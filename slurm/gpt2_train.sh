@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=emi-gpt2
+#SBATCH --account=e32706
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
@@ -9,6 +10,8 @@
 #SBATCH --output=logs/gpt2_%j.out
 #SBATCH --error=logs/gpt2_%j.err
 #SBATCH --partition=gengpu
+#SBATCH --mail-user=bettencourt@u.northwestern.edu
+
 
 set -euo pipefail
 
