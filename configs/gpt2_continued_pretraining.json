@@ -1,0 +1,17 @@
+{
+  "model_family": "gpt2",
+  "model_name": "gpt2",
+  "max_length": 512,
+  "objective": "clm",
+  "epochs": 1.5,
+  "checkpoint_interval": 0.10,
+  "train_data_path": "data/train.jsonl",
+  "heldout_data_path": "data/heldout/congressional.jsonl",
+  "general_data_path": "data/heldout/general.jsonl",
+  "output_dir": "checkpoints/gpt2",
+  "batch_size": 16,
+  "gradient_accumulation_steps": 1,
+  "learning_rate": 5e-5,
+  "weight_decay": 0.01,
+  "seed": 42
+}
