@@ -27,6 +27,14 @@ class ModelConfig:
     tokenizer_name: str
     output_dir: str
     local_cache_dir: str = str(LOCAL_CACHE_DIR)
+    train_data_path: str = "data/train.jsonl"
+    heldout_data_path: str = "data/heldout/congressional.jsonl"
+    general_data_path: str = "data/heldout/general.jsonl"
+    batch_size: int = 32
+    gradient_accumulation_steps: int = 1
+    learning_rate: float = 5e-5
+    weight_decay: float = 0.01
+    seed: int = 42
 
     @property
     def checkpoint_every(self) -> int:

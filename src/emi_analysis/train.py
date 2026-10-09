@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+from dataclasses import fields
 from pathlib import Path
 
 import torch
@@ -11,15 +12,25 @@ from transformers import AutoModelForCausalLM, AutoModelForMaskedLM, AutoTokeniz
 from .config import BERT_CONFIG, GPT2_CONFIG, ModelConfig
 
 
-def parse_config(config_path: str | Path) -> ModelConfig:
-    path = Path(config_path)
-    with path.open("r", encoding="utf-8") as handle:
-        config = json.load(handle)
-    if config["model_family"] == "bert":
-        return ModelConfig(**{**BERT_CONFIG.__dict__, **config})
-    if config["model_family"] == "gpt2":
-        return ModelConfig(**{**GPT2_CONFIG.__dict__, **config})
-    raise ValueError(f"Unsupported model family in config: {config['model_family']}")
+def parse_config(config_path: str | Path | dict) -> ModelConfig:
+    if isinstance(config_path, dict):
+        config = dict(config_path)
+    else:
+        path = Path(config_path)
+        with path.open("r", encoding="utf-8") as handle:
+            config = json.load(handle)
+
+    model_family = config.get("model_family")
+    if model_family == "bert":
+        defaults = BERT_CONFIG.__dict__.copy()
+    elif model_family == "gpt2":
+        defaults = GPT2_CONFIG.__dict__.copy()
+    else:
+        raise ValueError(f"Unsupported model family in config: {model_family}")
+
+    allowed_fields = {field.name for field in fields(ModelConfig)}
+    merged = {**defaults, **{key: value for key, value in config.items() if key in allowed_fields}}
+    return ModelConfig(**merged)
 
 
 def build_cli() -> argparse.ArgumentParser:
