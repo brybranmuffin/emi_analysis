@@ -44,8 +44,13 @@ def build_cli() -> argparse.ArgumentParser:
 
 def load_texts(path: str | Path) -> list[str]:
     path = Path(path)
-    if not path.exists():
+    if path.is_dir():
+        print(f"Input path is a directory: {path}. Falling back to smoke-test sample texts.")
         return ["This is a smoke-test sample for EMI continued pretraining."] * 20
+    if not path.exists():
+        print(f"Input file not found: {path}. Falling back to smoke-test sample texts.")
+        return ["This is a smoke-test sample for EMI continued pretraining."] * 20
+
     texts: list[str] = []
     with path.open("r", encoding="utf-8") as handle:
         for line in handle:
@@ -162,7 +167,8 @@ def main() -> None:
             local_cache_dir=config.local_cache_dir,
         )
 
-    texts = load_texts(config.output_dir)
+    train_data_path = getattr(config, "train_data_path", config.output_dir)
+    texts = load_texts(train_data_path)
     run_training(
         model_family=config.model_family,
         model_name=config.model_name,
