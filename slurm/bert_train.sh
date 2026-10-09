@@ -8,6 +8,7 @@
 #SBATCH --mem=120G
 #SBATCH --output=logs/bert_%j.out
 #SBATCH --error=logs/bert_%j.err
+#SBATCH --partition=gengpu
 
 set -euo pipefail
 

@@ -7,6 +7,8 @@
 #SBATCH --mem=32G
 #SBATCH --output=logs/validate_%j.out
 #SBATCH --error=logs/validate_%j.err
+#SBATCH --partition=gengpu
+
 
 set -euo pipefail
 

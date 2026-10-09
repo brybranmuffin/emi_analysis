@@ -8,6 +8,7 @@
 #SBATCH --mem=120G
 #SBATCH --output=logs/gpt2_%j.out
 #SBATCH --error=logs/gpt2_%j.err
+#SBATCH --partition=gengpu
 
 set -euo pipefail
 
