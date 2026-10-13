@@ -8,7 +8,7 @@
 #SBATCH --mem=32G
 #SBATCH --output=logs/validate_%j.out
 #SBATCH --error=logs/validate_%j.err
-#SBATCH --partition=gengpu
+#SBATCH --partition=short
 #SBATCH --mail-user=bettencourt@u.northwestern.edu
 
 

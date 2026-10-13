@@ -8,7 +8,7 @@
 #SBATCH --mem=120G
 #SBATCH --output=logs/prep_%j.out
 #SBATCH --error=logs/prep_%j.err
-#SBATCH --partition=gengpu
+#SBATCH --partition=short
 #SBATCH --mail-user=bettencourt@u.northwestern.edu
 
 # Builds data/train.jsonl and the fixed held-out sets (CPU only). Usage:
