@@ -10,6 +10,7 @@
 #SBATCH --error=logs/prep_%j.err
 #SBATCH --partition=short
 #SBATCH --mail-user=bettencourt@u.northwestern.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
 
 # Builds data/train.jsonl and the fixed held-out sets (CPU only). Usage:
 #   sbatch --export=ALL,CORPUS=data/raw/osf/<corpus>.csv.gzip slurm/prepare_data.sh

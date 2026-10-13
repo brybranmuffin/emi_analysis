@@ -10,6 +10,7 @@
 #SBATCH --error=logs/validate_%j.err
 #SBATCH --partition=short
 #SBATCH --mail-user=bettencourt@u.northwestern.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
 
 
 set -euo pipefail

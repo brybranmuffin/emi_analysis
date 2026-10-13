@@ -11,6 +11,7 @@
 #SBATCH --error=logs/gpt2_%j.err
 #SBATCH --partition=gengpu
 #SBATCH --mail-user=bettencourt@u.northwestern.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
 
 # Full continued-pretraining run. Needs the outputs of slurm/prepare_data.sh and the seed lexicons
 # in data/lexicons/. Progress, token accounting and every checkpoint are logged to logs/gpt2_<job>.out
