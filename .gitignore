@@ -39,3 +39,8 @@ outputs/
 wandb/
 mlruns/
 .DS_Store
+
+# Smoke-test and validation-subset outputs
+data/smoke/
+data/val10k/
+*.gzip

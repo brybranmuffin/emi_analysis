@@ -27,7 +27,7 @@ This repository is set up for the congressional-speech continued pretraining wor
 - `data/heldout/`: held-out IDs and generated artifacts
 - `docs/`: notes and verification requirements
 
-## Quickstart
+## Setup
 
 From the repository root:
 
@@ -39,62 +39,69 @@ python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
 
-Download the dataset archive and cache the Hugging Face models locally if they are not already present:
+## Inputs you must download
 
-```bash
-python -m emi_analysis.download_assets
-```
+The Zenodo archive fetched by `python -m emi_analysis.download_assets` contains only the EMI paper's aggregate results. It has **no speeches**. The EMI README points to the [OSF repository](https://doi.org/10.17605/OSF.IO/Z6UTW) for the large files. From there you need:
 
-Run a smoke test before the full training run:
+- **The speech corpus**, e.g. `combined_congress1879_till_2022.csv.gzip` (the EMI scripts also use a `..._filtered_nonprocedural.csv.gzip` variant). Expected columns: `speech_id`, `text`, and `congress` or `year`. Other names can be mapped with `--id-column`, `--text-column`, `--congress-column` and `--year-column`.
+- **The seed lexicons** `evidence_lexicon.csv` and `intuition_lexicon.csv` (columns `evidence_keywords` / `intuition_keywords`). Put them in `data/lexicons/`. Training refuses to start without them, because seed drift is a required checkpoint metric.
 
-```bash
-python scripts/run_smoke_test.py
-```
+## Workflow
 
-Run a small local training job directly with the repo config files:
+1. **Prepare data** (CPU). This holds out speeches first, then deduplicates the training side and writes everything `train.py` reads:
 
-```bash
-python -m emi_analysis.train --config configs/bert_continued_pretraining.json --max-steps 2 --checkpoint-every 1
-python -m emi_analysis.train --config configs/gpt2_continued_pretraining.json --max-steps 2 --checkpoint-every 1
-```
+   ```bash
+   python -m emi_analysis.prepare_data --input data/raw/osf/<corpus>.csv.gzip
+   # on Quest:
+   sbatch --export=ALL,CORPUS=data/raw/osf/<corpus>.csv.gzip slurm/prepare_data.sh
+   ```
 
-## Quest (SLURM)
+   Outputs: `data/train.jsonl`, `data/heldout/{speech_ids.txt,congressional.jsonl,general.jsonl}`, `data/processed/{dedup_report.csv,prep_summary.json,prepare_data.log}`. The held-out ID file is **reused** on later runs so the split stays fixed (`--regenerate-holdout` overrides this). The general-domain sample is 2,000 WikiText-103 paragraphs by default (`--general-source`).
 
-On Quest, submit each model job from the repo root:
+2. **Smoke test** (a few minutes; runs the real models on a synthetic corpus under `data/smoke/` and `checkpoints/smoke/`):
 
-```bash
-cd /path/to/emi_analysis
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m pip install -e .
-python -m emi_analysis.download_assets
-sbatch slurm/bert_train.sh
-sbatch slurm/gpt2_train.sh
-```
+   ```bash
+   python scripts/run_smoke_test.py
+   ```
 
-The job scripts use a single A100 GPU and write logs to `logs/` while saving checkpoints under `checkpoints/bert` and `checkpoints/gpt2`.
+3. **Validate on 10k speeches** before the full run (handoff Step 2):
 
-If you want to inspect the queued jobs or output:
+   ```bash
+   sbatch --export=ALL,CORPUS=<corpus> slurm/prepare_data.sh --sample 10000 --holdout-count 500 --out-root data/val10k
+   # then point a copy of each config at data/val10k/... and run a few hundred steps:
+   sbatch slurm/bert_train.sh --max-steps 300
+   ```
 
-```bash
-squeue -u $USER
-ls -R logs
-ls -R checkpoints
-```
+4. **Full training** (one A100 each; extra arguments after the script name are passed to `train.py`):
 
-## Slurm
+   ```bash
+   sbatch slurm/bert_train.sh
+   sbatch slurm/gpt2_train.sh
+   ```
 
-The included batch scripts assume the project is mounted on a cluster filesystem and a Python environment is available in the workspace. Each script prepares `logs/`, creates the cache directory, downloads data/model assets if needed, and launches the continued-pretraining job with the matching JSON config.
+   Pass `--legacy-truncation` to reproduce the old truncating loader for comparison.
 
-## Validation
+## Reading a training run
 
-Before running the full corpus, the project validates on a 10k-speech subset:
+Each run gets its own folder, `checkpoints/<model>/run-job<SLURM_JOB_ID>/`, so reruns never mix with older checkpoints:
 
-1. Check that total output tokens approximately match total input tokens after deduplication and minimum-length drops.
-2. Ensure no chunk exceeds the model max length.
-3. Verify that held-out speech IDs never appear in the training set.
-4. Inspect attention masks for boundary blocking when packing is enabled.
+| File | Contents |
+| --- | --- |
+| `train.log` | Same lines as `logs/<model>_<job>.out` |
+| `run_config.json` | Resolved config, environment (GPU, git commit), token accounting, step schedule |
+| `metrics.csv` | One row for step 0 (unadapted model) and one per checkpoint: `model, step, congressional_loss, general_loss, mean_seed_drift`, then `max_seed_drift, loss_metric, epoch, train_loss, tokens_seen, elapsed_seconds, flags, checkpoint` |
+| `checkpoint-<step>/` | Model and tokenizer, plus `checkpoint_info.json` with that checkpoint's metrics |
+| `run_summary.json` | `completed`, `stopped_on_flag` or `failed` (with the error) |
 
-## Notes
+The log is organised as follows:
 
-This repository is intentionally structured as a runnable starter for the handoff workflow. Actual dataset paths, cluster names, and full model checkpoints should be filled in for your specific compute environment.
+- **Header block.** Host, GPU, precision, git commit, Python, job ID.
+- **TOKEN ACCOUNTING.** Tokens in, tokens out in chunks, tokens dropped as chunks under `min_chunk_tokens`, and the longest chunk. The run aborts if in ≠ out + dropped, or if any chunk exceeds `max_length`.
+- **TRAINING PLAN.** Total optimizer steps, the checkpoint steps (every 10%), learning-rate schedule and stop thresholds.
+- **BASELINE.** Held-out losses of the unadapted model (step 0).
+- **Progress lines** every `log_every` steps: step, % done, epoch, train loss, learning rate, throughput, elapsed time and ETA. If the ETA exceeds the job's remaining SLURM time, a warning is logged early in the run.
+- **CHECKPOINT k/10 blocks.** Where the checkpoint was saved, held-out congressional and general loss with the % change from step 0, seed drift mean/max, and any flags.
+
+`congressional_loss`/`general_loss` are MLM loss for BERT and perplexity for GPT-2 (`loss_metric` column). Compare each model only to its own step 0.
+
+**Stop conditions.** A flag fires when general loss is more than `general_loss_max_rel_increase` (default 20%) above step 0, or when mean seed drift exceeds `seed_drift_threshold` (default 0.10) and is still rising. On a flag, the run logs `STOP CONDITION`, saves that checkpoint and exits with code 3, so `sacct` shows the job as FAILED. The handoff does not quantify "sharp" or "large", so these defaults are starting points. Set `stop_on_flag: false` to log flags without stopping.
