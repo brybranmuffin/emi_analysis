@@ -1,0 +1,15 @@
+/var/spool/slurmd/job9263381/slurm_script: line 21: .venv/bin/activate: No such file or directory
+Traceback (most recent call last):
+  File "/hpc/software/mamba/24.3.0/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/hpc/software/mamba/24.3.0/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/scratch/rsr7518/emi_analysis/src/emi_analysis/train.py", line 179, in <module>
+    main()
+  File "/scratch/rsr7518/emi_analysis/src/emi_analysis/train.py", line 165, in main
+    texts = load_texts(config.output_dir)
+  File "/scratch/rsr7518/emi_analysis/src/emi_analysis/train.py", line 50, in load_texts
+    with path.open("r", encoding="utf-8") as handle:
+  File "/hpc/software/mamba/24.3.0/lib/python3.10/pathlib.py", line 1119, in open
+    return self._accessor.open(self, mode, buffering, encoding, errors,
+IsADirectoryError: [Errno 21] Is a directory: 'checkpoints/gpt2'

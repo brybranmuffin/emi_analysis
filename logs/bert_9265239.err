@@ -1,0 +1,15 @@
+/var/spool/slurmd/job9265239/slurm_script: line 21: .venv/bin/activate: No such file or directory
+Loading weights:   0%|          | 0/202 [00:00<?, ?it/s]Loading weights:  67%|██████▋   | 135/202 [00:00<00:00, 1323.62it/s]Loading weights: 100%|██████████| 202/202 [00:00<00:00, 1321.30it/s]
+[transformers] [1mBertForMaskedLM LOAD REPORT[0m from: bert-base-uncased
+Key                         | Status     |  | 
+----------------------------+------------+--+-
+bert.pooler.dense.weight    | UNEXPECTED |  | 
+cls.seq_relationship.bias   | UNEXPECTED |  | 
+cls.seq_relationship.weight | UNEXPECTED |  | 
+bert.pooler.dense.bias      | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00,  7.35it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00,  7.33it/s]
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00,  8.12it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00,  8.10it/s]
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00,  7.69it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00,  7.68it/s]

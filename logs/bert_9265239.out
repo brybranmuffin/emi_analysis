@@ -1,0 +1,8 @@
+Dataset is already present: [PosixPath('data/raw/extracted/saroyehun-EvidenceMinusIntuition-4200ef3/data/congress_EMI_party_chamber_w2v_bootstrap_CIs.csv'), PosixPath('data/raw/extracted/saroyehun-EvidenceMinusIntuition-4200ef3/data/congress_EMI_party_w2v_bootstrap_CIs.csv'), PosixPath('data/raw/extracted/saroyehun-EvidenceMinusIntuition-4200ef3/data/congress_EMI_w2v_bootstrap_CIs.csv')]
+Downloaded dataset assets: ['data/raw/extracted/saroyehun-EvidenceMinusIntuition-4200ef3/data/congress_EMI_party_chamber_w2v_bootstrap_CIs.csv', 'data/raw/extracted/saroyehun-EvidenceMinusIntuition-4200ef3/data/congress_EMI_party_w2v_bootstrap_CIs.csv', 'data/raw/extracted/saroyehun-EvidenceMinusIntuition-4200ef3/data/congress_EMI_w2v_bootstrap_CIs.csv']
+Input file not found: data/train.jsonl. Falling back to smoke-test sample texts.
+Saved checkpoint: checkpoints/bert/checkpoint-2
+Saved checkpoint: checkpoints/bert/checkpoint-4
+Saved checkpoint: checkpoints/bert/checkpoint-5
+Completed training for bert for 5 steps.
+Checkpoints saved under: checkpoints/bert
