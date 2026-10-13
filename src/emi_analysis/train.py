@@ -21,6 +21,7 @@ import logging
 import math
 import os
 import random
+import signal
 import subprocess
 import time
 from dataclasses import asdict, fields, replace
@@ -40,6 +41,7 @@ from .verification import append_metric_row, check_stop_conditions
 logger = logging.getLogger("emi_analysis")
 
 STOP_EXIT_CODE = 3
+CANCEL_EXIT_CODE = 143  # 128 + SIGTERM, what SLURM reports for scancel / time limit
 PREP_HINT = "Run `python -m emi_analysis.prepare_data --input <corpus>` first (see README)."
 
 
@@ -83,6 +85,12 @@ def build_cli() -> argparse.ArgumentParser:
     parser.add_argument("--require-gpu", action="store_true", help="Fail instead of falling back to CPU.")
     parser.add_argument("--legacy-truncation", action="store_true", help="Reproduce the old loader: keep only the first window of each speech.")
     parser.add_argument("--allow-missing-lexicons", action="store_true", help="Smoke tests only: skip seed drift if lexicons are missing.")
+    parser.add_argument(
+        "--stop-on-flag",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="End the run when a stop condition fires (default: config stop_on_flag). Flags are always logged and recorded.",
+    )
     return parser
 
 
@@ -98,6 +106,16 @@ def checkpoint_schedule(total_steps: int, interval: float = 0.10, every: int | N
         return steps
     n = max(1, round(1 / interval))
     return sorted({round(total_steps * k / n) for k in range(1, n + 1)} - {0})
+
+
+def epoch_end_steps(batches_per_epoch: int, accumulation: int, total_steps: int) -> list[int]:
+    """Optimizer step on which each full epoch completes (the first step at or after its last batch)."""
+    steps = []
+    epoch = 1
+    while (step := math.ceil(epoch * batches_per_epoch / accumulation)) <= total_steps:
+        steps.append(step)
+        epoch += 1
+    return steps
 
 
 def parse_slurm_time(value: str) -> int | None:
@@ -466,6 +484,8 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     epoch_steps = math.ceil(config.epochs * steps_per_epoch)
     total_steps = min(args.max_steps, epoch_steps) if args.max_steps else epoch_steps
     schedule = checkpoint_schedule(total_steps, config.checkpoint_interval, args.checkpoint_every)
+    epoch_ends = epoch_end_steps(batches_per_epoch, config.gradient_accumulation_steps, total_steps)
+    epochs_planned = round(total_steps * config.gradient_accumulation_steps / batches_per_epoch, 3)
     log_every = max(1, config.log_every)
 
     decay = [p for n, p in model.named_parameters() if p.requires_grad and not (n.endswith("bias") or "LayerNorm" in n or "ln_" in n)]
@@ -485,6 +505,8 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
         "total_steps": total_steps,
         "max_steps_override": args.max_steps,
         "checkpoint_steps": schedule,
+        "epoch_end_steps": epoch_ends,
+        "epochs_planned": epochs_planned,
         "warmup_steps": warmup_steps,
     }
     run_config = {
@@ -503,18 +525,58 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
         "effective batch": f"{config.batch_size * config.gradient_accumulation_steps} chunks",
         "learning rate": f"{config.learning_rate} ({config.lr_scheduler}, {warmup_steps} warmup steps)",
         "checkpoints": f"{len(schedule)} at steps {schedule}",
-        "stop if": f"general loss > +{config.general_loss_max_rel_increase:.0%} vs step 0, or mean seed drift "
-        f"> {config.seed_drift_threshold} and climbing" + ("" if config.stop_on_flag else " (flag only, no stop)"),
+        "epoch ends": f"steps {epoch_ends} (evaluated and checkpointed too)" if epoch_ends else "none within this run",
+        "flag if": f"general loss > +{config.general_loss_max_rel_increase:.0%} vs step 0, or mean seed drift "
+        f"> {config.seed_drift_threshold} and climbing",
+        "on a flag": "stop the run (stop_on_flag on)" if config.stop_on_flag else "log it and keep training (stop_on_flag off)",
         "run config": run_dir / "run_config.json",
     })
 
     metrics_path = run_dir / "metrics.csv"
+    progress_path = run_dir / "progress.json"
     loss_metric = "mlm_loss" if family == "bert" else "perplexity"
     base_words = embed_words(model, tokenizer, seed_words, device) if seed_words else None
-    state = {"step": 0, "micro": 0, "tokens": 0, "eval_seconds": 0.0, "status": "running"}
+    state = {"step": 0, "micro": 0, "tokens": 0, "eval_seconds": 0.0, "status": "running",
+             "rate": None, "eta": None, "recent_loss": None, "lr": config.learning_rate}
     rows: list[dict] = []
+    flags_raised: list[dict] = []
 
-    def evaluate_point(step: int, checkpoint_path: str, train_loss: float | None) -> dict:
+    def public(row: dict) -> dict:
+        return {k: v for k, v in row.items() if not k.startswith("_")}
+
+    def latest_checkpoint() -> str:
+        return next((r["checkpoint"] for r in reversed(rows) if r["checkpoint"]), "")
+
+    def write_progress() -> None:
+        """Snapshot for deciding mid-run whether to stop; rewritten at every progress line and evaluation."""
+        snapshot = {
+            "model": family,
+            "status": state["status"],
+            "run_dir": str(run_dir),
+            "log": str(run_dir / "train.log"),
+            "slurm_job_id": os.environ.get("SLURM_JOB_ID", ""),
+            "step": state["step"],
+            "total_steps": total_steps,
+            "percent": round(100 * state["step"] / total_steps, 2),
+            "epoch": round(state["micro"] / batches_per_epoch, 4),
+            "epochs_planned": epochs_planned,
+            "loss_metric": loss_metric,
+            "recent_train_loss": state["recent_loss"],
+            "learning_rate": state["lr"],
+            "steps_per_second": state["rate"],
+            "elapsed_seconds": round(time.time() - started, 1),
+            "eta_seconds": state["eta"],
+            "latest_checkpoint": latest_checkpoint(),
+            "baseline": public(rows[0]) if rows else None,
+            "latest_evaluation": public(rows[-1]) if rows else None,
+            "flags_raised": flags_raised,
+            "updated_at": datetime.now().isoformat(timespec="seconds"),
+        }
+        tmp = progress_path.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8")
+        tmp.replace(progress_path)
+
+    def evaluate_point(step: int, checkpoint_path: str, train_loss: float | None, event: str) -> dict:
         eval_started = time.time()
         row = {
             "model": family,
@@ -530,6 +592,7 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
             "elapsed_seconds": round(time.time() - started, 1),
             "flags": "",
             "checkpoint": checkpoint_path,
+            "event": event,
         }
         if base_words is not None:
             mean_drift, max_drift = seed_drift(base_words, embed_words(model, tokenizer, seed_words, device))
@@ -544,10 +607,13 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
         row["flags"] = "; ".join(flags)
         append_metric_row(metrics_path, row)
         rows.append(row)
+        if flags:
+            flags_raised.append({"step": row["step"], "epoch": row["epoch"], "flags": flags})
+        write_progress()
         return flags
 
     logger.info(f"Evaluating the unadapted model (step 0) on {len(eval_sets['congressional'])} + {len(eval_sets['general'])} batches")
-    baseline = evaluate_point(0, "", None)
+    baseline = evaluate_point(0, "", None, "baseline")
     record(baseline)
     eval_cost = baseline["_eval_seconds"]
     banner(logger, "BASELINE (step 0, unadapted model)", {
@@ -556,125 +622,173 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
         "seed drift": "0 by definition" if base_words is not None else "not measured",
         "evaluation time": format_duration(eval_cost),
         "metrics file": metrics_path,
+        "live progress": progress_path,
     })
 
     # ---- training loop
+    cancel: dict[str, str | None] = {"signal": None}
+
+    def request_cancel(signum, _frame) -> None:
+        cancel["signal"] = signal.Signals(signum).name
+
+    previous_handler = signal.signal(signal.SIGTERM, request_cancel)
     train_generator = torch.Generator().manual_seed(config.seed)
     epoch, position = 0, 0
     epoch_batches = sampler.epoch_batches(epoch)
     logger.info(f"Starting epoch 1 ({batches_per_epoch:,} batches)")
     window_loss, window_micro = 0.0, 0
     ckpt_loss, ckpt_micro = 0.0, 0
+    epoch_loss, epoch_micro = 0.0, 0
     train_started = time.time()
     walltime_checked = False
     checkpoint_steps = set(schedule)
+    epoch_end_set = set(epoch_ends)
 
-    while state["step"] < total_steps:
-        if position >= len(epoch_batches):
-            epoch, position = epoch + 1, 0
-            epoch_batches = sampler.epoch_batches(epoch)
-            logger.info(f"Starting epoch {epoch + 1} ({batches_per_epoch:,} batches, reshuffled with seed {config.seed + epoch})")
-        rows_in_batch = train_chunks[epoch_batches[position]]["input_ids"]
-        position += 1
-        batch = make_batch(rows_in_batch, family, tokenizer, config, train_generator)
-        batch = {k: v.to(device, non_blocking=True) for k, v in batch.items()}
-        with autocast():
-            loss = model(**batch).loss
-        if not torch.isfinite(loss):
-            raise RuntimeError(f"Non-finite training loss ({loss.item()}) at step {state['step'] + 1}, epoch {epoch + 1}.")
-        (loss / config.gradient_accumulation_steps).backward()
-        state["micro"] += 1
-        state["tokens"] += int(batch["attention_mask"].sum().item())
-        window_loss += loss.item()
-        window_micro += 1
-        ckpt_loss += loss.item()
-        ckpt_micro += 1
-        if state["micro"] % config.gradient_accumulation_steps:
-            continue
+    try:
+        while state["step"] < total_steps:
+            if cancel["signal"]:
+                state["status"] = "cancelled"
+                logger.warning(
+                    f"Received {cancel['signal']} (scancel or SLURM time limit) at step {state['step']:,}/{total_steps:,}; "
+                    f"stopping. Latest checkpoint: {latest_checkpoint() or 'none yet'}"
+                )
+                break
+            if position >= len(epoch_batches):
+                epoch, position = epoch + 1, 0
+                epoch_batches = sampler.epoch_batches(epoch)
+                logger.info(f"Starting epoch {epoch + 1} ({batches_per_epoch:,} batches, reshuffled with seed {config.seed + epoch})")
+            rows_in_batch = train_chunks[epoch_batches[position]]["input_ids"]
+            position += 1
+            batch = make_batch(rows_in_batch, family, tokenizer, config, train_generator)
+            batch = {k: v.to(device, non_blocking=True) for k, v in batch.items()}
+            with autocast():
+                loss = model(**batch).loss
+            if not torch.isfinite(loss):
+                raise RuntimeError(f"Non-finite training loss ({loss.item()}) at step {state['step'] + 1}, epoch {epoch + 1}.")
+            (loss / config.gradient_accumulation_steps).backward()
+            state["micro"] += 1
+            state["tokens"] += int(batch["attention_mask"].sum().item())
+            window_loss += loss.item()
+            window_micro += 1
+            ckpt_loss += loss.item()
+            ckpt_micro += 1
+            epoch_loss += loss.item()
+            epoch_micro += 1
+            if state["micro"] % config.gradient_accumulation_steps:
+                continue
 
-        torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
-        optimizer.step()
-        scheduler.step()
-        optimizer.zero_grad(set_to_none=True)
-        state["step"] += 1
-        step = state["step"]
+            torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad(set_to_none=True)
+            state["step"] += 1
+            step = state["step"]
 
-        if step % log_every == 0 or step == total_steps:
-            train_seconds = time.time() - train_started - (state["eval_seconds"] - eval_cost)
-            rate = step / max(train_seconds, 1e-9)
-            remaining_ckpts = sum(1 for s in schedule if s > step)
-            eta = (total_steps - step) / rate + remaining_ckpts * eval_cost
-            gpu = f" | gpu mem {torch.cuda.max_memory_allocated(device) / 1e9:.1f} GB" if device.type == "cuda" else ""
-            logger.info(
-                f"step {step:,}/{total_steps:,} ({step / total_steps:.1%}) | epoch {state['micro'] / batches_per_epoch:.3f} | "
-                f"loss {window_loss / window_micro:.4f} | lr {scheduler.get_last_lr()[0]:.2e} | {rate:.2f} steps/s | "
-                f"{state['tokens'] / max(train_seconds, 1e-9):,.0f} tok/s | elapsed {format_duration(time.time() - started)} | "
-                f"ETA {format_duration(eta)}{gpu}"
-            )
-            window_loss, window_micro = 0.0, 0
-            if not walltime_checked and step >= min(total_steps, 5 * log_every):
-                walltime_checked = True
-                left = slurm_seconds_left()
-                if left is not None and eta > left:
-                    logger.warning(
-                        f"Projected time to finish ({format_duration(eta)}) exceeds the SLURM time left ({format_duration(left)}). "
-                        "The job will be killed before the final checkpoint; resubmit with a longer --time or fewer epochs."
-                    )
+            if step % log_every == 0 or step == total_steps:
+                train_seconds = time.time() - train_started - (state["eval_seconds"] - eval_cost)
+                rate = step / max(train_seconds, 1e-9)
+                remaining_evals = len({s for s in checkpoint_steps | epoch_end_set if s > step})
+                eta = (total_steps - step) / rate + remaining_evals * eval_cost
+                state.update(rate=round(rate, 3), eta=round(eta), recent_loss=round(window_loss / window_micro, 6),
+                             lr=scheduler.get_last_lr()[0])
+                gpu = f" | gpu mem {torch.cuda.max_memory_allocated(device) / 1e9:.1f} GB" if device.type == "cuda" else ""
+                logger.info(
+                    f"step {step:,}/{total_steps:,} ({step / total_steps:.1%}) | epoch {state['micro'] / batches_per_epoch:.3f} | "
+                    f"loss {window_loss / window_micro:.4f} | lr {state['lr']:.2e} | {rate:.2f} steps/s | "
+                    f"{state['tokens'] / max(train_seconds, 1e-9):,.0f} tok/s | elapsed {format_duration(time.time() - started)} | "
+                    f"ETA {format_duration(eta)}{gpu}"
+                )
+                window_loss, window_micro = 0.0, 0
+                write_progress()
+                if not walltime_checked and step >= min(total_steps, 5 * log_every):
+                    walltime_checked = True
+                    left = slurm_seconds_left()
+                    if left is not None and eta > left:
+                        logger.warning(
+                            f"Projected time to finish ({format_duration(eta)}) exceeds the SLURM time left ({format_duration(left)}). "
+                            "The job will be killed before the final checkpoint; resubmit with a longer --time or fewer epochs."
+                        )
 
-        if step in checkpoint_steps:
+            if step not in checkpoint_steps and step not in epoch_end_set:
+                continue
+
+            events, titles = [], []
+            if step in checkpoint_steps:
+                events.append("checkpoint")
+                titles.append(f"CHECKPOINT {schedule.index(step) + 1}/{len(schedule)}")
+            completed_epoch = int(state["micro"] // batches_per_epoch)
+            if step in epoch_end_set:
+                events.append("epoch_end")
+                titles.append(f"END OF EPOCH {completed_epoch} (of {epochs_planned:g} planned)")
             ckpt_dir = run_dir / f"checkpoint-{step}"
             model.save_pretrained(ckpt_dir)
             tokenizer.save_pretrained(ckpt_dir)
-            row = evaluate_point(step, str(ckpt_dir), ckpt_loss / max(1, ckpt_micro))
+            row = evaluate_point(step, str(ckpt_dir), ckpt_loss / max(1, ckpt_micro), "+".join(events))
             ckpt_loss, ckpt_micro = 0.0, 0
             flags = record(row)
-            info = {k: v for k, v in row.items() if not k.startswith("_")}
-            info.update(total_steps=total_steps, checkpoint_index=schedule.index(step) + 1, checkpoints_planned=len(schedule),
-                        saved_at=datetime.now().isoformat(timespec="seconds"))
+            info = public(row)
+            info.update(total_steps=total_steps, saved_at=datetime.now().isoformat(timespec="seconds"))
             (ckpt_dir / "checkpoint_info.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
             details = {
                 "saved to": ckpt_dir,
                 f"congressional {loss_metric}": _change(row["congressional_loss"], baseline["congressional_loss"]),
                 f"general {loss_metric}": _change(row["general_loss"], baseline["general_loss"]),
                 "seed drift mean / max": f"{row['mean_seed_drift']} / {row['max_seed_drift']}" if base_words is not None else "not measured",
-                "train loss since last checkpoint": f"{row['train_loss']:.4f}",
+                "train loss since last evaluation": f"{row['train_loss']:.4f}",
+            }
+            if step in epoch_end_set:
+                details[f"train loss over epoch {completed_epoch}"] = f"{epoch_loss / max(1, epoch_micro):.4f}"
+                epoch_loss, epoch_micro = 0.0, 0
+            details.update({
                 "epoch": row["epoch"],
                 "tokens seen": f"{row['tokens_seen']:,}",
                 "evaluation time": format_duration(row["_eval_seconds"]),
                 "flags": row["flags"] or "none",
-            }
-            banner(logger, f"CHECKPOINT {schedule.index(step) + 1}/{len(schedule)} | step {step:,}/{total_steps:,} ({step / total_steps:.0%})", details)
-            if flags:
-                for flag in flags:
-                    logger.warning(f"STOP CONDITION: {flag}")
-                if config.stop_on_flag:
-                    logger.error("Stopping the run as the handoff requires; report these numbers before continuing.")
-                    state["status"] = "stopped_on_flag"
-                    break
+            })
+            banner(logger, f"{' + '.join(titles)} | step {step:,}/{total_steps:,} ({step / total_steps:.0%})", details)
+            for flag in flags:
+                suffix = "" if config.stop_on_flag else " (stop_on_flag is off; the run continues)"
+                logger.warning(f"FLAG at step {step:,}: {flag}{suffix}")
+            if flags and config.stop_on_flag:
+                logger.error(f"STOP CONDITION at step {step:,}: ending the run because stop_on_flag is on. "
+                             f"Latest checkpoint: {ckpt_dir}")
+                state["status"] = "stopped_on_flag"
+                break
+    finally:
+        signal.signal(signal.SIGTERM, previous_handler)
 
     if state["status"] == "running":
         state["status"] = "completed"
-    final = {k: v for k, v in rows[-1].items() if not k.startswith("_")}
+    write_progress()
+    final = public(rows[-1])
     summary = {
         "status": state["status"],
         "model": family,
         "steps_completed": state["step"],
         "total_steps": total_steps,
         "epochs_completed": round(state["micro"] / batches_per_epoch, 4),
+        "epochs_planned": epochs_planned,
         "tokens_seen": state["tokens"],
+        "latest_checkpoint": latest_checkpoint(),
         "checkpoints": [r["checkpoint"] for r in rows if r["checkpoint"]],
-        "baseline": {k: v for k, v in baseline.items() if not k.startswith("_")},
+        "flags_raised": flags_raised,
+        "baseline": public(baseline),
         "final": final,
         "elapsed_seconds": round(time.time() - started, 1),
         "finished_at": datetime.now().isoformat(timespec="seconds"),
     }
+    if state["status"] == "cancelled":
+        summary["stop_reason"] = f"received {cancel['signal']}"
     (run_dir / "run_summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     banner(logger, f"TRAINING {state['status'].upper().replace('_', ' ')}", {
         "steps": f"{state['step']:,}/{total_steps:,}",
+        "epochs": f"{summary['epochs_completed']} of {epochs_planned:g}",
         "checkpoints written": len(summary["checkpoints"]),
-        f"congressional {loss_metric}": _change(final["congressional_loss"], baseline["congressional_loss"]),
-        f"general {loss_metric}": _change(final["general_loss"], baseline["general_loss"]),
-        "final seed drift mean / max": f"{final['mean_seed_drift']} / {final['max_seed_drift']}",
+        "latest checkpoint": summary["latest_checkpoint"] or "none",
+        f"congressional {loss_metric} (last evaluation)": _change(final["congressional_loss"], baseline["congressional_loss"]),
+        f"general {loss_metric} (last evaluation)": _change(final["general_loss"], baseline["general_loss"]),
+        "seed drift mean / max (last evaluation)": f"{final['mean_seed_drift']} / {final['max_seed_drift']}",
+        "flags raised": len(flags_raised),
         "metrics": metrics_path,
         "summary": run_dir / "run_summary.json",
         "elapsed": format_duration(time.time() - started),
@@ -690,6 +804,7 @@ def main(argv: list[str] | None = None) -> Path:
         "log_every": args.log_every,
         "num_proc": args.num_proc,
         "legacy_truncation": True if args.legacy_truncation else None,
+        "stop_on_flag": args.stop_on_flag,
     }
     if args.data_root:
         root = Path(args.data_root)
@@ -719,6 +834,8 @@ def main(argv: list[str] | None = None) -> Path:
         raise
     if status == "stopped_on_flag":
         raise SystemExit(STOP_EXIT_CODE)
+    if status == "cancelled":
+        raise SystemExit(CANCEL_EXIT_CODE)
     return run_dir
 
 

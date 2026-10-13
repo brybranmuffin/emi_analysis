@@ -20,6 +20,7 @@ METRIC_FIELDS = [
     "elapsed_seconds",
     "flags",
     "checkpoint",
+    "event",
 ]
 
 

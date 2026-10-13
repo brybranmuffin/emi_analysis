@@ -25,5 +25,5 @@
   "log_every": 100,
   "general_loss_max_rel_increase": 0.2,
   "seed_drift_threshold": 0.1,
-  "stop_on_flag": true
+  "stop_on_flag": false
 }

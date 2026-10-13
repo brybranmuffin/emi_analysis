@@ -16,7 +16,11 @@ _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 def setup_logging(log_file: str | Path | None = None, mode: str = "w") -> logging.Logger:
-    """Log to stdout (the SLURM .out file) and, if given, to ``log_file`` with identical lines."""
+    """Log to stdout (the SLURM .out file) and, if given, to ``log_file`` with identical lines.
+
+    Warnings and errors are also copied to stderr (the SLURM .err file) so flags and stop reasons are
+    visible there. Tracebacks are left to Python's own stderr output to avoid printing them twice.
+    """
     logger = logging.getLogger(LOGGER_NAME)
     for handler in list(logger.handlers):
         handler.close()
@@ -28,6 +32,11 @@ def setup_logging(log_file: str | Path | None = None, mode: str = "w") -> loggin
     stream = logging.StreamHandler(sys.stdout)
     stream.setFormatter(formatter)
     logger.addHandler(stream)
+    errors = logging.StreamHandler(sys.stderr)
+    errors.setLevel(logging.WARNING)
+    errors.setFormatter(formatter)
+    errors.addFilter(lambda record: record.exc_info is None)
+    logger.addHandler(errors)
     if log_file is not None:
         path = Path(log_file)
         path.parent.mkdir(parents=True, exist_ok=True)

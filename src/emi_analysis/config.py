@@ -50,9 +50,10 @@ class ModelConfig:
     log_every: int = 100
     num_proc: int | None = None
     # Stop conditions from the handoff. "Sharp" and "large" are not defined there; these are starting values.
+    # Flags are always logged and recorded; stop_on_flag decides whether a flag also ends the run.
     general_loss_max_rel_increase: float = 0.20
     seed_drift_threshold: float = 0.10
-    stop_on_flag: bool = True
+    stop_on_flag: bool = False
 
 
 BERT_CONFIG = ModelConfig(

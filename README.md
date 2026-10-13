@@ -88,25 +88,39 @@ The Zenodo archive fetched by `python -m emi_analysis.download_assets` contains 
 
 ## Reading a training run
 
-Each run gets its own folder, `checkpoints/<model>/run-job<SLURM_JOB_ID>/`, so reruns never mix with older checkpoints:
+Each run gets its own folder, `checkpoints/<model>/run-job<SLURM_JOB_ID>/` (or `checkpoints/<data-root name>/<model>/...` with `--data-root`), so reruns never mix with older checkpoints:
 
 | File | Contents |
 | --- | --- |
 | `train.log` | Same lines as `logs/<model>_<job>.out` |
-| `run_config.json` | Resolved config, environment (GPU, git commit), token accounting, step schedule |
-| `metrics.csv` | One row for step 0 (unadapted model) and one per checkpoint: `model, step, congressional_loss, general_loss, mean_seed_drift`, then `max_seed_drift, loss_metric, epoch, train_loss, tokens_seen, elapsed_seconds, flags, checkpoint` |
-| `checkpoint-<step>/` | Model and tokenizer, plus `checkpoint_info.json` with that checkpoint's metrics |
-| `run_summary.json` | `completed`, `stopped_on_flag` or `failed` (with the error) |
+| `progress.json` | Live snapshot, rewritten at every progress line and evaluation: step, epoch, ETA, recent train loss, latest checkpoint, baseline and latest evaluation, flags so far |
+| `run_config.json` | Resolved config, environment (GPU, git commit), token accounting, step schedule including epoch-end steps |
+| `metrics.csv` | One row for step 0 (unadapted model), one per 10% checkpoint and one per epoch end: `model, step, congressional_loss, general_loss, mean_seed_drift`, then `max_seed_drift, loss_metric, epoch, train_loss, tokens_seen, elapsed_seconds, flags, checkpoint, event` |
+| `checkpoint-<step>/` | Model and tokenizer, plus `checkpoint_info.json` with that evaluation's metrics |
+| `run_summary.json` | `completed`, `cancelled` (scancel or time limit), `stopped_on_flag` or `failed` (with the error); flags raised; latest checkpoint |
 
-The log is organised as follows:
+### Checking on a run, and stopping one
+
+```bash
+python -m emi_analysis.status                      # latest run in every folder under checkpoints/
+python -m emi_analysis.status checkpoints/val10k   # just the validation runs
+```
+
+For each run this prints the status, progress, epoch, ETA and latest checkpoint. It also prints a table of every evaluation so far, with the change from step 0 for congressional and general loss, seed drift, train loss and any flags. That is everything needed to decide whether to stop. To stop a run, `scancel <jobid>` (the status output prints the exact command). The run catches the signal, writes `run_summary.json` with status `cancelled` and exits with code 143. Everything up to the latest checkpoint is kept, and that checkpoint is a usable model. A run cut off by the SLURM time limit is handled the same way.
+
+### The log
 
 - **Header block.** Host, GPU, precision, git commit, Python, job ID.
 - **TOKEN ACCOUNTING.** Tokens in, tokens out in chunks, tokens dropped as chunks under `min_chunk_tokens`, and the longest chunk. The run aborts if in ≠ out + dropped, or if any chunk exceeds `max_length`.
-- **TRAINING PLAN.** Total optimizer steps, the checkpoint steps (every 10%), learning-rate schedule and stop thresholds.
+- **TRAINING PLAN.** Total optimizer steps, checkpoint steps (every 10%), epoch-end steps, learning-rate schedule, flag thresholds and whether a flag stops the run.
 - **BASELINE.** Held-out losses of the unadapted model (step 0).
 - **Progress lines** every `log_every` steps: step, % done, epoch, train loss, learning rate, throughput, elapsed time and ETA. If the ETA exceeds the job's remaining SLURM time, a warning is logged early in the run.
-- **CHECKPOINT k/10 blocks.** Where the checkpoint was saved, held-out congressional and general loss with the % change from step 0, seed drift mean/max, and any flags.
+- **CHECKPOINT k/10 and END OF EPOCH n blocks.** Where the checkpoint was saved, held-out congressional and general loss with the % change from step 0, seed drift mean/max, train loss since the previous evaluation (and over the whole epoch at an epoch end), and any flags. An epoch end that falls between 10% checkpoints is evaluated and checkpointed as well.
 
 `congressional_loss`/`general_loss` are MLM loss for BERT and perplexity for GPT-2 (`loss_metric` column). Compare each model only to its own step 0.
 
-**Stop conditions.** A flag fires when general loss is more than `general_loss_max_rel_increase` (default 20%) above step 0, or when mean seed drift exceeds `seed_drift_threshold` (default 0.10) and is still rising. On a flag, the run logs `STOP CONDITION`, saves that checkpoint and exits with code 3, so `sacct` shows the job as FAILED. The handoff does not quantify "sharp" or "large", so these defaults are starting points. Set `stop_on_flag: false` to log flags without stopping.
+Warnings, flags and stop reasons are also written to `logs/<model>_<job>.err`, so that file holds everything worth looking at. It also contains a harmless transformers "LOAD REPORT" about unused pretrained weights.
+
+**Flags.** A flag fires when general loss is more than `general_loss_max_rel_increase` (default 20%) above step 0, or when mean seed drift exceeds `seed_drift_threshold` (default 0.10) and is still rising. The handoff does not quantify "sharp" or "large", so these thresholds are starting points. By default a flag is only recorded (`FLAG at step ...` in the log and `.err`, the `flags` column, `flags_raised` in the summary) and training continues (`stop_on_flag: false` in both configs). Pass `--stop-on-flag` to make a flag end the run instead. It then saves that checkpoint and exits with code 3, which SLURM reports as FAILED.
+
+**Exit codes.** 0 = completed, 1 = error (traceback in `.err`), 3 = stopped on a flag (`--stop-on-flag`), 143 = cancelled by `scancel` or the time limit.

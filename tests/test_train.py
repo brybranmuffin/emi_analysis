@@ -9,9 +9,11 @@ from pathlib import Path
 import pytest
 import torch
 
+from emi_analysis.status import main as status_main
 from emi_analysis.train import (
     LengthGroupedBatchSampler,
     checkpoint_schedule,
+    epoch_end_steps,
     main as train_main,
     mask_tokens_for_mlm,
     parse_slurm_time,
@@ -27,6 +29,16 @@ TINY_MODELS = {
 
 
 # ---------------------------------------------------------------- unit tests
+
+
+def test_epoch_end_steps_without_accumulation():
+    assert epoch_end_steps(batches_per_epoch=88, accumulation=1, total_steps=132) == [88]
+    assert epoch_end_steps(batches_per_epoch=88, accumulation=1, total_steps=176) == [88, 176]
+
+
+def test_epoch_end_steps_round_up_to_the_next_optimizer_step():
+    # Epoch 1 ends after micro-batch 10; the optimizer steps after micro-batches 4, 8, 12, ...
+    assert epoch_end_steps(batches_per_epoch=10, accumulation=4, total_steps=6) == [3, 5]
 
 
 def test_checkpoint_schedule_every_ten_percent():
@@ -238,13 +250,15 @@ def test_training_run_records_measured_metrics_and_checkpoints(tmp_path, family)
     assert str(run_dir / "checkpoint-2") in log_text and str(run_dir / "checkpoint-4") in log_text
 
 
-def test_training_stops_and_exits_nonzero_when_a_flag_fires(tmp_path):
+def test_training_stops_and_exits_nonzero_when_a_flag_fires(tmp_path, capsys):
     config_path = _make_run_inputs(tmp_path, "gpt2", seed_drift_threshold=0.0)
 
     with pytest.raises(SystemExit) as excinfo:
-        train_main(["--config", str(config_path), "--max-steps", "4", "--checkpoint-every", "2", "--run-name", "s"])
+        train_main(["--config", str(config_path), "--max-steps", "4", "--checkpoint-every", "2", "--run-name", "s",
+                    "--stop-on-flag"])
 
     assert excinfo.value.code == 3
+    assert "STOP CONDITION" in capsys.readouterr().err
     run_dir = tmp_path / "checkpoints" / "gpt2" / "run-s"
     rows = _read_metrics(run_dir)
     assert [r["step"] for r in rows] == ["0", "2"]
@@ -289,3 +303,82 @@ def test_training_refuses_heldout_speeches_that_appear_in_training_data(tmp_path
         handle.write(json.dumps({"speech_id": "h0", "congress": 46, "text": "leaked held out speech " * 10}) + "\n")
     with pytest.raises(RuntimeError, match="held-out"):
         train_main(["--config", str(config_path), "--max-steps", "2", "--run-name", "leak"])
+
+
+def test_flags_are_recorded_without_stopping_by_default(tmp_path, capsys):
+    config_path = _make_run_inputs(tmp_path, "gpt2", seed_drift_threshold=0.0)
+
+    run_dir = train_main(["--config", str(config_path), "--max-steps", "4", "--checkpoint-every", "2", "--run-name", "f"])
+
+    rows = _read_metrics(run_dir)
+    assert [r["step"] for r in rows] == ["0", "2", "4"]
+    assert "drift" in rows[1]["flags"]
+    summary = json.loads((run_dir / "run_summary.json").read_text())
+    assert summary["status"] == "completed"
+    assert summary["flags_raised"][0]["step"] == 2
+    assert "FLAG at step 2" in capsys.readouterr().err
+
+
+def test_every_epoch_end_is_evaluated_and_checkpointed(tmp_path):
+    config_path = _make_run_inputs(tmp_path, "bert", epochs=1.5)
+
+    run_dir = train_main(["--config", str(config_path), "--run-name", "e"])
+
+    schedule = json.loads((run_dir / "run_config.json").read_text())["schedule"]
+    epoch_one_end = schedule["optimizer_steps_per_epoch"]
+    assert epoch_one_end not in checkpoint_schedule(schedule["total_steps"], 0.10), "fixture should put epoch 1 off the 10% grid"
+    row = next(r for r in _read_metrics(run_dir) if r["step"] == str(epoch_one_end))
+    assert float(row["epoch"]) == 1.0
+    assert "epoch_end" in row["event"]
+    assert (run_dir / f"checkpoint-{epoch_one_end}" / "model.safetensors").exists()
+    assert "END OF EPOCH 1" in (run_dir / "train.log").read_text()
+
+
+def test_progress_file_and_status_report_describe_the_run(tmp_path, capsys):
+    config_path = _make_run_inputs(tmp_path, "bert", seed_drift_threshold=2.0, general_loss_max_rel_increase=100.0)
+    run_dir = train_main(["--config", str(config_path), "--max-steps", "4", "--checkpoint-every", "2", "--run-name", "p"])
+    capsys.readouterr()
+
+    progress = json.loads((run_dir / "progress.json").read_text())
+    assert progress["status"] == "completed"
+    assert progress["step"] == 4 and progress["total_steps"] == 4
+    assert progress["latest_checkpoint"] == str(run_dir / "checkpoint-4")
+
+    status_main([str(run_dir)])
+    out = capsys.readouterr().out
+    assert "COMPLETED" in out
+    assert "4/4" in out
+    assert str(run_dir / "checkpoint-4") in out
+
+
+def test_sigterm_ends_the_run_with_a_cancelled_summary(tmp_path):
+    import os
+    import signal
+    import subprocess
+    import sys
+    import time
+
+    config_path = _make_run_inputs(tmp_path, "bert", epochs=500.0)
+    run_dir = tmp_path / "checkpoints" / "bert" / "run-c"
+    env = {**os.environ, "HF_HUB_DISABLE_PROGRESS_BARS": "1"}
+    proc = subprocess.Popen([sys.executable, "-m", "emi_analysis.train", "--config", str(config_path), "--run-name", "c"],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    try:
+        deadline = time.time() + 120
+        while time.time() < deadline:
+            progress = run_dir / "progress.json"
+            if progress.exists() and json.loads(progress.read_text()).get("step", 0) >= 3:
+                break
+            time.sleep(0.2)
+        else:
+            pytest.fail("training never reported progress")
+        proc.send_signal(signal.SIGTERM)
+        assert proc.wait(timeout=60) == 143
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+
+    summary = json.loads((run_dir / "run_summary.json").read_text())
+    assert summary["status"] == "cancelled"
+    assert summary["steps_completed"] >= 3
+    assert json.loads((run_dir / "progress.json").read_text())["status"] == "cancelled"
