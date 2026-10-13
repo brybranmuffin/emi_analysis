@@ -71,6 +71,7 @@ def test_prepare_writes_disjoint_deduplicated_splits(corpus):
     assert summary["train_speeches"] == 10
     assert summary["dedup_removed_total"] == 1
     assert not set(heldout_ids) & {row["speech_id"] for row in train}
+    assert summary["heldout_ids_in_train"] == 0
     all_texts = [_norm(row["text"]) for row in train + heldout]
     assert len(all_texts) == len(set(all_texts))
     assert (out_root / "processed" / "dedup_report.csv").exists()

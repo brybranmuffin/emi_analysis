@@ -67,10 +67,15 @@ The Zenodo archive fetched by `python -m emi_analysis.download_assets` contains 
 3. **Validate on 10k speeches** before the full run (handoff Step 2):
 
    ```bash
-   sbatch --export=ALL,CORPUS=<corpus> slurm/prepare_data.sh --sample 10000 --holdout-count 500 --out-root data/val10k
-   # then point a copy of each config at data/val10k/... and run a few hundred steps:
-   sbatch slurm/bert_train.sh --max-steps 300
+   # a random 10k speeches with 500 held out, written under data/val10k/ (the full run's data/ is untouched)
+   sbatch --export=ALL,CORPUS=data/raw/osf/combined_congress1879_till_2022_filtered_nonprocedural.csv.gzip \
+     slurm/prepare_data.sh --sample 10000 --holdout-count 500 --out-root data/val10k
+   # once that finishes: 300 GPU steps per model on that subset; checkpoints go to checkpoints/val10k/<model>/
+   sbatch slurm/bert_train.sh --data-root data/val10k --max-steps 300
+   sbatch slurm/gpt2_train.sh --data-root data/val10k --max-steps 300
    ```
+
+   Check in each log: the prep summary's `held-out IDs in training set: 0`, train's `Held-out leakage check ... OK`, the TOKEN ACCOUNTING block (tokens in = tokens out + tokens dropped; max chunk length within the limit), falling congressional loss across the checkpoints, and the steps/s on the A100. Steps/s lets you estimate the full run's duration before submitting it. Packing is not used (chunks are batched by length), so there are no cross-speech attention masks to inspect. EMI on the adapted models is not computed by this repo.
 
 4. **Full training** (one A100 each; extra arguments after the script name are passed to `train.py`):
 

@@ -264,3 +264,28 @@ def test_training_refuses_to_run_without_seed_lexicons(tmp_path):
     (tmp_path / "data" / "lexicons" / "evidence_lexicon.csv").unlink()
     with pytest.raises(FileNotFoundError, match="lexicon"):
         train_main(["--config", str(config_path), "--max-steps", "2", "--run-name", "m"])
+
+
+def test_data_root_redirects_inputs_and_checkpoints(tmp_path):
+    config_path = _make_run_inputs(tmp_path, "bert", seed_drift_threshold=2.0, general_loss_max_rel_increase=100.0)
+    config = json.loads(config_path.read_text())
+    config.update(train_data_path="missing/train.jsonl", heldout_data_path="missing/c.jsonl", general_data_path="missing/g.jsonl")
+    config_path.write_text(json.dumps(config))
+
+    run_dir = train_main(["--config", str(config_path), "--data-root", str(tmp_path / "data"),
+                          "--max-steps", "2", "--checkpoint-every", "2", "--run-name", "r"])
+
+    assert run_dir == tmp_path / "checkpoints" / "data" / "bert" / "run-r"
+    used = json.loads((run_dir / "run_config.json").read_text())["config"]
+    assert used["train_data_path"] == str(tmp_path / "data" / "train.jsonl")
+    assert used["heldout_data_path"] == str(tmp_path / "data" / "heldout" / "congressional.jsonl")
+    assert used["general_data_path"] == str(tmp_path / "data" / "heldout" / "general.jsonl")
+
+
+def test_training_refuses_heldout_speeches_that_appear_in_training_data(tmp_path):
+    config_path = _make_run_inputs(tmp_path, "bert")
+    train_path = tmp_path / "data" / "train.jsonl"
+    with train_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps({"speech_id": "h0", "congress": 46, "text": "leaked held out speech " * 10}) + "\n")
+    with pytest.raises(RuntimeError, match="held-out"):
+        train_main(["--config", str(config_path), "--max-steps", "2", "--run-name", "leak"])

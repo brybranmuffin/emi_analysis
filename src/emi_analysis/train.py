@@ -68,6 +68,13 @@ def build_cli() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Launch continued-pretraining for BERT or GPT-2.")
     parser.add_argument("--config", type=str, required=True, help="Path to a JSON config file.")
     parser.add_argument("--output-dir", type=str, default=None, help="Optional override for checkpoint directory.")
+    parser.add_argument(
+        "--data-root",
+        type=str,
+        default=None,
+        help="Read <root>/train.jsonl and <root>/heldout/{congressional,general}.jsonl (a prepare_data --out-root) "
+        "and write checkpoints to checkpoints/<root name>/<model> unless --output-dir is given.",
+    )
     parser.add_argument("--run-name", type=str, default=None, help="Run folder name (default: job<SLURM_JOB_ID> or a timestamp).")
     parser.add_argument("--max-steps", type=int, default=None, help="Cap on optimizer steps (default: config epochs).")
     parser.add_argument("--checkpoint-every", type=int, default=None, help="Checkpoint every N steps (default: every 10%% of training).")
@@ -151,6 +158,15 @@ def load_jsonl_dataset(path: str | Path, cache_dir: str | Path):
     from datasets import load_dataset
 
     return load_dataset("json", data_files=str(path), split="train", cache_dir=str(cache_dir))
+
+
+def heldout_overlap(train_dataset, heldout_dataset) -> int | None:
+    """Number of training rows whose speech_id is a held-out speech; None if either file lacks speech_id."""
+    if "speech_id" not in train_dataset.column_names or "speech_id" not in heldout_dataset.column_names:
+        return None
+    heldout_ids = {str(s) for s in heldout_dataset.select_columns(["speech_id"]).with_format(None)[:]["speech_id"]}
+    train_ids = train_dataset.select_columns(["speech_id"]).with_format(None)[:]["speech_id"]
+    return sum(1 for s in train_ids if str(s) in heldout_ids)
 
 
 def tokenize_and_chunk(dataset, tokenizer, window: int, min_chunk_tokens: int, truncate: bool, num_proc: int | None):
@@ -389,11 +405,27 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     window = config.max_length - n_special
     if config.min_chunk_tokens > window:
         raise ValueError(f"min_chunk_tokens ({config.min_chunk_tokens}) exceeds the chunk window ({window}); every chunk would be dropped.")
+    train_raw = load_jsonl_dataset(config.train_data_path, config.datasets_cache_dir)
+    eval_raw = {
+        "congressional": load_jsonl_dataset(config.heldout_data_path, config.datasets_cache_dir),
+        "general": load_jsonl_dataset(config.general_data_path, config.datasets_cache_dir),
+    }
+    overlap = heldout_overlap(train_raw, eval_raw["congressional"])
+    if overlap is None:
+        logger.warning("Held-out leakage check skipped: speech_id column missing from the training or held-out file")
+    elif overlap:
+        raise RuntimeError(
+            f"{overlap:,} held-out speech IDs from {config.heldout_data_path} also appear in {config.train_data_path}. "
+            "These files must come from the same prepare_data run (check --data-root and the config paths)."
+        )
+    else:
+        logger.info(f"Held-out leakage check: 0 of {len(eval_raw['congressional']):,} held-out speech IDs appear in "
+                    f"{config.train_data_path}: OK")
+
     t0 = time.time()
     logger.info(f"Tokenizing and chunking {config.train_data_path} (window {window} + {n_special} special tokens, {num_proc} processes)")
     train_chunks, train_lengths, train_stats = tokenize_and_chunk(
-        load_jsonl_dataset(config.train_data_path, config.datasets_cache_dir), tokenizer, window,
-        config.min_chunk_tokens, config.legacy_truncation, num_proc,
+        train_raw, tokenizer, window, config.min_chunk_tokens, config.legacy_truncation, num_proc,
     )
     banner(logger, f"TOKEN ACCOUNTING: training set, {family} tokenizer ({format_duration(time.time() - t0)})", {
         "speeches": f"{train_stats['speeches']:,}",
@@ -415,8 +447,7 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     eval_sets: dict[str, list[dict[str, torch.Tensor]]] = {}
     eval_stats: dict[str, dict] = {}
     for offset, (name, path) in enumerate((("congressional", config.heldout_data_path), ("general", config.general_data_path)), start=1):
-        chunks, _, stats = tokenize_and_chunk(load_jsonl_dataset(path, config.datasets_cache_dir), tokenizer, window,
-                                              config.min_chunk_tokens, False, num_proc)
+        chunks, _, stats = tokenize_and_chunk(eval_raw[name], tokenizer, window, config.min_chunk_tokens, False, num_proc)
         if len(chunks) > config.eval_max_chunks:
             keep = np.random.default_rng(config.seed + offset).choice(len(chunks), size=config.eval_max_chunks, replace=False)
             chunks = chunks.select(sorted(keep.tolist()))
@@ -660,6 +691,15 @@ def main(argv: list[str] | None = None) -> Path:
         "num_proc": args.num_proc,
         "legacy_truncation": True if args.legacy_truncation else None,
     }
+    if args.data_root:
+        root = Path(args.data_root)
+        overrides.update(
+            train_data_path=str(root / "train.jsonl"),
+            heldout_data_path=str(root / "heldout" / "congressional.jsonl"),
+            general_data_path=str(root / "heldout" / "general.jsonl"),
+        )
+        if not args.output_dir:
+            overrides["output_dir"] = str(Path(config.output_dir).parent / root.name / config.model_family)
     config = replace(config, **{k: v for k, v in overrides.items() if v is not None})
 
     job_id = os.environ.get("SLURM_JOB_ID")

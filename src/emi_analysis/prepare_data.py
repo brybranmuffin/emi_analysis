@@ -243,6 +243,10 @@ def prepare(args: argparse.Namespace) -> dict:
         pct = 100 * row["removed_total"] / max(1, row["speeches_before"])
         logger.info(f"  dedup {era_start}-{era_start + 19}: removed {int(row['removed_total']):,} of {int(row['speeches_before']):,} ({pct:.2f}%)")
     final_train = train_df.loc[~removed]
+    heldout_ids_in_train = int(final_train["speech_id"].isin(set(heldout_ids)).sum())
+    if heldout_ids_in_train:
+        raise RuntimeError(f"{heldout_ids_in_train:,} held-out speech IDs ended up in the training set.")
+    logger.info(f"Held-out leakage check: 0 of {len(heldout_ids):,} held-out speech IDs appear in the training set: OK")
 
     train_path = out_root / "train.jsonl"
     heldout_path = heldout_dir / "congressional.jsonl"
@@ -279,6 +283,7 @@ def prepare(args: argparse.Namespace) -> dict:
         "heldout_speeches": len(heldout_df),
         "heldout_ids_reused": reused,
         "heldout_ids_missing_from_corpus": missing_heldout,
+        "heldout_ids_in_train": heldout_ids_in_train,
         "train_speeches_before_dedup": len(train_df),
         "dedup_removed_within_train": int(within_train.sum()),
         "dedup_removed_matching_heldout": int(matches_heldout.sum()),
@@ -316,6 +321,7 @@ def prepare(args: argparse.Namespace) -> dict:
             "training speeches": f"{len(final_train):,} ({summary['words_train']:,} words)",
             "words check": "usable = held-out + dedup + train: "
             + ("OK" if summary["words_usable"] == summary["words_heldout"] + summary["words_removed_by_dedup"] + summary["words_train"] else "MISMATCH"),
+            "held-out IDs in training set": f"{heldout_ids_in_train} (must be 0)",
             "general-domain sequences": f"{general_count:,} ({general_source})",
             "summary file": processed_dir / "prep_summary.json",
             "elapsed": format_duration(time.time() - started),
