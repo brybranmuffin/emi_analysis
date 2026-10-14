@@ -1,0 +1,189 @@
+job 9822848 on qgpu2003 at 2026-10-13 14:58:15
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+NVIDIA A100-SXM4-80GB, 81920 MiB
+2026-10-13 14:58:28 | INFO    | ==============================================================================
+2026-10-13 14:58:28 | INFO    | EMI continued pretraining: bert (bert-base-uncased)
+2026-10-13 14:58:28 | INFO    |   run directory     : checkpoints/val10k/bert/run-job9822848
+2026-10-13 14:58:28 | INFO    |   config file       : configs/bert_continued_pretraining.json
+2026-10-13 14:58:28 | INFO    |   hostname          : qgpu2003
+2026-10-13 14:58:28 | INFO    |   python            : 3.10.14
+2026-10-13 14:58:28 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-13 14:58:28 | INFO    |   slurm_job_id      : 9822848
+2026-10-13 14:58:28 | INFO    |   git_commit        : unknown
+2026-10-13 14:58:28 | INFO    |   started_at        : 2026-10-13T14:58:28
+2026-10-13 14:58:28 | INFO    |   device            : NVIDIA A100-SXM4-80GB
+2026-10-13 14:58:28 | INFO    |   precision         : bf16 autocast
+2026-10-13 14:58:28 | INFO    |   torch             : 2.14.1+cu130
+2026-10-13 14:58:28 | INFO    |   transformers      : 5.19.0
+2026-10-13 14:58:28 | INFO    | ==============================================================================
+2026-10-13 14:58:28 | INFO    | Loaded 84 seed words from data/lexicons/evidence_lexicon.csv and data/lexicons/intuition_lexicon.csv
+2026-10-13 14:58:30 | INFO    | Loaded BertForMaskedLM with 109,514,298 parameters onto NVIDIA A100-SXM4-80GB
+2026-10-13 14:58:31 | INFO    | Held-out leakage check: 0 of 500 held-out speech IDs appear in data/val10k/train.jsonl: OK
+2026-10-13 14:58:31 | INFO    | Tokenizing and chunking data/val10k/train.jsonl (window 254 + 2 special tokens, 8 processes)
+2026-10-13 14:58:34 | INFO    | ==============================================================================
+2026-10-13 14:58:34 | INFO    | TOKEN ACCOUNTING: training set, bert tokenizer (00:00:03)
+2026-10-13 14:58:34 | INFO    |   speeches               : 9,500
+2026-10-13 14:58:34 | INFO    |   tokens in              : 2,236,959
+2026-10-13 14:58:34 | INFO    |   tokens out (in chunks) : 2,183,681 (97.6183% of tokens in)
+2026-10-13 14:58:34 | INFO    |   tokens dropped         : 53,278 (chunks < 32 tokens)
+2026-10-13 14:58:34 | INFO    |   chunks                 : 12,705 (mean 173.9 tokens incl. specials)
+2026-10-13 14:58:34 | INFO    |   max chunk length       : 256 (limit 256)
+2026-10-13 14:58:34 | INFO    |   check                  : tokens in = tokens out + tokens dropped: OK
+2026-10-13 14:58:34 | INFO    | ==============================================================================
+2026-10-13 14:58:36 | INFO    | Held-out congressional set: 500 texts -> 646 chunks; evaluating a fixed 646 of them at every checkpoint
+2026-10-13 14:58:37 | INFO    | Held-out general set: 2,000 texts -> 2,091 chunks; evaluating a fixed 2,091 of them at every checkpoint
+2026-10-13 14:58:37 | INFO    | ==============================================================================
+2026-10-13 14:58:37 | INFO    | TRAINING PLAN
+2026-10-13 14:58:37 | INFO    |   objective             : masked LM (fresh masks every batch)
+2026-10-13 14:58:37 | INFO    |   epochs                : 2.5 x 398 steps/epoch
+2026-10-13 14:58:37 | INFO    |   total optimizer steps : 300 (capped by --max-steps; full run is 995)
+2026-10-13 14:58:37 | INFO    |   effective batch       : 32 chunks
+2026-10-13 14:58:37 | INFO    |   learning rate         : 5e-05 (linear, 0 warmup steps)
+2026-10-13 14:58:37 | INFO    |   checkpoints           : 10 at steps [30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
+2026-10-13 14:58:37 | INFO    |   stop if               : general loss > +20% vs step 0, or mean seed drift > 0.1 and climbing
+2026-10-13 14:58:37 | INFO    |   run config            : checkpoints/val10k/bert/run-job9822848/run_config.json
+2026-10-13 14:58:37 | INFO    | ==============================================================================
+2026-10-13 14:58:38 | INFO    | Evaluating the unadapted model (step 0) on 21 + 66 batches
+2026-10-13 14:58:39 | INFO    | ==============================================================================
+2026-10-13 14:58:39 | INFO    | BASELINE (step 0, unadapted model)
+2026-10-13 14:58:39 | INFO    |   congressional mlm_loss : 2.5263
+2026-10-13 14:58:39 | INFO    |   general mlm_loss       : 1.9438
+2026-10-13 14:58:39 | INFO    |   seed drift             : 0 by definition
+2026-10-13 14:58:39 | INFO    |   evaluation time        : 00:00:02
+2026-10-13 14:58:39 | INFO    |   metrics file           : checkpoints/val10k/bert/run-job9822848/metrics.csv
+2026-10-13 14:58:39 | INFO    | ==============================================================================
+2026-10-13 14:58:39 | INFO    | Starting epoch 1 (398 batches)
+2026-10-13 14:58:43 | INFO    | ==============================================================================
+2026-10-13 14:58:43 | INFO    | CHECKPOINT 1/10 | step 30/300 (10%)
+2026-10-13 14:58:43 | INFO    |   saved to                         : checkpoints/val10k/bert/run-job9822848/checkpoint-30
+2026-10-13 14:58:43 | INFO    |   congressional mlm_loss           : 2.0574 (-18.56% vs step 0)
+2026-10-13 14:58:43 | INFO    |   general mlm_loss                 : 1.7625 (-9.33% vs step 0)
+2026-10-13 14:58:43 | INFO    |   seed drift mean / max            : 0.061374 / 0.167896
+2026-10-13 14:58:43 | INFO    |   train loss since last checkpoint : 2.3698
+2026-10-13 14:58:43 | INFO    |   epoch                            : 0.0754
+2026-10-13 14:58:43 | INFO    |   tokens seen                      : 193,415
+2026-10-13 14:58:43 | INFO    |   evaluation time                  : 00:00:01
+2026-10-13 14:58:43 | INFO    |   flags                            : none
+2026-10-13 14:58:43 | INFO    | ==============================================================================
+2026-10-13 14:58:46 | INFO    | ==============================================================================
+2026-10-13 14:58:46 | INFO    | CHECKPOINT 2/10 | step 60/300 (20%)
+2026-10-13 14:58:46 | INFO    |   saved to                         : checkpoints/val10k/bert/run-job9822848/checkpoint-60
+2026-10-13 14:58:46 | INFO    |   congressional mlm_loss           : 2.0118 (-20.37% vs step 0)
+2026-10-13 14:58:46 | INFO    |   general mlm_loss                 : 1.7569 (-9.62% vs step 0)
+2026-10-13 14:58:46 | INFO    |   seed drift mean / max            : 0.058381 / 0.146025
+2026-10-13 14:58:46 | INFO    |   train loss since last checkpoint : 2.2389
+2026-10-13 14:58:46 | INFO    |   epoch                            : 0.1508
+2026-10-13 14:58:46 | INFO    |   tokens seen                      : 352,176
+2026-10-13 14:58:46 | INFO    |   evaluation time                  : 00:00:01
+2026-10-13 14:58:46 | INFO    |   flags                            : none
+2026-10-13 14:58:46 | INFO    | ==============================================================================
+2026-10-13 14:58:49 | INFO    | ==============================================================================
+2026-10-13 14:58:49 | INFO    | CHECKPOINT 3/10 | step 90/300 (30%)
+2026-10-13 14:58:49 | INFO    |   saved to                         : checkpoints/val10k/bert/run-job9822848/checkpoint-90
+2026-10-13 14:58:49 | INFO    |   congressional mlm_loss           : 1.9858 (-21.40% vs step 0)
+2026-10-13 14:58:49 | INFO    |   general mlm_loss                 : 1.7559 (-9.67% vs step 0)
+2026-10-13 14:58:49 | INFO    |   seed drift mean / max            : 0.0627 / 0.150235
+2026-10-13 14:58:49 | INFO    |   train loss since last checkpoint : 2.1567
+2026-10-13 14:58:49 | INFO    |   epoch                            : 0.2261
+2026-10-13 14:58:49 | INFO    |   tokens seen                      : 497,253
+2026-10-13 14:58:49 | INFO    |   evaluation time                  : 00:00:01
+2026-10-13 14:58:49 | INFO    |   flags                            : none
+2026-10-13 14:58:49 | INFO    | ==============================================================================
+2026-10-13 14:58:49 | INFO    | step 100/300 (33.3%) | epoch 0.251 | loss 2.2449 | lr 3.33e-05 | 16.69 steps/s | 92,887 tok/s | elapsed 00:00:21 | ETA 00:00:23 | gpu mem 7.4 GB
+2026-10-13 14:58:52 | INFO    | ==============================================================================
+2026-10-13 14:58:52 | INFO    | CHECKPOINT 4/10 | step 120/300 (40%)
+2026-10-13 14:58:52 | INFO    |   saved to                         : checkpoints/val10k/bert/run-job9822848/checkpoint-120
+2026-10-13 14:58:52 | INFO    |   congressional mlm_loss           : 1.9652 (-22.21% vs step 0)
+2026-10-13 14:58:52 | INFO    |   general mlm_loss                 : 1.7518 (-9.88% vs step 0)
+2026-10-13 14:58:52 | INFO    |   seed drift mean / max            : 0.060642 / 0.133723
+2026-10-13 14:58:52 | INFO    |   train loss since last checkpoint : 2.1397
+2026-10-13 14:58:52 | INFO    |   epoch                            : 0.3015
+2026-10-13 14:58:52 | INFO    |   tokens seen                      : 644,967
+2026-10-13 14:58:52 | INFO    |   evaluation time                  : 00:00:01
+2026-10-13 14:58:52 | INFO    |   flags                            : none
+2026-10-13 14:58:52 | INFO    | ==============================================================================
+2026-10-13 14:58:55 | INFO    | ==============================================================================
+2026-10-13 14:58:55 | INFO    | CHECKPOINT 5/10 | step 150/300 (50%)
+2026-10-13 14:58:55 | INFO    |   saved to                         : checkpoints/val10k/bert/run-job9822848/checkpoint-150
+2026-10-13 14:58:55 | INFO    |   congressional mlm_loss           : 1.9533 (-22.68% vs step 0)
+2026-10-13 14:58:55 | INFO    |   general mlm_loss                 : 1.7489 (-10.03% vs step 0)
+2026-10-13 14:58:55 | INFO    |   seed drift mean / max            : 0.066257 / 0.160019
+2026-10-13 14:58:55 | INFO    |   train loss since last checkpoint : 2.1365
+2026-10-13 14:58:55 | INFO    |   epoch                            : 0.3769
+2026-10-13 14:58:55 | INFO    |   tokens seen                      : 800,089
+2026-10-13 14:58:55 | INFO    |   evaluation time                  : 00:00:01
+2026-10-13 14:58:55 | INFO    |   flags                            : none
+2026-10-13 14:58:55 | INFO    | ==============================================================================
+2026-10-13 14:58:58 | INFO    | ==============================================================================
+2026-10-13 14:58:58 | INFO    | CHECKPOINT 6/10 | step 180/300 (60%)
+2026-10-13 14:58:58 | INFO    |   saved to                         : checkpoints/val10k/bert/run-job9822848/checkpoint-180
+2026-10-13 14:58:58 | INFO    |   congressional mlm_loss           : 1.9345 (-23.43% vs step 0)
+2026-10-13 14:58:58 | INFO    |   general mlm_loss                 : 1.7377 (-10.60% vs step 0)
+2026-10-13 14:58:58 | INFO    |   seed drift mean / max            : 0.06444 / 0.154876
+2026-10-13 14:58:58 | INFO    |   train loss since last checkpoint : 2.1596
+2026-10-13 14:58:58 | INFO    |   epoch                            : 0.4523
+2026-10-13 14:58:58 | INFO    |   tokens seen                      : 976,736
+2026-10-13 14:58:58 | INFO    |   evaluation time                  : 00:00:01
+2026-10-13 14:58:58 | INFO    |   flags                            : none
+2026-10-13 14:58:58 | INFO    | ==============================================================================
+2026-10-13 14:58:59 | INFO    | step 200/300 (66.7%) | epoch 0.503 | loss 2.1369 | lr 1.67e-05 | 17.25 steps/s | 93,969 tok/s | elapsed 00:00:31 | ETA 00:00:12 | gpu mem 7.4 GB
+2026-10-13 14:59:01 | INFO    | ==============================================================================
+2026-10-13 14:59:01 | INFO    | CHECKPOINT 7/10 | step 210/300 (70%)
+2026-10-13 14:59:01 | INFO    |   saved to                         : checkpoints/val10k/bert/run-job9822848/checkpoint-210
+2026-10-13 14:59:01 | INFO    |   congressional mlm_loss           : 1.9304 (-23.59% vs step 0)
+2026-10-13 14:59:01 | INFO    |   general mlm_loss                 : 1.7383 (-10.57% vs step 0)
+2026-10-13 14:59:01 | INFO    |   seed drift mean / max            : 0.064832 / 0.162622
+2026-10-13 14:59:01 | INFO    |   train loss since last checkpoint : 2.1212
+2026-10-13 14:59:01 | INFO    |   epoch                            : 0.5276
+2026-10-13 14:59:01 | INFO    |   tokens seen                      : 1,133,521
+2026-10-13 14:59:01 | INFO    |   evaluation time                  : 00:00:01
+2026-10-13 14:59:01 | INFO    |   flags                            : none
+2026-10-13 14:59:01 | INFO    | ==============================================================================
+2026-10-13 14:59:04 | INFO    | ==============================================================================
+2026-10-13 14:59:04 | INFO    | CHECKPOINT 8/10 | step 240/300 (80%)
+2026-10-13 14:59:04 | INFO    |   saved to                         : checkpoints/val10k/bert/run-job9822848/checkpoint-240
+2026-10-13 14:59:04 | INFO    |   congressional mlm_loss           : 1.9193 (-24.03% vs step 0)
+2026-10-13 14:59:04 | INFO    |   general mlm_loss                 : 1.7299 (-11.01% vs step 0)
+2026-10-13 14:59:04 | INFO    |   seed drift mean / max            : 0.0687 / 0.15751
+2026-10-13 14:59:04 | INFO    |   train loss since last checkpoint : 2.0922
+2026-10-13 14:59:04 | INFO    |   epoch                            : 0.603
+2026-10-13 14:59:04 | INFO    |   tokens seen                      : 1,319,347
+2026-10-13 14:59:04 | INFO    |   evaluation time                  : 00:00:01
+2026-10-13 14:59:04 | INFO    |   flags                            : none
+2026-10-13 14:59:04 | INFO    | ==============================================================================
+2026-10-13 14:59:07 | INFO    | ==============================================================================
+2026-10-13 14:59:07 | INFO    | CHECKPOINT 9/10 | step 270/300 (90%)
+2026-10-13 14:59:07 | INFO    |   saved to                         : checkpoints/val10k/bert/run-job9822848/checkpoint-270
+2026-10-13 14:59:07 | INFO    |   congressional mlm_loss           : 1.9117 (-24.33% vs step 0)
+2026-10-13 14:59:07 | INFO    |   general mlm_loss                 : 1.7299 (-11.01% vs step 0)
+2026-10-13 14:59:07 | INFO    |   seed drift mean / max            : 0.069284 / 0.152982
+2026-10-13 14:59:07 | INFO    |   train loss since last checkpoint : 2.1596
+2026-10-13 14:59:07 | INFO    |   epoch                            : 0.6784
+2026-10-13 14:59:07 | INFO    |   tokens seen                      : 1,473,751
+2026-10-13 14:59:07 | INFO    |   evaluation time                  : 00:00:01
+2026-10-13 14:59:07 | INFO    |   flags                            : none
+2026-10-13 14:59:07 | INFO    | ==============================================================================
+2026-10-13 14:59:09 | INFO    | step 300/300 (100.0%) | epoch 0.754 | loss 2.1066 | lr 0.00e+00 | 17.41 steps/s | 94,942 tok/s | elapsed 00:00:40 | ETA 00:00:00 | gpu mem 7.4 GB
+2026-10-13 14:59:11 | INFO    | ==============================================================================
+2026-10-13 14:59:11 | INFO    | CHECKPOINT 10/10 | step 300/300 (100%)
+2026-10-13 14:59:11 | INFO    |   saved to                         : checkpoints/val10k/bert/run-job9822848/checkpoint-300
+2026-10-13 14:59:11 | INFO    |   congressional mlm_loss           : 1.9102 (-24.39% vs step 0)
+2026-10-13 14:59:11 | INFO    |   general mlm_loss                 : 1.7293 (-11.04% vs step 0)
+2026-10-13 14:59:11 | INFO    |   seed drift mean / max            : 0.068313 / 0.150731
+2026-10-13 14:59:11 | INFO    |   train loss since last checkpoint : 2.0538
+2026-10-13 14:59:11 | INFO    |   epoch                            : 0.7538
+2026-10-13 14:59:11 | INFO    |   tokens seen                      : 1,636,063
+2026-10-13 14:59:11 | INFO    |   evaluation time                  : 00:00:01
+2026-10-13 14:59:11 | INFO    |   flags                            : none
+2026-10-13 14:59:11 | INFO    | ==============================================================================
+2026-10-13 14:59:11 | INFO    | ==============================================================================
+2026-10-13 14:59:11 | INFO    | TRAINING COMPLETED
+2026-10-13 14:59:11 | INFO    |   steps                       : 300/300
+2026-10-13 14:59:11 | INFO    |   checkpoints written         : 10
+2026-10-13 14:59:11 | INFO    |   congressional mlm_loss      : 1.9102 (-24.39% vs step 0)
+2026-10-13 14:59:11 | INFO    |   general mlm_loss            : 1.7293 (-11.04% vs step 0)
+2026-10-13 14:59:11 | INFO    |   final seed drift mean / max : 0.068313 / 0.150731
+2026-10-13 14:59:11 | INFO    |   metrics                     : checkpoints/val10k/bert/run-job9822848/metrics.csv
+2026-10-13 14:59:11 | INFO    |   summary                     : checkpoints/val10k/bert/run-job9822848/run_summary.json
+2026-10-13 14:59:11 | INFO    |   elapsed                     : 00:00:43
+2026-10-13 14:59:11 | INFO    | ==============================================================================

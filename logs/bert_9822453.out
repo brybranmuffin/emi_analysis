@@ -1,0 +1,25 @@
+job 9822453 on qgpu2014 at 2026-10-13 14:36:55
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+NVIDIA A100-SXM4-80GB, 81920 MiB
+2026-10-13 14:37:09 | INFO    | ==============================================================================
+2026-10-13 14:37:09 | INFO    | EMI continued pretraining: bert (bert-base-uncased)
+2026-10-13 14:37:09 | INFO    |   run directory     : checkpoints/bert/run-job9822453
+2026-10-13 14:37:09 | INFO    |   config file       : configs/bert_continued_pretraining.json
+2026-10-13 14:37:09 | INFO    |   hostname          : qgpu2014
+2026-10-13 14:37:09 | INFO    |   python            : 3.10.14
+2026-10-13 14:37:09 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-13 14:37:09 | INFO    |   slurm_job_id      : 9822453
+2026-10-13 14:37:09 | INFO    |   git_commit        : unknown
+2026-10-13 14:37:09 | INFO    |   started_at        : 2026-10-13T14:37:09
+2026-10-13 14:37:09 | INFO    |   device            : NVIDIA A100-SXM4-80GB
+2026-10-13 14:37:09 | INFO    |   precision         : bf16 autocast
+2026-10-13 14:37:09 | INFO    |   torch             : 2.14.1+cu130
+2026-10-13 14:37:09 | INFO    |   transformers      : 5.19.0
+2026-10-13 14:37:09 | INFO    | ==============================================================================
+2026-10-13 14:37:09 | ERROR   | Training failed
+Traceback (most recent call last):
+  File "/scratch/rsr7518/emi_analysis/src/emi_analysis/train.py", line 714, in main
+    status = run(config, args, run_dir)
+  File "/scratch/rsr7518/emi_analysis/src/emi_analysis/train.py", line 383, in run
+    raise FileNotFoundError(
+FileNotFoundError: Seed-word lexicon(s) not found: ['data/lexicons/evidence_lexicon.csv', 'data/lexicons/intuition_lexicon.csv']. Seed drift is a required checkpoint metric; copy evidence_lexicon.csv / intuition_lexicon.csv from the EMI OSF repository (doi 10.17605/OSF.IO/Z6UTW) to these paths, or set evidence_lexicon_path / intuition_lexicon_path in the config.

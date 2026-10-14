@@ -1,0 +1,23 @@
+[transformers] [1mBertForMaskedLM LOAD REPORT[0m from: bert-base-uncased
+Key                         | Status     |  | 
+----------------------------+------------+--+-
+cls.seq_relationship.weight | UNEXPECTED |  | 
+bert.pooler.dense.weight    | UNEXPECTED |  | 
+cls.seq_relationship.bias   | UNEXPECTED |  | 
+bert.pooler.dense.bias      | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+[W1013 19:02:06.623011062 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 727711744 bytes (free: 66256896, total: 85009367040).
+2026-10-13 19:43:29 | WARNING | FLAG at step 87,712: mean seed drift 0.3215 is above 0.1000 and still climbing (previous 0.0000) (stop_on_flag is off; the run continues)
+2026-10-13 20:24:30 | WARNING | FLAG at step 175,424: general-domain loss rose 20.2% over step 0 (1.9438 -> 2.3356); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-13 20:24:30 | WARNING | FLAG at step 175,424: mean seed drift 0.4164 is above 0.1000 and still climbing (previous 0.3215) (stop_on_flag is off; the run continues)
+2026-10-13 21:05:16 | WARNING | FLAG at step 263,135: general-domain loss rose 21.0% over step 0 (1.9438 -> 2.3517); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-13 21:05:16 | WARNING | FLAG at step 263,135: mean seed drift 0.4533 is above 0.1000 and still climbing (previous 0.4164) (stop_on_flag is off; the run continues)
+2026-10-13 21:46:08 | WARNING | FLAG at step 350,847: general-domain loss rose 21.8% over step 0 (1.9438 -> 2.3670); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-13 21:46:08 | WARNING | FLAG at step 350,847: mean seed drift 0.4667 is above 0.1000 and still climbing (previous 0.4533) (stop_on_flag is off; the run continues)
+2026-10-13 22:27:00 | WARNING | FLAG at step 438,559: general-domain loss rose 21.6% over step 0 (1.9438 -> 2.3644); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-13 22:27:00 | WARNING | FLAG at step 438,559: mean seed drift 0.4862 is above 0.1000 and still climbing (previous 0.4667) (stop_on_flag is off; the run continues)
+2026-10-13 23:07:49 | WARNING | FLAG at step 526,271: general-domain loss rose 20.3% over step 0 (1.9438 -> 2.3389); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-13 23:07:49 | WARNING | FLAG at step 526,271: mean seed drift 0.4988 is above 0.1000 and still climbing (previous 0.4862) (stop_on_flag is off; the run continues)
+2026-10-14 01:51:10 | WARNING | FLAG at step 877,118: mean seed drift 0.4923 is above 0.1000 and still climbing (previous 0.4878) (stop_on_flag is off; the run continues)

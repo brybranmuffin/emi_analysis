@@ -1,0 +1,44 @@
+job 9799399 on qnode0328 at 2026-10-13 10:58:58
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+2026-10-13 10:59:00 | INFO    | ==============================================================================
+2026-10-13 10:59:00 | INFO    | EMI data preparation
+2026-10-13 10:59:00 | INFO    |   input             : data/raw/osf/combined_congress1879_till_2022_filtered_nonprocedural.csv.gzip
+2026-10-13 10:59:00 | INFO    |   out_root          : data
+2026-10-13 10:59:00 | INFO    |   hostname          : qnode0328
+2026-10-13 10:59:00 | INFO    |   python            : 3.10.14
+2026-10-13 10:59:00 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-13 10:59:00 | INFO    |   slurm_job_id      : 9799399
+2026-10-13 10:59:00 | INFO    |   git_commit        : unknown
+2026-10-13 10:59:00 | INFO    |   started_at        : 2026-10-13T10:59:00
+2026-10-13 10:59:00 | INFO    | ==============================================================================
+2026-10-13 10:59:00 | INFO    | Reading corpus data/raw/osf/combined_congress1879_till_2022_filtered_nonprocedural.csv.gzip (3.25 GB on disk)
+2026-10-13 11:01:22 | INFO    | Read 8,435,769 rows with columns ['speech_id', 'text', 'year'] in 00:02:22
+2026-10-13 11:01:40 | INFO    | Dropped 0 rows with empty text and 0 rows with a repeated speech_id
+2026-10-13 11:06:40 | INFO    | Usable speeches: 8,435,769 across Congresses 46-117 (1,674,373,335 whitespace words)
+2026-10-13 11:06:41 | INFO    | Wrote 20,000 stratified held-out IDs to data/heldout/speech_ids.txt
+2026-10-13 11:06:45 | INFO    | Held out 20,000 speeches spanning 72 Congresses; 8,415,769 remain for training
+2026-10-13 11:11:37 | INFO    | Dedup removed 62,324 training speeches (61,363 near-duplicates within training, 961 copies of held-out speeches) in 00:04:52
+2026-10-13 11:11:37 | INFO    |   dedup 1860-1879: removed 104 of 85,366 (0.12%)
+2026-10-13 11:11:37 | INFO    |   dedup 1880-1899: removed 1,966 of 874,048 (0.22%)
+2026-10-13 11:11:37 | INFO    |   dedup 1900-1919: removed 2,554 of 1,358,264 (0.19%)
+2026-10-13 11:11:37 | INFO    |   dedup 1920-1939: removed 3,404 of 1,298,468 (0.26%)
+2026-10-13 11:11:37 | INFO    |   dedup 1940-1959: removed 5,132 of 1,216,007 (0.42%)
+2026-10-13 11:11:37 | INFO    |   dedup 1960-1979: removed 7,889 of 1,477,156 (0.53%)
+2026-10-13 11:11:37 | INFO    |   dedup 1980-1999: removed 5,463 of 1,264,850 (0.43%)
+2026-10-13 11:11:37 | INFO    |   dedup 2000-2019: removed 34,959 of 799,285 (4.37%)
+2026-10-13 11:11:37 | INFO    |   dedup 2020-2039: removed 853 of 42,325 (2.02%)
+2026-10-13 11:13:27 | INFO    | Wrote 8,353,445 training speeches to data/train.jsonl and 20,000 held-out speeches to data/heldout/congressional.jsonl
+2026-10-13 11:13:45 | INFO    | Wrote 2,000 general-domain sequences from wikitext-103-test+validation to data/heldout/general.jsonl
+2026-10-13 11:13:45 | INFO    | ==============================================================================
+2026-10-13 11:13:45 | INFO    | DATA PREPARATION SUMMARY (whitespace words; model token counts are logged by train.py)
+2026-10-13 11:13:45 | INFO    |   input rows                         : 8,435,769
+2026-10-13 11:13:45 | INFO    |   dropped (empty text / repeated id) : 0 / 0
+2026-10-13 11:13:45 | INFO    |   usable speeches                    : 8,435,769 (1,674,373,335 words)
+2026-10-13 11:13:45 | INFO    |   held-out speeches                  : 20,000 (3,922,435 words)
+2026-10-13 11:13:45 | INFO    |   removed by dedup                   : 62,324 (9,059,899 words)
+2026-10-13 11:13:45 | INFO    |   training speeches                  : 8,353,445 (1,661,391,001 words)
+2026-10-13 11:13:45 | INFO    |   words check                        : usable = held-out + dedup + train: OK
+2026-10-13 11:13:45 | INFO    |   general-domain sequences           : 2,000 (wikitext-103-test+validation)
+2026-10-13 11:13:45 | INFO    |   summary file                       : data/processed/prep_summary.json
+2026-10-13 11:13:45 | INFO    |   elapsed                            : 00:14:45
+2026-10-13 11:13:45 | INFO    | ==============================================================================

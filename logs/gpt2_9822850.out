@@ -1,0 +1,104 @@
+job 9822850 on qgpu2003 at 2026-10-13 15:00:16
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+NVIDIA A100-SXM4-80GB, 81920 MiB
+2026-10-13 15:00:29 | INFO    | ==============================================================================
+2026-10-13 15:00:29 | INFO    | EMI continued pretraining: gpt2 (gpt2)
+2026-10-13 15:00:29 | INFO    |   run directory     : checkpoints/val10k/gpt2/run-job9822850
+2026-10-13 15:00:29 | INFO    |   config file       : configs/gpt2_continued_pretraining.json
+2026-10-13 15:00:29 | INFO    |   hostname          : qgpu2003
+2026-10-13 15:00:29 | INFO    |   python            : 3.10.14
+2026-10-13 15:00:29 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-13 15:00:29 | INFO    |   slurm_job_id      : 9822850
+2026-10-13 15:00:29 | INFO    |   git_commit        : unknown
+2026-10-13 15:00:29 | INFO    |   started_at        : 2026-10-13T15:00:29
+2026-10-13 15:00:29 | INFO    |   device            : NVIDIA A100-SXM4-80GB
+2026-10-13 15:00:29 | INFO    |   precision         : bf16 autocast
+2026-10-13 15:00:29 | INFO    |   torch             : 2.14.1+cu130
+2026-10-13 15:00:29 | INFO    |   transformers      : 5.19.0
+2026-10-13 15:00:29 | INFO    | ==============================================================================
+2026-10-13 15:00:29 | INFO    | Loaded 84 seed words from data/lexicons/evidence_lexicon.csv and data/lexicons/intuition_lexicon.csv
+2026-10-13 15:00:31 | INFO    | Loaded GPT2LMHeadModel with 124,439,808 parameters onto NVIDIA A100-SXM4-80GB
+2026-10-13 15:00:31 | INFO    | Held-out leakage check: 0 of 500 held-out speech IDs appear in data/val10k/train.jsonl: OK
+2026-10-13 15:00:31 | INFO    | Tokenizing and chunking data/val10k/train.jsonl (window 512 + 0 special tokens, 8 processes)
+2026-10-13 15:00:38 | INFO    | ==============================================================================
+2026-10-13 15:00:38 | INFO    | TOKEN ACCOUNTING: training set, gpt2 tokenizer (00:00:07)
+2026-10-13 15:00:38 | INFO    |   speeches               : 9,500
+2026-10-13 15:00:38 | INFO    |   tokens in              : 2,201,287
+2026-10-13 15:00:38 | INFO    |   tokens out (in chunks) : 2,150,849 (97.7087% of tokens in)
+2026-10-13 15:00:38 | INFO    |   tokens dropped         : 50,438 (chunks < 32 tokens)
+2026-10-13 15:00:38 | INFO    |   chunks                 : 9,210 (mean 233.5 tokens incl. specials)
+2026-10-13 15:00:38 | INFO    |   max chunk length       : 512 (limit 512)
+2026-10-13 15:00:38 | INFO    |   check                  : tokens in = tokens out + tokens dropped: OK
+2026-10-13 15:00:38 | INFO    | ==============================================================================
+2026-10-13 15:00:44 | INFO    | Held-out congressional set: 500 texts -> 472 chunks; evaluating a fixed 472 of them at every checkpoint
+2026-10-13 15:00:50 | INFO    | Held-out general set: 2,000 texts -> 1,999 chunks; evaluating a fixed 1,999 of them at every checkpoint
+2026-10-13 15:00:50 | INFO    | ==============================================================================
+2026-10-13 15:00:50 | INFO    | TRAINING PLAN
+2026-10-13 15:00:50 | INFO    |   objective             : causal LM
+2026-10-13 15:00:50 | INFO    |   epochs                : 1.5 x 576 steps/epoch
+2026-10-13 15:00:50 | INFO    |   total optimizer steps : 300 (capped by --max-steps; full run is 864)
+2026-10-13 15:00:50 | INFO    |   effective batch       : 16 chunks
+2026-10-13 15:00:50 | INFO    |   learning rate         : 5e-05 (linear, 0 warmup steps)
+2026-10-13 15:00:50 | INFO    |   checkpoints           : 10 at steps [30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
+2026-10-13 15:00:50 | INFO    |   stop if               : general loss > +20% vs step 0, or mean seed drift > 0.1 and climbing
+2026-10-13 15:00:50 | INFO    |   run config            : checkpoints/val10k/gpt2/run-job9822850/run_config.json
+2026-10-13 15:00:50 | INFO    | ==============================================================================
+2026-10-13 15:00:51 | INFO    | Evaluating the unadapted model (step 0) on 30 + 125 batches
+2026-10-13 15:00:54 | INFO    | ==============================================================================
+2026-10-13 15:00:54 | INFO    | BASELINE (step 0, unadapted model)
+2026-10-13 15:00:54 | INFO    |   congressional perplexity : 35.3936
+2026-10-13 15:00:54 | INFO    |   general perplexity       : 38.8389
+2026-10-13 15:00:54 | INFO    |   seed drift               : 0 by definition
+2026-10-13 15:00:54 | INFO    |   evaluation time          : 00:00:03
+2026-10-13 15:00:54 | INFO    |   metrics file             : checkpoints/val10k/gpt2/run-job9822850/metrics.csv
+2026-10-13 15:00:54 | INFO    | ==============================================================================
+2026-10-13 15:00:54 | INFO    | Starting epoch 1 (576 batches)
+2026-10-13 15:00:59 | INFO    | ==============================================================================
+2026-10-13 15:00:59 | INFO    | CHECKPOINT 1/10 | step 30/300 (10%)
+2026-10-13 15:00:59 | INFO    |   saved to                         : checkpoints/val10k/gpt2/run-job9822850/checkpoint-30
+2026-10-13 15:00:59 | INFO    |   congressional perplexity         : 28.7262 (-18.84% vs step 0)
+2026-10-13 15:00:59 | INFO    |   general perplexity               : 44.3703 (+14.24% vs step 0)
+2026-10-13 15:00:59 | INFO    |   seed drift mean / max            : 0.001618 / 0.003307
+2026-10-13 15:00:59 | INFO    |   train loss since last checkpoint : 3.6179
+2026-10-13 15:00:59 | INFO    |   epoch                            : 0.0521
+2026-10-13 15:00:59 | INFO    |   tokens seen                      : 121,093
+2026-10-13 15:00:59 | INFO    |   evaluation time                  : 00:00:03
+2026-10-13 15:00:59 | INFO    |   flags                            : none
+2026-10-13 15:00:59 | INFO    | ==============================================================================
+2026-10-13 15:01:05 | INFO    | ==============================================================================
+2026-10-13 15:01:05 | INFO    | CHECKPOINT 2/10 | step 60/300 (20%)
+2026-10-13 15:01:05 | INFO    |   saved to                         : checkpoints/val10k/gpt2/run-job9822850/checkpoint-60
+2026-10-13 15:01:05 | INFO    |   congressional perplexity         : 27.4135 (-22.55% vs step 0)
+2026-10-13 15:01:05 | INFO    |   general perplexity               : 46.0494 (+18.57% vs step 0)
+2026-10-13 15:01:05 | INFO    |   seed drift mean / max            : 0.001901 / 0.003769
+2026-10-13 15:01:05 | INFO    |   train loss since last checkpoint : 3.5376
+2026-10-13 15:01:05 | INFO    |   epoch                            : 0.1042
+2026-10-13 15:01:05 | INFO    |   tokens seen                      : 215,427
+2026-10-13 15:01:05 | INFO    |   evaluation time                  : 00:00:03
+2026-10-13 15:01:05 | INFO    |   flags                            : none
+2026-10-13 15:01:05 | INFO    | ==============================================================================
+2026-10-13 15:01:10 | INFO    | ==============================================================================
+2026-10-13 15:01:10 | INFO    | CHECKPOINT 3/10 | step 90/300 (30%)
+2026-10-13 15:01:10 | INFO    |   saved to                         : checkpoints/val10k/gpt2/run-job9822850/checkpoint-90
+2026-10-13 15:01:10 | INFO    |   congressional perplexity         : 26.8005 (-24.28% vs step 0)
+2026-10-13 15:01:10 | INFO    |   general perplexity               : 46.7507 (+20.37% vs step 0)
+2026-10-13 15:01:10 | INFO    |   seed drift mean / max            : 0.002603 / 0.006066
+2026-10-13 15:01:10 | INFO    |   train loss since last checkpoint : 3.5150
+2026-10-13 15:01:10 | INFO    |   epoch                            : 0.1562
+2026-10-13 15:01:10 | INFO    |   tokens seen                      : 339,607
+2026-10-13 15:01:10 | INFO    |   evaluation time                  : 00:00:03
+2026-10-13 15:01:10 | INFO    |   flags                            : general-domain loss rose 20.4% over step 0 (38.8389 -> 46.7507); limit is 20%
+2026-10-13 15:01:10 | INFO    | ==============================================================================
+2026-10-13 15:01:10 | WARNING | STOP CONDITION: general-domain loss rose 20.4% over step 0 (38.8389 -> 46.7507); limit is 20%
+2026-10-13 15:01:10 | ERROR   | Stopping the run as the handoff requires; report these numbers before continuing.
+2026-10-13 15:01:10 | INFO    | ==============================================================================
+2026-10-13 15:01:10 | INFO    | TRAINING STOPPED ON FLAG
+2026-10-13 15:01:10 | INFO    |   steps                       : 90/300
+2026-10-13 15:01:10 | INFO    |   checkpoints written         : 3
+2026-10-13 15:01:10 | INFO    |   congressional perplexity    : 26.8005 (-24.28% vs step 0)
+2026-10-13 15:01:10 | INFO    |   general perplexity          : 46.7507 (+20.37% vs step 0)
+2026-10-13 15:01:10 | INFO    |   final seed drift mean / max : 0.002603 / 0.006066
+2026-10-13 15:01:10 | INFO    |   metrics                     : checkpoints/val10k/gpt2/run-job9822850/metrics.csv
+2026-10-13 15:01:10 | INFO    |   summary                     : checkpoints/val10k/gpt2/run-job9822850/run_summary.json
+2026-10-13 15:01:10 | INFO    |   elapsed                     : 00:00:42
+2026-10-13 15:01:10 | INFO    | ==============================================================================
