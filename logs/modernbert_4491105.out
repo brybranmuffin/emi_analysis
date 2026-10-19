@@ -1,0 +1,212 @@
+job 4491105 on qgpu3013 at 2026-10-19 15:32:16
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+NVIDIA H100 80GB HBM3, 81559 MiB
+2026-10-19 15:32:27 | INFO    | ==============================================================================
+2026-10-19 15:32:27 | INFO    | EMI continued pretraining: modernbert (answerdotai/ModernBERT-base)
+2026-10-19 15:32:27 | INFO    |   run directory     : checkpoints/val10k/modernbert/run-job4491105
+2026-10-19 15:32:27 | INFO    |   config file       : configs/modernbert_continued_pretraining.json
+2026-10-19 15:32:27 | INFO    |   hostname          : qgpu3013
+2026-10-19 15:32:27 | INFO    |   python            : 3.10.14
+2026-10-19 15:32:27 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-19 15:32:27 | INFO    |   slurm_job_id      : 4491105
+2026-10-19 15:32:27 | INFO    |   git_commit        : unknown
+2026-10-19 15:32:27 | INFO    |   started_at        : 2026-10-19T15:32:27
+2026-10-19 15:32:27 | INFO    |   device            : NVIDIA H100 80GB HBM3
+2026-10-19 15:32:27 | INFO    |   precision         : bf16 autocast
+2026-10-19 15:32:27 | INFO    |   torch             : 2.14.1+cu130
+2026-10-19 15:32:27 | INFO    |   transformers      : 5.19.0
+2026-10-19 15:32:27 | INFO    | ==============================================================================
+2026-10-19 15:32:27 | INFO    | Loaded 84 seed words from data/lexicons/evidence_lexicon.csv and data/lexicons/intuition_lexicon.csv
+2026-10-19 15:32:31 | INFO    | Loaded ModernBertForMaskedLM with 149,655,232 parameters onto NVIDIA H100 80GB HBM3 (weights torch.float32, attention sdpa)
+2026-10-19 15:32:32 | INFO    | Held-out leakage check: 0 of 500 held-out speech IDs appear in data/val10k/train.jsonl: OK
+2026-10-19 15:32:32 | INFO    | Tokenizing and chunking data/val10k/train.jsonl (window 2046 + 2 special tokens, 8 processes)
+2026-10-19 15:32:33 | INFO    | ==============================================================================
+2026-10-19 15:32:33 | INFO    | TOKEN ACCOUNTING: training set, modernbert tokenizer (00:00:01)
+2026-10-19 15:32:33 | INFO    |   speeches               : 9,500
+2026-10-19 15:32:33 | INFO    |   tokens in              : 2,222,699
+2026-10-19 15:32:33 | INFO    |   tokens out (in chunks) : 2,174,483 (97.8307% of tokens in)
+2026-10-19 15:32:33 | INFO    |   tokens dropped         : 48,216 (chunks < 32 tokens)
+2026-10-19 15:32:33 | INFO    |   chunks                 : 7,414 (mean 295.3 tokens incl. specials)
+2026-10-19 15:32:33 | INFO    |   max chunk length       : 2048 (limit 2048)
+2026-10-19 15:32:33 | INFO    |   check                  : tokens in = tokens out + tokens dropped: OK
+2026-10-19 15:32:33 | INFO    | ==============================================================================
+2026-10-19 15:32:33 | INFO    | ==============================================================================
+2026-10-19 15:32:33 | INFO    | PACKING: training set (00:00:00)
+2026-10-19 15:32:33 | INFO    |   chunks          : 7,414
+2026-10-19 15:32:33 | INFO    |   packs           : 1,070 of up to 2,048 tokens
+2026-10-19 15:32:33 | INFO    |   fill rate       : 99.91% real tokens (0.09% padding)
+2026-10-19 15:32:33 | INFO    |   chunks per pack : 6.93 on average
+2026-10-19 15:32:33 | INFO    |   isolation       : positions restart per chunk; attention and next-token targets never cross chunks
+2026-10-19 15:32:33 | INFO    |   check           : tokens in packs = tokens in chunks (2,189,311): OK
+2026-10-19 15:32:33 | INFO    | ==============================================================================
+2026-10-19 15:32:34 | INFO    | Held-out congressional set: 500 texts -> 386 chunks; evaluating a fixed 386 of them at every checkpoint
+2026-10-19 15:32:35 | INFO    | Held-out general set: 2,000 texts -> 1,999 chunks; evaluating a fixed 1,999 of them at every checkpoint
+2026-10-19 15:32:35 | INFO    | ==============================================================================
+2026-10-19 15:32:35 | INFO    | TRAINING PLAN
+2026-10-19 15:32:35 | INFO    |   objective             : masked LM, 30% of tokens (fresh masks every batch)
+2026-10-19 15:32:35 | INFO    |   epochs                : 1.25 x 357 steps/epoch
+2026-10-19 15:32:35 | INFO    |   total optimizer steps : 300 (capped by --max-steps; full run is 447)
+2026-10-19 15:32:35 | INFO    |   effective batch       : 3 packs of up to 2,048 tokens
+2026-10-19 15:32:35 | INFO    |   learning rate         : 5e-05 (linear, 0 warmup steps)
+2026-10-19 15:32:35 | INFO    |   checkpoints           : 10 at steps [30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
+2026-10-19 15:32:35 | INFO    |   epoch ends            : none within this run
+2026-10-19 15:32:35 | INFO    |   flag if               : general loss > +20% vs step 0, or mean seed drift > 0.1 and climbing
+2026-10-19 15:32:35 | INFO    |   on a flag             : log it and keep training (stop_on_flag off)
+2026-10-19 15:32:35 | INFO    |   run config            : checkpoints/val10k/modernbert/run-job4491105/run_config.json
+2026-10-19 15:32:35 | INFO    | ==============================================================================
+2026-10-19 15:32:35 | INFO    | Evaluating the unadapted model (step 0) on 19 + 50 batches
+2026-10-19 15:32:38 | INFO    | ==============================================================================
+2026-10-19 15:32:38 | INFO    | BASELINE (step 0, unadapted model)
+2026-10-19 15:32:38 | INFO    |   congressional mlm_loss : 1.6802
+2026-10-19 15:32:38 | INFO    |   general mlm_loss       : 1.6539
+2026-10-19 15:32:38 | INFO    |   seed drift             : 0 by definition
+2026-10-19 15:32:38 | INFO    |   evaluation time        : 00:00:03
+2026-10-19 15:32:38 | INFO    |   metrics file           : checkpoints/val10k/modernbert/run-job4491105/metrics.csv
+2026-10-19 15:32:38 | INFO    |   live progress          : checkpoints/val10k/modernbert/run-job4491105/progress.json
+2026-10-19 15:32:38 | INFO    | ==============================================================================
+2026-10-19 15:32:38 | INFO    | Starting epoch 1 (357 batches)
+2026-10-19 15:32:46 | INFO    | ==============================================================================
+2026-10-19 15:32:46 | INFO    | CHECKPOINT 1/10 | step 30/300 (10%)
+2026-10-19 15:32:46 | INFO    |   saved to                         : checkpoints/val10k/modernbert/run-job4491105/checkpoint-30
+2026-10-19 15:32:46 | INFO    |   congressional mlm_loss           : 1.6016 (-4.68% vs step 0)
+2026-10-19 15:32:46 | INFO    |   general mlm_loss                 : 1.6817 (+1.68% vs step 0)
+2026-10-19 15:32:46 | INFO    |   seed drift mean / max            : 0.130857 / 0.339208
+2026-10-19 15:32:46 | INFO    |   train loss since last evaluation : 1.6598
+2026-10-19 15:32:46 | INFO    |   epoch                            : 0.084
+2026-10-19 15:32:46 | INFO    |   tokens seen                      : 184,127
+2026-10-19 15:32:46 | INFO    |   evaluation time                  : 00:00:02
+2026-10-19 15:32:46 | INFO    |   flags                            : mean seed drift 0.1309 is above 0.1000 and still climbing (previous 0.0000)
+2026-10-19 15:32:46 | INFO    | ==============================================================================
+2026-10-19 15:32:46 | WARNING | FLAG at step 30: mean seed drift 0.1309 is above 0.1000 and still climbing (previous 0.0000) (stop_on_flag is off; the run continues)
+2026-10-19 15:32:51 | INFO    | ==============================================================================
+2026-10-19 15:32:51 | INFO    | CHECKPOINT 2/10 | step 60/300 (20%)
+2026-10-19 15:32:51 | INFO    |   saved to                         : checkpoints/val10k/modernbert/run-job4491105/checkpoint-60
+2026-10-19 15:32:51 | INFO    |   congressional mlm_loss           : 1.5825 (-5.82% vs step 0)
+2026-10-19 15:32:51 | INFO    |   general mlm_loss                 : 1.7005 (+2.82% vs step 0)
+2026-10-19 15:32:51 | INFO    |   seed drift mean / max            : 0.177039 / 0.362555
+2026-10-19 15:32:51 | INFO    |   train loss since last evaluation : 1.6421
+2026-10-19 15:32:51 | INFO    |   epoch                            : 0.1681
+2026-10-19 15:32:51 | INFO    |   tokens seen                      : 368,104
+2026-10-19 15:32:51 | INFO    |   evaluation time                  : 00:00:02
+2026-10-19 15:32:51 | INFO    |   flags                            : mean seed drift 0.1770 is above 0.1000 and still climbing (previous 0.1309)
+2026-10-19 15:32:51 | INFO    | ==============================================================================
+2026-10-19 15:32:51 | WARNING | FLAG at step 60: mean seed drift 0.1770 is above 0.1000 and still climbing (previous 0.1309) (stop_on_flag is off; the run continues)
+2026-10-19 15:32:56 | INFO    | ==============================================================================
+2026-10-19 15:32:56 | INFO    | CHECKPOINT 3/10 | step 90/300 (30%)
+2026-10-19 15:32:56 | INFO    |   saved to                         : checkpoints/val10k/modernbert/run-job4491105/checkpoint-90
+2026-10-19 15:32:56 | INFO    |   congressional mlm_loss           : 1.5739 (-6.33% vs step 0)
+2026-10-19 15:32:56 | INFO    |   general mlm_loss                 : 1.6963 (+2.57% vs step 0)
+2026-10-19 15:32:56 | INFO    |   seed drift mean / max            : 0.176993 / 0.370646
+2026-10-19 15:32:56 | INFO    |   train loss since last evaluation : 1.6487
+2026-10-19 15:32:56 | INFO    |   epoch                            : 0.2521
+2026-10-19 15:32:56 | INFO    |   tokens seen                      : 552,345
+2026-10-19 15:32:56 | INFO    |   evaluation time                  : 00:00:02
+2026-10-19 15:32:56 | INFO    |   flags                            : none
+2026-10-19 15:32:56 | INFO    | ==============================================================================
+2026-10-19 15:32:57 | INFO    | step 100/300 (33.3%) | epoch 0.280 | loss 1.6432 | lr 3.33e-05 | 7.64 steps/s | 46,873 tok/s | elapsed 00:00:30 | ETA 00:00:44 | gpu mem 10.3 GB
+2026-10-19 15:33:00 | INFO    | ==============================================================================
+2026-10-19 15:33:00 | INFO    | CHECKPOINT 4/10 | step 120/300 (40%)
+2026-10-19 15:33:00 | INFO    |   saved to                         : checkpoints/val10k/modernbert/run-job4491105/checkpoint-120
+2026-10-19 15:33:00 | INFO    |   congressional mlm_loss           : 1.5671 (-6.73% vs step 0)
+2026-10-19 15:33:00 | INFO    |   general mlm_loss                 : 1.7047 (+3.07% vs step 0)
+2026-10-19 15:33:00 | INFO    |   seed drift mean / max            : 0.204497 / 0.459803
+2026-10-19 15:33:00 | INFO    |   train loss since last evaluation : 1.6179
+2026-10-19 15:33:00 | INFO    |   epoch                            : 0.3361
+2026-10-19 15:33:00 | INFO    |   tokens seen                      : 736,509
+2026-10-19 15:33:00 | INFO    |   evaluation time                  : 00:00:02
+2026-10-19 15:33:00 | INFO    |   flags                            : mean seed drift 0.2045 is above 0.1000 and still climbing (previous 0.1770)
+2026-10-19 15:33:00 | INFO    | ==============================================================================
+2026-10-19 15:33:00 | WARNING | FLAG at step 120: mean seed drift 0.2045 is above 0.1000 and still climbing (previous 0.1770) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:05 | INFO    | ==============================================================================
+2026-10-19 15:33:05 | INFO    | CHECKPOINT 5/10 | step 150/300 (50%)
+2026-10-19 15:33:05 | INFO    |   saved to                         : checkpoints/val10k/modernbert/run-job4491105/checkpoint-150
+2026-10-19 15:33:05 | INFO    |   congressional mlm_loss           : 1.5610 (-7.10% vs step 0)
+2026-10-19 15:33:05 | INFO    |   general mlm_loss                 : 1.7034 (+2.99% vs step 0)
+2026-10-19 15:33:05 | INFO    |   seed drift mean / max            : 0.298247 / 0.536024
+2026-10-19 15:33:05 | INFO    |   train loss since last evaluation : 1.5620
+2026-10-19 15:33:05 | INFO    |   epoch                            : 0.4202
+2026-10-19 15:33:05 | INFO    |   tokens seen                      : 920,606
+2026-10-19 15:33:05 | INFO    |   evaluation time                  : 00:00:02
+2026-10-19 15:33:05 | INFO    |   flags                            : mean seed drift 0.2982 is above 0.1000 and still climbing (previous 0.2045)
+2026-10-19 15:33:05 | INFO    | ==============================================================================
+2026-10-19 15:33:05 | WARNING | FLAG at step 150: mean seed drift 0.2982 is above 0.1000 and still climbing (previous 0.2045) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:09 | INFO    | ==============================================================================
+2026-10-19 15:33:09 | INFO    | CHECKPOINT 6/10 | step 180/300 (60%)
+2026-10-19 15:33:09 | INFO    |   saved to                         : checkpoints/val10k/modernbert/run-job4491105/checkpoint-180
+2026-10-19 15:33:09 | INFO    |   congressional mlm_loss           : 1.5566 (-7.36% vs step 0)
+2026-10-19 15:33:09 | INFO    |   general mlm_loss                 : 1.7085 (+3.31% vs step 0)
+2026-10-19 15:33:09 | INFO    |   seed drift mean / max            : 0.31369 / 0.555397
+2026-10-19 15:33:09 | INFO    |   train loss since last evaluation : 1.5910
+2026-10-19 15:33:09 | INFO    |   epoch                            : 0.5042
+2026-10-19 15:33:09 | INFO    |   tokens seen                      : 1,104,872
+2026-10-19 15:33:09 | INFO    |   evaluation time                  : 00:00:02
+2026-10-19 15:33:09 | INFO    |   flags                            : mean seed drift 0.3137 is above 0.1000 and still climbing (previous 0.2982)
+2026-10-19 15:33:09 | INFO    | ==============================================================================
+2026-10-19 15:33:09 | WARNING | FLAG at step 180: mean seed drift 0.3137 is above 0.1000 and still climbing (previous 0.2982) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:10 | INFO    | step 200/300 (66.7%) | epoch 0.560 | loss 1.5897 | lr 1.67e-05 | 9.47 steps/s | 58,119 tok/s | elapsed 00:00:44 | ETA 00:00:21 | gpu mem 10.3 GB
+2026-10-19 15:33:13 | INFO    | ==============================================================================
+2026-10-19 15:33:13 | INFO    | CHECKPOINT 7/10 | step 210/300 (70%)
+2026-10-19 15:33:13 | INFO    |   saved to                         : checkpoints/val10k/modernbert/run-job4491105/checkpoint-210
+2026-10-19 15:33:13 | INFO    |   congressional mlm_loss           : 1.5511 (-7.69% vs step 0)
+2026-10-19 15:33:13 | INFO    |   general mlm_loss                 : 1.7116 (+3.49% vs step 0)
+2026-10-19 15:33:13 | INFO    |   seed drift mean / max            : 0.356309 / 0.58775
+2026-10-19 15:33:13 | INFO    |   train loss since last evaluation : 1.5712
+2026-10-19 15:33:13 | INFO    |   epoch                            : 0.5882
+2026-10-19 15:33:13 | INFO    |   tokens seen                      : 1,288,970
+2026-10-19 15:33:13 | INFO    |   evaluation time                  : 00:00:02
+2026-10-19 15:33:13 | INFO    |   flags                            : mean seed drift 0.3563 is above 0.1000 and still climbing (previous 0.3137)
+2026-10-19 15:33:13 | INFO    | ==============================================================================
+2026-10-19 15:33:13 | WARNING | FLAG at step 210: mean seed drift 0.3563 is above 0.1000 and still climbing (previous 0.3137) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:17 | INFO    | ==============================================================================
+2026-10-19 15:33:17 | INFO    | CHECKPOINT 8/10 | step 240/300 (80%)
+2026-10-19 15:33:17 | INFO    |   saved to                         : checkpoints/val10k/modernbert/run-job4491105/checkpoint-240
+2026-10-19 15:33:17 | INFO    |   congressional mlm_loss           : 1.5473 (-7.91% vs step 0)
+2026-10-19 15:33:17 | INFO    |   general mlm_loss                 : 1.7091 (+3.34% vs step 0)
+2026-10-19 15:33:17 | INFO    |   seed drift mean / max            : 0.387012 / 0.608061
+2026-10-19 15:33:17 | INFO    |   train loss since last evaluation : 1.6189
+2026-10-19 15:33:17 | INFO    |   epoch                            : 0.6723
+2026-10-19 15:33:17 | INFO    |   tokens seen                      : 1,473,015
+2026-10-19 15:33:17 | INFO    |   evaluation time                  : 00:00:02
+2026-10-19 15:33:17 | INFO    |   flags                            : mean seed drift 0.3870 is above 0.1000 and still climbing (previous 0.3563)
+2026-10-19 15:33:17 | INFO    | ==============================================================================
+2026-10-19 15:33:17 | WARNING | FLAG at step 240: mean seed drift 0.3870 is above 0.1000 and still climbing (previous 0.3563) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:22 | INFO    | ==============================================================================
+2026-10-19 15:33:22 | INFO    | CHECKPOINT 9/10 | step 270/300 (90%)
+2026-10-19 15:33:22 | INFO    |   saved to                         : checkpoints/val10k/modernbert/run-job4491105/checkpoint-270
+2026-10-19 15:33:22 | INFO    |   congressional mlm_loss           : 1.5460 (-7.99% vs step 0)
+2026-10-19 15:33:22 | INFO    |   general mlm_loss                 : 1.7082 (+3.29% vs step 0)
+2026-10-19 15:33:22 | INFO    |   seed drift mean / max            : 0.387559 / 0.618762
+2026-10-19 15:33:22 | INFO    |   train loss since last evaluation : 1.5745
+2026-10-19 15:33:22 | INFO    |   epoch                            : 0.7563
+2026-10-19 15:33:22 | INFO    |   tokens seen                      : 1,657,218
+2026-10-19 15:33:22 | INFO    |   evaluation time                  : 00:00:02
+2026-10-19 15:33:22 | INFO    |   flags                            : mean seed drift 0.3876 is above 0.1000 and still climbing (previous 0.3870)
+2026-10-19 15:33:22 | INFO    | ==============================================================================
+2026-10-19 15:33:22 | WARNING | FLAG at step 270: mean seed drift 0.3876 is above 0.1000 and still climbing (previous 0.3870) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:24 | INFO    | step 300/300 (100.0%) | epoch 0.840 | loss 1.5849 | lr 0.00e+00 | 10.30 steps/s | 63,138 tok/s | elapsed 00:00:57 | ETA 00:00:00 | gpu mem 10.3 GB
+2026-10-19 15:33:26 | INFO    | ==============================================================================
+2026-10-19 15:33:26 | INFO    | CHECKPOINT 10/10 | step 300/300 (100%)
+2026-10-19 15:33:26 | INFO    |   saved to                         : checkpoints/val10k/modernbert/run-job4491105/checkpoint-300
+2026-10-19 15:33:26 | INFO    |   congressional mlm_loss           : 1.5449 (-8.05% vs step 0)
+2026-10-19 15:33:26 | INFO    |   general mlm_loss                 : 1.7081 (+3.28% vs step 0)
+2026-10-19 15:33:26 | INFO    |   seed drift mean / max            : 0.382679 / 0.626329
+2026-10-19 15:33:26 | INFO    |   train loss since last evaluation : 1.5732
+2026-10-19 15:33:26 | INFO    |   epoch                            : 0.8403
+2026-10-19 15:33:26 | INFO    |   tokens seen                      : 1,839,312
+2026-10-19 15:33:26 | INFO    |   evaluation time                  : 00:00:02
+2026-10-19 15:33:26 | INFO    |   flags                            : none
+2026-10-19 15:33:26 | INFO    | ==============================================================================
+2026-10-19 15:33:26 | INFO    | ==============================================================================
+2026-10-19 15:33:26 | INFO    | TRAINING COMPLETED
+2026-10-19 15:33:26 | INFO    |   steps                                    : 300/300
+2026-10-19 15:33:26 | INFO    |   epochs                                   : 0.8403 of 0.84
+2026-10-19 15:33:26 | INFO    |   checkpoints written                      : 10
+2026-10-19 15:33:26 | INFO    |   latest checkpoint                        : checkpoints/val10k/modernbert/run-job4491105/checkpoint-300
+2026-10-19 15:33:26 | INFO    |   congressional mlm_loss (last evaluation) : 1.5449 (-8.05% vs step 0)
+2026-10-19 15:33:26 | INFO    |   general mlm_loss (last evaluation)       : 1.7081 (+3.28% vs step 0)
+2026-10-19 15:33:26 | INFO    |   seed drift mean / max (last evaluation)  : 0.382679 / 0.626329
+2026-10-19 15:33:26 | INFO    |   flags raised                             : 8
+2026-10-19 15:33:26 | INFO    |   metrics                                  : checkpoints/val10k/modernbert/run-job4491105/metrics.csv
+2026-10-19 15:33:26 | INFO    |   summary                                  : checkpoints/val10k/modernbert/run-job4491105/run_summary.json
+2026-10-19 15:33:26 | INFO    |   elapsed                                  : 00:01:00
+2026-10-19 15:33:26 | INFO    | ==============================================================================

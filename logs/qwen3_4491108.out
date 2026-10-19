@@ -1,0 +1,220 @@
+job 4491108 on qgpu3008 at 2026-10-19 15:33:16
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+NVIDIA H100 80GB HBM3, 81559 MiB
+2026-10-19 15:33:28 | INFO    | ==============================================================================
+2026-10-19 15:33:28 | INFO    | EMI continued pretraining: qwen3 (Qwen/Qwen3-0.6B-Base)
+2026-10-19 15:33:28 | INFO    |   run directory     : checkpoints/val10k/qwen3/run-job4491108
+2026-10-19 15:33:28 | INFO    |   config file       : configs/qwen3_continued_pretraining.json
+2026-10-19 15:33:28 | INFO    |   hostname          : qgpu3008
+2026-10-19 15:33:28 | INFO    |   python            : 3.10.14
+2026-10-19 15:33:28 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-19 15:33:28 | INFO    |   slurm_job_id      : 4491108
+2026-10-19 15:33:28 | INFO    |   git_commit        : unknown
+2026-10-19 15:33:28 | INFO    |   started_at        : 2026-10-19T15:33:28
+2026-10-19 15:33:28 | INFO    |   device            : NVIDIA H100 80GB HBM3
+2026-10-19 15:33:28 | INFO    |   precision         : bf16 autocast
+2026-10-19 15:33:28 | INFO    |   torch             : 2.14.1+cu130
+2026-10-19 15:33:28 | INFO    |   transformers      : 5.19.0
+2026-10-19 15:33:28 | INFO    | ==============================================================================
+2026-10-19 15:33:28 | INFO    | Loaded 84 seed words from data/lexicons/evidence_lexicon.csv and data/lexicons/intuition_lexicon.csv
+2026-10-19 15:33:33 | INFO    | Loaded Qwen3ForCausalLM with 596,049,920 parameters onto NVIDIA H100 80GB HBM3 (weights torch.float32, attention sdpa)
+2026-10-19 15:33:33 | INFO    | Held-out leakage check: 0 of 500 held-out speech IDs appear in data/val10k/train.jsonl: OK
+2026-10-19 15:33:33 | INFO    | Tokenizing and chunking data/val10k/train.jsonl (window 2048 + 0 special tokens, 8 processes)
+2026-10-19 15:33:45 | INFO    | ==============================================================================
+2026-10-19 15:33:45 | INFO    | TOKEN ACCOUNTING: training set, qwen3 tokenizer (00:00:12)
+2026-10-19 15:33:45 | INFO    |   speeches               : 9,500
+2026-10-19 15:33:45 | INFO    |   tokens in              : 2,267,072
+2026-10-19 15:33:45 | INFO    |   tokens out (in chunks) : 2,219,814 (97.9155% of tokens in)
+2026-10-19 15:33:45 | INFO    |   tokens dropped         : 47,258 (chunks < 32 tokens)
+2026-10-19 15:33:45 | INFO    |   chunks                 : 7,467 (mean 297.3 tokens incl. specials)
+2026-10-19 15:33:45 | INFO    |   max chunk length       : 2048 (limit 2048)
+2026-10-19 15:33:45 | INFO    |   check                  : tokens in = tokens out + tokens dropped: OK
+2026-10-19 15:33:45 | INFO    | ==============================================================================
+2026-10-19 15:33:45 | INFO    | ==============================================================================
+2026-10-19 15:33:45 | INFO    | PACKING: training set (00:00:00)
+2026-10-19 15:33:45 | INFO    |   chunks          : 7,467
+2026-10-19 15:33:45 | INFO    |   packs           : 1,085 of up to 2,048 tokens
+2026-10-19 15:33:45 | INFO    |   fill rate       : 99.90% real tokens (0.10% padding)
+2026-10-19 15:33:45 | INFO    |   chunks per pack : 6.88 on average
+2026-10-19 15:33:45 | INFO    |   isolation       : positions restart per chunk; attention and next-token targets never cross chunks
+2026-10-19 15:33:45 | INFO    |   check           : tokens in packs = tokens in chunks (2,219,814): OK
+2026-10-19 15:33:45 | INFO    | ==============================================================================
+2026-10-19 15:33:56 | INFO    | Held-out congressional set: 500 texts -> 388 chunks; evaluating a fixed 388 of them at every checkpoint
+2026-10-19 15:34:07 | INFO    | Held-out general set: 2,000 texts -> 1,998 chunks; evaluating a fixed 1,998 of them at every checkpoint
+2026-10-19 15:34:07 | INFO    | ==============================================================================
+2026-10-19 15:34:07 | INFO    | TRAINING PLAN
+2026-10-19 15:34:07 | INFO    |   objective             : causal LM
+2026-10-19 15:34:07 | INFO    |   epochs                : 1.0 x 543 steps/epoch
+2026-10-19 15:34:07 | INFO    |   total optimizer steps : 300 (capped by --max-steps; full run is 543)
+2026-10-19 15:34:07 | INFO    |   effective batch       : 2 packs of up to 2,048 tokens
+2026-10-19 15:34:07 | INFO    |   learning rate         : 5e-05 (linear, 0 warmup steps)
+2026-10-19 15:34:07 | INFO    |   checkpoints           : 10 at steps [30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
+2026-10-19 15:34:07 | INFO    |   epoch ends            : none within this run
+2026-10-19 15:34:07 | INFO    |   flag if               : general loss > +20% vs step 0, or mean seed drift > 0.1 and climbing
+2026-10-19 15:34:07 | INFO    |   on a flag             : log it and keep training (stop_on_flag off)
+2026-10-19 15:34:07 | INFO    |   run config            : checkpoints/val10k/qwen3/run-job4491108/run_config.json
+2026-10-19 15:34:07 | INFO    | ==============================================================================
+2026-10-19 15:34:07 | INFO    | Evaluating the unadapted model (step 0) on 28 + 77 batches
+2026-10-19 15:34:15 | INFO    | ==============================================================================
+2026-10-19 15:34:15 | INFO    | BASELINE (step 0, unadapted model)
+2026-10-19 15:34:15 | INFO    |   congressional perplexity : 21.7021
+2026-10-19 15:34:15 | INFO    |   general perplexity       : 18.4794
+2026-10-19 15:34:15 | INFO    |   seed drift               : 0 by definition
+2026-10-19 15:34:15 | INFO    |   evaluation time          : 00:00:08
+2026-10-19 15:34:15 | INFO    |   metrics file             : checkpoints/val10k/qwen3/run-job4491108/metrics.csv
+2026-10-19 15:34:15 | INFO    |   live progress            : checkpoints/val10k/qwen3/run-job4491108/progress.json
+2026-10-19 15:34:15 | INFO    | ==============================================================================
+2026-10-19 15:34:15 | INFO    | Starting epoch 1 (543 batches)
+2026-10-19 15:34:31 | INFO    | ==============================================================================
+2026-10-19 15:34:31 | INFO    | CHECKPOINT 1/10 | step 30/300 (10%)
+2026-10-19 15:34:31 | INFO    |   saved to                         : checkpoints/val10k/qwen3/run-job4491108/checkpoint-30
+2026-10-19 15:34:31 | INFO    |   congressional perplexity         : 19.0410 (-12.26% vs step 0)
+2026-10-19 15:34:31 | INFO    |   general perplexity               : 24.5415 (+32.80% vs step 0)
+2026-10-19 15:34:31 | INFO    |   seed drift mean / max            : 0.142607 / 0.376801
+2026-10-19 15:34:31 | INFO    |   train loss since last evaluation : 3.0248
+2026-10-19 15:34:31 | INFO    |   epoch                            : 0.0552
+2026-10-19 15:34:31 | INFO    |   tokens seen                      : 122,728
+2026-10-19 15:34:31 | INFO    |   evaluation time                  : 00:00:05
+2026-10-19 15:34:31 | INFO    |   flags                            : general-domain loss rose 32.8% over step 0 (18.4794 -> 24.5415); limit is 20%; mean seed drift 0.1426 is above 0.1000 and still climbing (previous 0.0000)
+2026-10-19 15:34:31 | INFO    | ==============================================================================
+2026-10-19 15:34:31 | WARNING | FLAG at step 30: general-domain loss rose 32.8% over step 0 (18.4794 -> 24.5415); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-19 15:34:31 | WARNING | FLAG at step 30: mean seed drift 0.1426 is above 0.1000 and still climbing (previous 0.0000) (stop_on_flag is off; the run continues)
+2026-10-19 15:34:41 | INFO    | ==============================================================================
+2026-10-19 15:34:41 | INFO    | CHECKPOINT 2/10 | step 60/300 (20%)
+2026-10-19 15:34:41 | INFO    |   saved to                         : checkpoints/val10k/qwen3/run-job4491108/checkpoint-60
+2026-10-19 15:34:41 | INFO    |   congressional perplexity         : 18.5525 (-14.51% vs step 0)
+2026-10-19 15:34:41 | INFO    |   general perplexity               : 26.1758 (+41.65% vs step 0)
+2026-10-19 15:34:41 | INFO    |   seed drift mean / max            : 0.178085 / 0.38392
+2026-10-19 15:34:41 | INFO    |   train loss since last evaluation : 2.9358
+2026-10-19 15:34:41 | INFO    |   epoch                            : 0.1105
+2026-10-19 15:34:41 | INFO    |   tokens seen                      : 245,540
+2026-10-19 15:34:41 | INFO    |   evaluation time                  : 00:00:05
+2026-10-19 15:34:41 | INFO    |   flags                            : general-domain loss rose 41.6% over step 0 (18.4794 -> 26.1758); limit is 20%; mean seed drift 0.1781 is above 0.1000 and still climbing (previous 0.1426)
+2026-10-19 15:34:41 | INFO    | ==============================================================================
+2026-10-19 15:34:41 | WARNING | FLAG at step 60: general-domain loss rose 41.6% over step 0 (18.4794 -> 26.1758); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-19 15:34:41 | WARNING | FLAG at step 60: mean seed drift 0.1781 is above 0.1000 and still climbing (previous 0.1426) (stop_on_flag is off; the run continues)
+2026-10-19 15:34:54 | INFO    | ==============================================================================
+2026-10-19 15:34:54 | INFO    | CHECKPOINT 3/10 | step 90/300 (30%)
+2026-10-19 15:34:54 | INFO    |   saved to                         : checkpoints/val10k/qwen3/run-job4491108/checkpoint-90
+2026-10-19 15:34:54 | INFO    |   congressional perplexity         : 18.0739 (-16.72% vs step 0)
+2026-10-19 15:34:54 | INFO    |   general perplexity               : 27.1504 (+46.92% vs step 0)
+2026-10-19 15:34:54 | INFO    |   seed drift mean / max            : 0.165917 / 0.369004
+2026-10-19 15:34:54 | INFO    |   train loss since last evaluation : 3.0029
+2026-10-19 15:34:54 | INFO    |   epoch                            : 0.1657
+2026-10-19 15:34:54 | INFO    |   tokens seen                      : 368,255
+2026-10-19 15:34:54 | INFO    |   evaluation time                  : 00:00:05
+2026-10-19 15:34:54 | INFO    |   flags                            : general-domain loss rose 46.9% over step 0 (18.4794 -> 27.1504); limit is 20%
+2026-10-19 15:34:54 | INFO    | ==============================================================================
+2026-10-19 15:34:54 | WARNING | FLAG at step 90: general-domain loss rose 46.9% over step 0 (18.4794 -> 27.1504); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-19 15:34:56 | INFO    | step 100/300 (33.3%) | epoch 0.184 | loss 2.9858 | lr 3.33e-05 | 3.77 steps/s | 15,424 tok/s | elapsed 00:01:29 | ETA 00:01:50 | gpu mem 26.3 GB
+2026-10-19 15:35:05 | INFO    | ==============================================================================
+2026-10-19 15:35:05 | INFO    | CHECKPOINT 4/10 | step 120/300 (40%)
+2026-10-19 15:35:05 | INFO    |   saved to                         : checkpoints/val10k/qwen3/run-job4491108/checkpoint-120
+2026-10-19 15:35:05 | INFO    |   congressional perplexity         : 17.7623 (-18.15% vs step 0)
+2026-10-19 15:35:05 | INFO    |   general perplexity               : 27.8674 (+50.80% vs step 0)
+2026-10-19 15:35:05 | INFO    |   seed drift mean / max            : 0.176112 / 0.307092
+2026-10-19 15:35:05 | INFO    |   train loss since last evaluation : 2.9618
+2026-10-19 15:35:05 | INFO    |   epoch                            : 0.221
+2026-10-19 15:35:05 | INFO    |   tokens seen                      : 491,030
+2026-10-19 15:35:05 | INFO    |   evaluation time                  : 00:00:05
+2026-10-19 15:35:05 | INFO    |   flags                            : general-domain loss rose 50.8% over step 0 (18.4794 -> 27.8674); limit is 20%; mean seed drift 0.1761 is above 0.1000 and still climbing (previous 0.1659)
+2026-10-19 15:35:05 | INFO    | ==============================================================================
+2026-10-19 15:35:05 | WARNING | FLAG at step 120: general-domain loss rose 50.8% over step 0 (18.4794 -> 27.8674); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-19 15:35:05 | WARNING | FLAG at step 120: mean seed drift 0.1761 is above 0.1000 and still climbing (previous 0.1659) (stop_on_flag is off; the run continues)
+2026-10-19 15:35:15 | INFO    | ==============================================================================
+2026-10-19 15:35:15 | INFO    | CHECKPOINT 5/10 | step 150/300 (50%)
+2026-10-19 15:35:15 | INFO    |   saved to                         : checkpoints/val10k/qwen3/run-job4491108/checkpoint-150
+2026-10-19 15:35:15 | INFO    |   congressional perplexity         : 17.3422 (-20.09% vs step 0)
+2026-10-19 15:35:15 | INFO    |   general perplexity               : 26.7918 (+44.98% vs step 0)
+2026-10-19 15:35:15 | INFO    |   seed drift mean / max            : 0.18023 / 0.35869
+2026-10-19 15:35:15 | INFO    |   train loss since last evaluation : 2.9084
+2026-10-19 15:35:15 | INFO    |   epoch                            : 0.2762
+2026-10-19 15:35:15 | INFO    |   tokens seen                      : 613,894
+2026-10-19 15:35:15 | INFO    |   evaluation time                  : 00:00:05
+2026-10-19 15:35:15 | INFO    |   flags                            : general-domain loss rose 45.0% over step 0 (18.4794 -> 26.7918); limit is 20%; mean seed drift 0.1802 is above 0.1000 and still climbing (previous 0.1761)
+2026-10-19 15:35:15 | INFO    | ==============================================================================
+2026-10-19 15:35:15 | WARNING | FLAG at step 150: general-domain loss rose 45.0% over step 0 (18.4794 -> 26.7918); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-19 15:35:15 | WARNING | FLAG at step 150: mean seed drift 0.1802 is above 0.1000 and still climbing (previous 0.1761) (stop_on_flag is off; the run continues)
+2026-10-19 15:35:26 | INFO    | ==============================================================================
+2026-10-19 15:35:26 | INFO    | CHECKPOINT 6/10 | step 180/300 (60%)
+2026-10-19 15:35:26 | INFO    |   saved to                         : checkpoints/val10k/qwen3/run-job4491108/checkpoint-180
+2026-10-19 15:35:26 | INFO    |   congressional perplexity         : 17.0341 (-21.51% vs step 0)
+2026-10-19 15:35:26 | INFO    |   general perplexity               : 27.1172 (+46.74% vs step 0)
+2026-10-19 15:35:26 | INFO    |   seed drift mean / max            : 0.176616 / 0.3264
+2026-10-19 15:35:26 | INFO    |   train loss since last evaluation : 2.9252
+2026-10-19 15:35:26 | INFO    |   epoch                            : 0.3315
+2026-10-19 15:35:26 | INFO    |   tokens seen                      : 736,640
+2026-10-19 15:35:26 | INFO    |   evaluation time                  : 00:00:05
+2026-10-19 15:35:26 | INFO    |   flags                            : general-domain loss rose 46.7% over step 0 (18.4794 -> 27.1172); limit is 20%
+2026-10-19 15:35:26 | INFO    | ==============================================================================
+2026-10-19 15:35:26 | WARNING | FLAG at step 180: general-domain loss rose 46.7% over step 0 (18.4794 -> 27.1172); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-19 15:35:29 | INFO    | step 200/300 (66.7%) | epoch 0.368 | loss 2.9162 | lr 1.67e-05 | 4.41 steps/s | 18,061 tok/s | elapsed 00:02:02 | ETA 00:00:55 | gpu mem 26.3 GB
+2026-10-19 15:35:36 | INFO    | ==============================================================================
+2026-10-19 15:35:36 | INFO    | CHECKPOINT 7/10 | step 210/300 (70%)
+2026-10-19 15:35:36 | INFO    |   saved to                         : checkpoints/val10k/qwen3/run-job4491108/checkpoint-210
+2026-10-19 15:35:36 | INFO    |   congressional perplexity         : 16.7595 (-22.77% vs step 0)
+2026-10-19 15:35:36 | INFO    |   general perplexity               : 27.1185 (+46.75% vs step 0)
+2026-10-19 15:35:36 | INFO    |   seed drift mean / max            : 0.177291 / 0.313047
+2026-10-19 15:35:36 | INFO    |   train loss since last evaluation : 2.8646
+2026-10-19 15:35:36 | INFO    |   epoch                            : 0.3867
+2026-10-19 15:35:36 | INFO    |   tokens seen                      : 859,457
+2026-10-19 15:35:36 | INFO    |   evaluation time                  : 00:00:05
+2026-10-19 15:35:36 | INFO    |   flags                            : general-domain loss rose 46.7% over step 0 (18.4794 -> 27.1185); limit is 20%; mean seed drift 0.1773 is above 0.1000 and still climbing (previous 0.1766)
+2026-10-19 15:35:36 | INFO    | ==============================================================================
+2026-10-19 15:35:36 | WARNING | FLAG at step 210: general-domain loss rose 46.7% over step 0 (18.4794 -> 27.1185); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-19 15:35:36 | WARNING | FLAG at step 210: mean seed drift 0.1773 is above 0.1000 and still climbing (previous 0.1766) (stop_on_flag is off; the run continues)
+2026-10-19 15:35:46 | INFO    | ==============================================================================
+2026-10-19 15:35:46 | INFO    | CHECKPOINT 8/10 | step 240/300 (80%)
+2026-10-19 15:35:46 | INFO    |   saved to                         : checkpoints/val10k/qwen3/run-job4491108/checkpoint-240
+2026-10-19 15:35:46 | INFO    |   congressional perplexity         : 16.5281 (-23.84% vs step 0)
+2026-10-19 15:35:46 | INFO    |   general perplexity               : 27.1693 (+47.02% vs step 0)
+2026-10-19 15:35:46 | INFO    |   seed drift mean / max            : 0.17696 / 0.312383
+2026-10-19 15:35:46 | INFO    |   train loss since last evaluation : 2.8264
+2026-10-19 15:35:46 | INFO    |   epoch                            : 0.442
+2026-10-19 15:35:46 | INFO    |   tokens seen                      : 982,274
+2026-10-19 15:35:46 | INFO    |   evaluation time                  : 00:00:05
+2026-10-19 15:35:46 | INFO    |   flags                            : general-domain loss rose 47.0% over step 0 (18.4794 -> 27.1693); limit is 20%
+2026-10-19 15:35:46 | INFO    | ==============================================================================
+2026-10-19 15:35:46 | WARNING | FLAG at step 240: general-domain loss rose 47.0% over step 0 (18.4794 -> 27.1693); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-19 15:35:57 | INFO    | ==============================================================================
+2026-10-19 15:35:57 | INFO    | CHECKPOINT 9/10 | step 270/300 (90%)
+2026-10-19 15:35:57 | INFO    |   saved to                         : checkpoints/val10k/qwen3/run-job4491108/checkpoint-270
+2026-10-19 15:35:57 | INFO    |   congressional perplexity         : 16.3551 (-24.64% vs step 0)
+2026-10-19 15:35:57 | INFO    |   general perplexity               : 26.7339 (+44.67% vs step 0)
+2026-10-19 15:35:57 | INFO    |   seed drift mean / max            : 0.164473 / 0.288087
+2026-10-19 15:35:57 | INFO    |   train loss since last evaluation : 2.7898
+2026-10-19 15:35:57 | INFO    |   epoch                            : 0.4972
+2026-10-19 15:35:57 | INFO    |   tokens seen                      : 1,105,034
+2026-10-19 15:35:57 | INFO    |   evaluation time                  : 00:00:05
+2026-10-19 15:35:57 | INFO    |   flags                            : general-domain loss rose 44.7% over step 0 (18.4794 -> 26.7339); limit is 20%
+2026-10-19 15:35:57 | INFO    | ==============================================================================
+2026-10-19 15:35:57 | WARNING | FLAG at step 270: general-domain loss rose 44.7% over step 0 (18.4794 -> 26.7339); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-19 15:36:02 | INFO    | step 300/300 (100.0%) | epoch 0.552 | loss 2.8217 | lr 0.00e+00 | 4.66 steps/s | 19,074 tok/s | elapsed 00:02:35 | ETA 00:00:00 | gpu mem 26.3 GB
+2026-10-19 15:36:08 | INFO    | ==============================================================================
+2026-10-19 15:36:08 | INFO    | CHECKPOINT 10/10 | step 300/300 (100%)
+2026-10-19 15:36:08 | INFO    |   saved to                         : checkpoints/val10k/qwen3/run-job4491108/checkpoint-300
+2026-10-19 15:36:08 | INFO    |   congressional perplexity         : 16.2697 (-25.03% vs step 0)
+2026-10-19 15:36:08 | INFO    |   general perplexity               : 26.7439 (+44.72% vs step 0)
+2026-10-19 15:36:08 | INFO    |   seed drift mean / max            : 0.165576 / 0.289449
+2026-10-19 15:36:08 | INFO    |   train loss since last evaluation : 2.8393
+2026-10-19 15:36:08 | INFO    |   epoch                            : 0.5525
+2026-10-19 15:36:08 | INFO    |   tokens seen                      : 1,227,831
+2026-10-19 15:36:08 | INFO    |   evaluation time                  : 00:00:05
+2026-10-19 15:36:08 | INFO    |   flags                            : general-domain loss rose 44.7% over step 0 (18.4794 -> 26.7439); limit is 20%; mean seed drift 0.1656 is above 0.1000 and still climbing (previous 0.1645)
+2026-10-19 15:36:08 | INFO    | ==============================================================================
+2026-10-19 15:36:08 | WARNING | FLAG at step 300: general-domain loss rose 44.7% over step 0 (18.4794 -> 26.7439); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-19 15:36:08 | WARNING | FLAG at step 300: mean seed drift 0.1656 is above 0.1000 and still climbing (previous 0.1645) (stop_on_flag is off; the run continues)
+2026-10-19 15:36:08 | INFO    | ==============================================================================
+2026-10-19 15:36:08 | INFO    | TRAINING COMPLETED
+2026-10-19 15:36:08 | INFO    |   steps                                      : 300/300
+2026-10-19 15:36:08 | INFO    |   epochs                                     : 0.5525 of 0.552
+2026-10-19 15:36:08 | INFO    |   checkpoints written                        : 10
+2026-10-19 15:36:08 | INFO    |   latest checkpoint                          : checkpoints/val10k/qwen3/run-job4491108/checkpoint-300
+2026-10-19 15:36:08 | INFO    |   congressional perplexity (last evaluation) : 16.2697 (-25.03% vs step 0)
+2026-10-19 15:36:08 | INFO    |   general perplexity (last evaluation)       : 26.7439 (+44.72% vs step 0)
+2026-10-19 15:36:08 | INFO    |   seed drift mean / max (last evaluation)    : 0.165576 / 0.289449
+2026-10-19 15:36:08 | INFO    |   flags raised                               : 10
+2026-10-19 15:36:08 | INFO    |   metrics                                    : checkpoints/val10k/qwen3/run-job4491108/metrics.csv
+2026-10-19 15:36:08 | INFO    |   summary                                    : checkpoints/val10k/qwen3/run-job4491108/run_summary.json
+2026-10-19 15:36:08 | INFO    |   elapsed                                    : 00:02:41
+2026-10-19 15:36:08 | INFO    | ==============================================================================

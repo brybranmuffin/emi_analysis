@@ -1,0 +1,9 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-10-19 15:32:46 | WARNING | FLAG at step 30: mean seed drift 0.1309 is above 0.1000 and still climbing (previous 0.0000) (stop_on_flag is off; the run continues)
+2026-10-19 15:32:51 | WARNING | FLAG at step 60: mean seed drift 0.1770 is above 0.1000 and still climbing (previous 0.1309) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:00 | WARNING | FLAG at step 120: mean seed drift 0.2045 is above 0.1000 and still climbing (previous 0.1770) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:05 | WARNING | FLAG at step 150: mean seed drift 0.2982 is above 0.1000 and still climbing (previous 0.2045) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:09 | WARNING | FLAG at step 180: mean seed drift 0.3137 is above 0.1000 and still climbing (previous 0.2982) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:13 | WARNING | FLAG at step 210: mean seed drift 0.3563 is above 0.1000 and still climbing (previous 0.3137) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:17 | WARNING | FLAG at step 240: mean seed drift 0.3870 is above 0.1000 and still climbing (previous 0.3563) (stop_on_flag is off; the run continues)
+2026-10-19 15:33:22 | WARNING | FLAG at step 270: mean seed drift 0.3876 is above 0.1000 and still climbing (previous 0.3870) (stop_on_flag is off; the run continues)
