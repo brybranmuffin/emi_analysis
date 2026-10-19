@@ -4,7 +4,7 @@
 Exercises exactly the code path of the full run, on throwaway data under data/smoke/ and
 checkpoints/smoke/. The seed lexicons written here are placeholders, not the EMI lexicons.
 
-    python scripts/run_smoke_test.py [--max-steps 4] [--checkpoint-every 2]
+    python scripts/run_smoke_test.py [--max-steps 4] [--checkpoint-every 2] [--models bert gpt2 modernbert qwen3]
 """
 
 from __future__ import annotations
@@ -56,6 +56,8 @@ def write_smoke_config(family: str, root: Path) -> Path:
         eval_max_chunks=16,
         log_every=1,
     )
+    if config.get("packing"):
+        config.update(max_length=512, batch_size=2)  # shorter packs keep the CPU smoke test quick
     path = root / f"{family}_smoke_config.json"
     path.write_text(json.dumps(config, indent=2), encoding="utf-8")
     return path
@@ -66,6 +68,7 @@ def main() -> None:
     parser.add_argument("--max-steps", type=int, default=4)
     parser.add_argument("--checkpoint-every", type=int, default=2)
     parser.add_argument("--require-gpu", action="store_true")
+    parser.add_argument("--models", nargs="+", default=["bert", "gpt2"], choices=["bert", "gpt2", "modernbert", "qwen3"])
     args = parser.parse_args()
 
     corpus = SMOKE_DATA / "raw" / "smoke_corpus.csv.gzip"
@@ -82,7 +85,7 @@ def main() -> None:
 
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     run_dirs = []
-    for family in ("bert", "gpt2"):
+    for family in args.models:
         argv = ["--config", str(write_smoke_config(family, SMOKE_DATA)), "--run-name", f"smoke-{stamp}",
                 "--max-steps", str(args.max_steps), "--checkpoint-every", str(args.checkpoint_every)]
         if args.require_gpu:

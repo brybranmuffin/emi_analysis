@@ -33,8 +33,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from .config import BERT_CONFIG, GPT2_CONFIG, ModelConfig
+from .config import BERT_CONFIG, GPT2_CONFIG, MODERNBERT_CONFIG, QWEN3_CONFIG, ModelConfig
 from .data_pipeline import chunk_token_ids
+from .packing import build_packed_batch, model_inputs, pack_sequences
 from .runinfo import banner, environment_info, format_duration, setup_logging
 from .verification import append_metric_row, check_stop_conditions
 
@@ -43,6 +44,7 @@ logger = logging.getLogger("emi_analysis")
 STOP_EXIT_CODE = 3
 CANCEL_EXIT_CODE = 143  # 128 + SIGTERM, what SLURM reports for scancel / time limit
 PREP_HINT = "Run `python -m emi_analysis.prepare_data --input <corpus>` first (see README)."
+FAMILY_DEFAULTS = {"bert": BERT_CONFIG, "gpt2": GPT2_CONFIG, "modernbert": MODERNBERT_CONFIG, "qwen3": QWEN3_CONFIG}
 
 
 def parse_config(config_path: str | Path | dict) -> ModelConfig:
@@ -54,12 +56,9 @@ def parse_config(config_path: str | Path | dict) -> ModelConfig:
             config = json.load(handle)
 
     model_family = config.get("model_family")
-    if model_family == "bert":
-        defaults = BERT_CONFIG.__dict__.copy()
-    elif model_family == "gpt2":
-        defaults = GPT2_CONFIG.__dict__.copy()
-    else:
+    if model_family not in FAMILY_DEFAULTS:
         raise ValueError(f"Unsupported model family in config: {model_family}")
+    defaults = FAMILY_DEFAULTS[model_family].__dict__.copy()
 
     allowed_fields = {field.name for field in fields(ModelConfig)}
     merged = {**defaults, **{key: value for key, value in config.items() if key in allowed_fields}}
@@ -279,28 +278,60 @@ def mask_tokens_for_mlm(
     return masked, labels
 
 
-def make_batch(rows, family: str, tokenizer, config: ModelConfig, generator: torch.Generator) -> dict[str, torch.Tensor]:
-    batch = collate(rows, tokenizer.pad_token_id)
-    if family == "bert":
+def make_batch(rows, objective: str, tokenizer, config: ModelConfig, generator: torch.Generator) -> dict[str, torch.Tensor]:
+    """Training/eval batch with labels. ``rows`` are chunks, or packs (lists of chunks) when ``config.packing``.
+
+    ``_real`` marks real (non-padding) tokens; other ``_`` keys are packing bookkeeping, not model inputs.
+    """
+    if config.packing:
+        batch = build_packed_batch(rows, tokenizer.pad_token_id)
+    else:
+        batch = collate(rows, tokenizer.pad_token_id)
+        batch["_real"] = batch["attention_mask"].bool()
+    if objective == "mlm":
         special = torch.as_tensor(tokenizer.all_special_ids)
-        maskable = batch["attention_mask"].bool() & ~torch.isin(batch["input_ids"], special)
+        maskable = batch["_real"] & ~torch.isin(batch["input_ids"], special)
         batch["input_ids"], batch["labels"] = mask_tokens_for_mlm(
             batch["input_ids"], maskable, tokenizer.mask_token_id, len(tokenizer), config.mlm_probability, generator
         )
+    elif config.packing:
+        # A speech's first token would be predicted from the end of the previous speech: never score it.
+        batch["labels"] = batch["input_ids"].masked_fill(~batch["_real"] | batch["_doc_start"], -100)
     else:
         batch["labels"] = batch["input_ids"].masked_fill(batch["attention_mask"] == 0, -100)
     return batch
 
 
-def build_eval_batches(chunks, family: str, tokenizer, config: ModelConfig, seed: int) -> list[dict[str, torch.Tensor]]:
-    """Fixed evaluation batches; BERT masks are drawn once so every checkpoint sees the same task."""
+def pack_stats(packs: list[list[int]], lengths: np.ndarray, capacity: int) -> dict:
+    tokens = int(sum(int(lengths[i]) for pack in packs for i in pack))
+    return {
+        "pieces": int(sum(len(pack) for pack in packs)),
+        "packs": len(packs),
+        "tokens": tokens,
+        "capacity": capacity,
+        "fill_rate": round(tokens / max(1, len(packs) * capacity), 4),
+        "mean_pieces_per_pack": round(sum(len(pack) for pack in packs) / max(1, len(packs)), 2),
+    }
+
+
+def build_eval_batches(chunks, objective: str, tokenizer, config: ModelConfig, seed: int) -> tuple[list[dict[str, torch.Tensor]], dict | None]:
+    """Fixed evaluation batches; MLM masks are drawn once so every checkpoint sees the same task.
+
+    With packing, the evaluation chunks are packed the same way as training (returns the pack stats too).
+    """
     rows = chunks.with_format(None)[:]["input_ids"]
-    order = sorted(range(len(rows)), key=lambda i: len(rows[i]))
     generator = torch.Generator().manual_seed(seed)
-    return [
-        make_batch([rows[i] for i in order[s : s + config.batch_size]], family, tokenizer, config, generator)
-        for s in range(0, len(order), config.batch_size)
-    ]
+    if config.packing:
+        lengths = np.asarray([len(r) for r in rows])
+        packs = pack_sequences(lengths, config.max_length)
+        units = [[rows[i] for i in pack] for pack in packs]
+        stats = pack_stats(packs, lengths, config.max_length)
+    else:
+        units = [rows[i] for i in sorted(range(len(rows)), key=lambda i: len(rows[i]))]
+        stats = None
+    batches = [make_batch(units[s : s + config.batch_size], objective, tokenizer, config, generator)
+               for s in range(0, len(units), config.batch_size)]
+    return batches, stats
 
 
 def load_lexicon(path: str | Path) -> list[str]:
@@ -320,22 +351,30 @@ def load_lexicon(path: str | Path) -> list[str]:
 
 
 @torch.no_grad()
-def evaluate(model, batches, family: str, device: torch.device, autocast) -> float:
-    """Token-weighted held-out MLM loss (BERT) or perplexity (GPT-2)."""
+def evaluate(model, batches, objective: str, device: torch.device, autocast) -> float:
+    """Token-weighted held-out MLM loss (masked LM) or perplexity (causal LM)."""
     model.eval()
     total_loss, total_tokens = 0.0, 0
     for batch in batches:
         labels = batch["labels"].to(device)
         with autocast():
-            logits = model(input_ids=batch["input_ids"].to(device), attention_mask=batch["attention_mask"].to(device)).logits
-        if family == "gpt2":
+            # No labels passed: ModernBERT's sparse prediction would otherwise return logits for masked tokens only.
+            logits = model(**model_inputs(batch, model, objective, device, labels=False)).logits
+        if objective == "clm":
             logits, labels = logits[:, :-1], labels[:, 1:]
         loss = F.cross_entropy(logits.float().reshape(-1, logits.size(-1)), labels.reshape(-1), ignore_index=-100, reduction="sum")
         total_loss += loss.item()
         total_tokens += int((labels != -100).sum().item())
     model.train()
     nll = total_loss / max(1, total_tokens)
-    return math.exp(nll) if family == "gpt2" else nll
+    return math.exp(nll) if objective == "clm" else nll
+
+
+def split_weight_decay(model) -> tuple[list[str], list[str]]:
+    """Parameter names with and without weight decay: biases and norm weights (1-D tensors) get none."""
+    decay = [n for n, p in model.named_parameters() if p.requires_grad and p.ndim >= 2]
+    no_decay = [n for n, p in model.named_parameters() if p.requires_grad and p.ndim < 2]
+    return decay, no_decay
 
 
 @torch.no_grad()
@@ -374,6 +413,7 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     np.random.seed(config.seed)
     torch.manual_seed(config.seed)
     family = config.model_family
+    objective = config.objective
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if args.require_gpu and device.type != "cuda":
@@ -412,10 +452,17 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     tokenizer = AutoTokenizer.from_pretrained(config.model_name, cache_dir=config.local_cache_dir)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    model_cls = AutoModelForMaskedLM if family == "bert" else AutoModelForCausalLM
-    model = model_cls.from_pretrained(config.model_name, cache_dir=config.local_cache_dir).to(device)
+    model_cls = AutoModelForMaskedLM if objective == "mlm" else AutoModelForCausalLM
+    # Packed batches rely on SDPA/eager attention masks; flash-attention kernels would ignore them.
+    load_kwargs = {"attn_implementation": "sdpa"} if config.packing else {}
+    # Always train float32 weights (bf16 only inside autocast). transformers otherwise keeps a checkpoint's stored
+    # dtype, and Qwen3 is stored in bf16, where updates of size lr x gradient are largely rounded away.
+    model = model_cls.from_pretrained(config.model_name, cache_dir=config.local_cache_dir, dtype=torch.float32,
+                                      **load_kwargs).to(device)
     model.train()
-    logger.info(f"Loaded {type(model).__name__} with {sum(p.numel() for p in model.parameters()):,} parameters onto {device_name}")
+    environment["weights_dtype"] = str(model.dtype)
+    logger.info(f"Loaded {type(model).__name__} with {sum(p.numel() for p in model.parameters()):,} parameters onto {device_name} "
+                f"(weights {model.dtype}, attention {model.config._attn_implementation})")
 
     # ---- data: tokenize with the model's own tokenizer and chunk; every token is accounted for.
     num_proc = config.num_proc or int(os.environ.get("SLURM_CPUS_PER_TASK", "1"))
@@ -462,6 +509,27 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     if train_stats["max_chunk_length"] > config.max_length:
         raise RuntimeError(f"A chunk has {train_stats['max_chunk_length']} tokens, above max_length {config.max_length}.")
 
+    # ---- packing: several chunks per max_length sequence, each isolated from the others
+    pack_info: dict[str, dict] = {}
+    if config.packing:
+        t0 = time.time()
+        train_packs = pack_sequences(train_lengths, config.max_length)
+        pack_info["train"] = pack_stats(train_packs, train_lengths, config.max_length)
+        unit_lengths = np.asarray([sum(int(train_lengths[i]) for i in pack) for pack in train_packs])
+        banner(logger, f"PACKING: training set ({format_duration(time.time() - t0)})", {
+            "chunks": f"{pack_info['train']['pieces']:,}",
+            "packs": f"{pack_info['train']['packs']:,} of up to {config.max_length:,} tokens",
+            "fill rate": f"{pack_info['train']['fill_rate']:.2%} real tokens ({1 - pack_info['train']['fill_rate']:.2%} padding)",
+            "chunks per pack": f"{pack_info['train']['mean_pieces_per_pack']} on average",
+            "isolation": "positions restart per chunk; attention and next-token targets never cross chunks",
+            "check": f"tokens in packs = tokens in chunks ({pack_info['train']['tokens']:,}): OK",
+        })
+        if pack_info["train"]["tokens"] != int(train_lengths.sum()) or pack_info["train"]["pieces"] != len(train_lengths):
+            raise RuntimeError(f"Packing lost chunks or tokens: {pack_info['train']}")
+    else:
+        train_packs = None
+        unit_lengths = train_lengths
+
     eval_sets: dict[str, list[dict[str, torch.Tensor]]] = {}
     eval_stats: dict[str, dict] = {}
     for offset, (name, path) in enumerate((("congressional", config.heldout_data_path), ("general", config.general_data_path)), start=1):
@@ -470,15 +538,18 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
             keep = np.random.default_rng(config.seed + offset).choice(len(chunks), size=config.eval_max_chunks, replace=False)
             chunks = chunks.select(sorted(keep.tolist()))
         stats["chunks_evaluated"] = len(chunks)
-        eval_sets[name] = build_eval_batches(chunks, family, tokenizer, config, seed=config.seed + offset)
+        eval_sets[name], eval_pack_stats = build_eval_batches(chunks, objective, tokenizer, config, seed=config.seed + offset)
         eval_stats[name] = stats
+        if eval_pack_stats:
+            pack_info[f"{name}_eval"] = eval_pack_stats
         logger.info(f"Held-out {name} set: {stats['speeches']:,} texts -> {stats['chunks']:,} chunks; "
                     f"evaluating a fixed {len(chunks):,} of them at every checkpoint")
         if len(chunks) == 0:
             raise RuntimeError(f"Held-out {name} set at {path} produced no chunks.")
 
     # ---- schedule
-    sampler = LengthGroupedBatchSampler(train_lengths, config.batch_size, config.seed)
+    # One sampler unit is a chunk (bucketed by length) or, with packing, a whole pack.
+    sampler = LengthGroupedBatchSampler(unit_lengths, config.batch_size, config.seed)
     batches_per_epoch = len(sampler)
     steps_per_epoch = math.ceil(batches_per_epoch / config.gradient_accumulation_steps)
     epoch_steps = math.ceil(config.epochs * steps_per_epoch)
@@ -488,8 +559,9 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     epochs_planned = round(total_steps * config.gradient_accumulation_steps / batches_per_epoch, 3)
     log_every = max(1, config.log_every)
 
-    decay = [p for n, p in model.named_parameters() if p.requires_grad and not (n.endswith("bias") or "LayerNorm" in n or "ln_" in n)]
-    no_decay = [p for n, p in model.named_parameters() if p.requires_grad and (n.endswith("bias") or "LayerNorm" in n or "ln_" in n)]
+    params = dict(model.named_parameters())
+    decay_names, no_decay_names = split_weight_decay(model)
+    decay, no_decay = [params[n] for n in decay_names], [params[n] for n in no_decay_names]
     optimizer = torch.optim.AdamW(
         [{"params": decay, "weight_decay": config.weight_decay}, {"params": no_decay, "weight_decay": 0.0}], lr=config.learning_rate
     )
@@ -514,15 +586,17 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
         "cli": vars(args),
         "environment": environment,
         "data": {"train": train_stats, **{f"{k}_eval": v for k, v in eval_stats.items()}},
+        "packing": pack_info or None,
         "seed_words": len(seed_words),
         "schedule": schedule_info,
     }
     (run_dir / "run_config.json").write_text(json.dumps(run_config, indent=2, default=str) + "\n", encoding="utf-8")
     banner(logger, "TRAINING PLAN", {
-        "objective": "masked LM (fresh masks every batch)" if family == "bert" else "causal LM",
+        "objective": f"masked LM, {config.mlm_probability:.0%} of tokens (fresh masks every batch)" if objective == "mlm" else "causal LM",
         "epochs": f"{config.epochs} x {steps_per_epoch:,} steps/epoch",
         "total optimizer steps": f"{total_steps:,}" + (f" (capped by --max-steps; full run is {epoch_steps:,})" if total_steps < epoch_steps else ""),
-        "effective batch": f"{config.batch_size * config.gradient_accumulation_steps} chunks",
+        "effective batch": (f"{config.batch_size * config.gradient_accumulation_steps} packs of up to {config.max_length:,} tokens"
+                            if config.packing else f"{config.batch_size * config.gradient_accumulation_steps} chunks"),
         "learning rate": f"{config.learning_rate} ({config.lr_scheduler}, {warmup_steps} warmup steps)",
         "checkpoints": f"{len(schedule)} at steps {schedule}",
         "epoch ends": f"steps {epoch_ends} (evaluated and checkpointed too)" if epoch_ends else "none within this run",
@@ -534,7 +608,7 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
 
     metrics_path = run_dir / "metrics.csv"
     progress_path = run_dir / "progress.json"
-    loss_metric = "mlm_loss" if family == "bert" else "perplexity"
+    loss_metric = "mlm_loss" if objective == "mlm" else "perplexity"
     base_words = embed_words(model, tokenizer, seed_words, device) if seed_words else None
     state = {"step": 0, "micro": 0, "tokens": 0, "eval_seconds": 0.0, "status": "running",
              "rate": None, "eta": None, "recent_loss": None, "lr": config.learning_rate}
@@ -581,8 +655,8 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
         row = {
             "model": family,
             "step": step,
-            "congressional_loss": round(evaluate(model, eval_sets["congressional"], family, device, autocast), 6),
-            "general_loss": round(evaluate(model, eval_sets["general"], family, device, autocast), 6),
+            "congressional_loss": round(evaluate(model, eval_sets["congressional"], objective, device, autocast), 6),
+            "general_loss": round(evaluate(model, eval_sets["general"], objective, device, autocast), 6),
             "mean_seed_drift": "",
             "max_seed_drift": "",
             "loss_metric": loss_metric,
@@ -657,17 +731,21 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
                 epoch, position = epoch + 1, 0
                 epoch_batches = sampler.epoch_batches(epoch)
                 logger.info(f"Starting epoch {epoch + 1} ({batches_per_epoch:,} batches, reshuffled with seed {config.seed + epoch})")
-            rows_in_batch = train_chunks[epoch_batches[position]]["input_ids"]
+            if train_packs is None:
+                rows_in_batch = train_chunks[epoch_batches[position]]["input_ids"]
+            else:
+                batch_packs = [train_packs[i] for i in epoch_batches[position]]
+                fetched = iter(train_chunks[[i for pack in batch_packs for i in pack]]["input_ids"])
+                rows_in_batch = [[next(fetched) for _ in pack] for pack in batch_packs]
             position += 1
-            batch = make_batch(rows_in_batch, family, tokenizer, config, train_generator)
-            batch = {k: v.to(device, non_blocking=True) for k, v in batch.items()}
+            batch = make_batch(rows_in_batch, objective, tokenizer, config, train_generator)
             with autocast():
-                loss = model(**batch).loss
+                loss = model(**model_inputs(batch, model, objective, device)).loss
             if not torch.isfinite(loss):
                 raise RuntimeError(f"Non-finite training loss ({loss.item()}) at step {state['step'] + 1}, epoch {epoch + 1}.")
             (loss / config.gradient_accumulation_steps).backward()
             state["micro"] += 1
-            state["tokens"] += int(batch["attention_mask"].sum().item())
+            state["tokens"] += int(batch["_real"].sum().item())
             window_loss += loss.item()
             window_micro += 1
             ckpt_loss += loss.item()

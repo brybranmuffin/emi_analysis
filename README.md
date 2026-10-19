@@ -73,18 +73,40 @@ The Zenodo archive fetched by `python -m emi_analysis.download_assets` contains 
    # once that finishes: 300 GPU steps per model on that subset; checkpoints go to checkpoints/val10k/<model>/
    sbatch slurm/bert_train.sh --data-root data/val10k --max-steps 300
    sbatch slurm/gpt2_train.sh --data-root data/val10k --max-steps 300
+   sbatch slurm/modernbert_train.sh --data-root data/val10k --max-steps 300
+   sbatch slurm/qwen3_train.sh --data-root data/val10k --max-steps 300
    ```
 
-   Check in each log: the prep summary's `held-out IDs in training set: 0`, train's `Held-out leakage check ... OK`, the TOKEN ACCOUNTING block (tokens in = tokens out + tokens dropped; max chunk length within the limit), falling congressional loss across the checkpoints, and the steps/s on the A100. Steps/s lets you estimate the full run's duration before submitting it. Packing is not used (chunks are batched by length), so there are no cross-speech attention masks to inspect. EMI on the adapted models is not computed by this repo.
+   Check in each log: the prep summary's `held-out IDs in training set: 0`, train's `Held-out leakage check ... OK`, the TOKEN ACCOUNTING block (tokens in = tokens out + tokens dropped; max chunk length within the limit), falling congressional loss across the checkpoints, and the steps/s on the GPU. Steps/s lets you estimate the full run's duration before submitting it. For ModernBERT and Qwen3, also check the PACKING block (fill rate, and tokens in packs = tokens in chunks). EMI on the adapted models is not computed by this repo.
 
-4. **Full training** (one A100 each; extra arguments after the script name are passed to `train.py`):
+4. **Full training** (one GPU each; extra arguments after the script name are passed to `train.py`):
 
    ```bash
    sbatch slurm/bert_train.sh
    sbatch slurm/gpt2_train.sh
+   sbatch slurm/modernbert_train.sh
+   sbatch slurm/qwen3_train.sh
    ```
 
-   Pass `--legacy-truncation` to reproduce the old truncating loader for comparison.
+   Pass `--legacy-truncation` to reproduce the old truncating loader for comparison (BERT/GPT-2).
+
+## Models
+
+| Model | Objective | Input | Per optimizer step | Epochs |
+| --- | --- | --- | --- | --- |
+| `bert-base-uncased` | masked LM, 15% | chunks of 256 tokens, batched by length | 32 chunks (~5.6k tokens) | 2.5 |
+| `gpt2` | causal LM | chunks of 512 tokens, batched by length | 16 chunks (~3.8k tokens) | 1.5 |
+| `answerdotai/ModernBERT-base` | masked LM, 30% (its pretraining rate) | packed sequences of 2,048 tokens | 3 packs (~6k tokens) | 1.25 |
+| `Qwen/Qwen3-0.6B-Base` | causal LM | packed sequences of 2,048 tokens | 2 packs (~4k tokens) | 1.0 |
+
+All four use the same learning rate (5e-5, linear decay, no warmup), data, held-out sets and verification. Weights are always loaded and trained in float32, with bf16 used only for the GPU computation (autocast). Qwen3's checkpoint is stored in bf16 and would otherwise be trained in bf16, where many small updates round away. ModernBERT's 1.25 epochs at 30% masking give the same number of masked-token predictions per token as BERT's 2.5 epochs at 15%.
+
+**Packing (ModernBERT, Qwen3).** These models read far longer inputs than a typical speech, so several speech chunks are packed into each 2,048-token sequence (best-fit, ~99% real tokens). Each chunk behaves exactly as if it were alone:
+- its position ids restart at 0;
+- attention never crosses into another chunk, in ModernBERT's global and sliding-window layers as well as Qwen3's causal layers;
+- for Qwen3, the first token of a chunk is never predicted from the end of the previous one.
+
+`tests/test_packing.py` proves this. A chunk's outputs inside a pack match its outputs alone, and changing its neighbour changes nothing; the real ModernBERT-base and Qwen3-0.6B-Base give identical outputs, a difference of exactly 0. The PACKING block in the log reports the packs, the fill rate, and a check that no chunk or token was lost.
 
 ## Reading a training run
 

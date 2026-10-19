@@ -25,6 +25,7 @@ MODEL_CACHE = REPO_ROOT / ".cache" / "huggingface"
 TINY_MODELS = {
     "bert": "hf-internal-testing/tiny-random-BertForMaskedLM",
     "gpt2": "hf-internal-testing/tiny-random-GPT2LMHeadModel",
+    "modernbert": "hf-internal-testing/tiny-random-ModernBertForMaskedLM",
 }
 
 
@@ -172,9 +173,9 @@ def _make_run_inputs(tmp_path: Path, family: str, **overrides) -> Path:
 
     config = {
         "model_family": family,
-        "model_name": TINY_MODELS[family],
+        "model_name": TINY_MODELS.get(family, ""),
         "max_length": 32,
-        "objective": "mlm" if family == "bert" else "clm",
+        "objective": "mlm" if family in ("bert", "modernbert") else "clm",
         "epochs": 1.0,
         "checkpoint_interval": 0.10,
         "train_data_path": str(tmp_path / "data" / "train.jsonl"),
@@ -382,3 +383,45 @@ def test_sigterm_ends_the_run_with_a_cancelled_summary(tmp_path):
     assert summary["status"] == "cancelled"
     assert summary["steps_completed"] >= 3
     assert json.loads((run_dir / "progress.json").read_text())["status"] == "cancelled"
+
+
+@pytest.mark.parametrize("family", ["modernbert", "qwen3"])
+def test_packed_training_run_records_metrics_and_packing_stats(tmp_path, family, tiny_qwen3_path):
+    overrides = {"packing": True, "max_length": 128, "batch_size": 2, "seed_drift_threshold": 2.0,
+                 "general_loss_max_rel_increase": 100.0}
+    if family == "qwen3":
+        overrides["model_name"] = tiny_qwen3_path
+    else:
+        overrides["mlm_probability"] = 0.3
+    config_path = _make_run_inputs(tmp_path, family, **overrides)
+
+    run_dir = train_main(["--config", str(config_path), "--max-steps", "4", "--checkpoint-every", "2", "--run-name", "k"])
+
+    rows = _read_metrics(run_dir)
+    assert [r["step"] for r in rows] == ["0", "2", "4"]
+    assert rows[0]["loss_metric"] == ("mlm_loss" if family == "modernbert" else "perplexity")
+    assert all(math.isfinite(float(r["congressional_loss"])) for r in rows)
+    assert float(rows[-1]["mean_seed_drift"]) > 0.0
+
+    run_config = json.loads((run_dir / "run_config.json").read_text())
+    train = run_config["data"]["train"]
+    packing = run_config["packing"]["train"]
+    assert train["tokens_in"] == train["tokens_out"] + train["tokens_dropped"]
+    assert packing["tokens"] == train["tokens_out"] + train["special_tokens_per_chunk"] * train["chunks"]
+    assert packing["pieces"] == train["chunks"]
+    assert packing["packs"] < packing["pieces"]
+    assert packing["fill_rate"] > 0.8
+    assert "PACKING" in (run_dir / "train.log").read_text()
+    assert json.loads((run_dir / "run_summary.json").read_text())["status"] == "completed"
+
+
+def test_bf16_checkpoints_are_trained_and_saved_in_float32(tmp_path, tiny_qwen3_bf16_path):
+    from safetensors import safe_open
+
+    config_path = _make_run_inputs(tmp_path, "qwen3", model_name=tiny_qwen3_bf16_path, packing=True, max_length=128,
+                                   batch_size=2, seed_drift_threshold=2.0, general_loss_max_rel_increase=100.0)
+
+    run_dir = train_main(["--config", str(config_path), "--max-steps", "2", "--checkpoint-every", "2", "--run-name", "d"])
+
+    with safe_open(str(run_dir / "checkpoint-2" / "model.safetensors"), "pt") as handle:
+        assert {str(handle.get_slice(k).get_dtype()) for k in handle.keys()} == {"F32"}

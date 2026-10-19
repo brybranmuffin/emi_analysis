@@ -6,6 +6,8 @@ from typing import Literal
 
 BERT_MAX_LENGTH = 256
 GPT2_MAX_LENGTH = 512
+# ModernBERT and Qwen3 read far longer inputs; speeches are packed into sequences of this many tokens.
+PACKED_MAX_LENGTH = 2048
 MIN_CHUNK_TOKENS = 32
 
 DATASET_URL = "https://zenodo.org/records/11127530/files/saroyehun%2FEvidenceMinusIntuition-v0.2.zip"
@@ -19,7 +21,7 @@ HELDOUT_DIR = DATA_DIR / "heldout"
 @dataclass(frozen=True)
 class ModelConfig:
     model_name: str
-    model_family: Literal["bert", "gpt2"]
+    model_family: Literal["bert", "gpt2", "modernbert", "qwen3"]
     max_length: int
     checkpoint_interval: float
     epochs: float
@@ -45,6 +47,8 @@ class ModelConfig:
     min_chunk_tokens: int = MIN_CHUNK_TOKENS
     mlm_probability: float = 0.15
     legacy_truncation: bool = False
+    # Pack several speech pieces into each max_length sequence (speech-isolated); batch_size then counts packs.
+    packing: bool = False
     # Held-out congressional chunks scored at every checkpoint (a fixed random subset, for speed).
     eval_max_chunks: int = 10_000
     log_every: int = 100
@@ -78,4 +82,35 @@ GPT2_CONFIG = ModelConfig(
     tokenizer_name="gpt2",
     output_dir="checkpoints/gpt2",
     local_cache_dir=str(LOCAL_CACHE_DIR),
+)
+
+# Each new model continues with its own pretraining objective (ModernBERT was pretrained masking 30%).
+# batch_size counts packs: 3 x 2048 and 2 x 2048 tokens per step roughly match BERT's and GPT-2's tokens per step.
+MODERNBERT_CONFIG = ModelConfig(
+    model_name="answerdotai/ModernBERT-base",
+    model_family="modernbert",
+    max_length=PACKED_MAX_LENGTH,
+    checkpoint_interval=0.10,
+    epochs=1.25,
+    objective="mlm",
+    tokenizer_name="answerdotai/ModernBERT-base",
+    output_dir="checkpoints/modernbert",
+    local_cache_dir=str(LOCAL_CACHE_DIR),
+    batch_size=3,
+    mlm_probability=0.30,
+    packing=True,
+)
+
+QWEN3_CONFIG = ModelConfig(
+    model_name="Qwen/Qwen3-0.6B-Base",
+    model_family="qwen3",
+    max_length=PACKED_MAX_LENGTH,
+    checkpoint_interval=0.10,
+    epochs=1.0,
+    objective="clm",
+    tokenizer_name="Qwen/Qwen3-0.6B-Base",
+    output_dir="checkpoints/qwen3",
+    local_cache_dir=str(LOCAL_CACHE_DIR),
+    batch_size=2,
+    packing=True,
 )
