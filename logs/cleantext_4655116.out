@@ -1,0 +1,123 @@
+job 4655116 on qgpu3008 at 2026-10-20 14:44:51
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+NVIDIA H100 80GB HBM3, 81559 MiB
+=== clean-text check: bert ===
+2026-10-20 14:44:57 | INFO    | ==============================================================================
+2026-10-20 14:44:57 | INFO    | CLEAN-TEXT CHECK: bert
+2026-10-20 14:44:57 | INFO    |   training run       : checkpoints/bert/run-job9843493
+2026-10-20 14:44:57 | INFO    |   general-domain set : data/heldout/general.jsonl (2,000 paragraphs; 2,000 changed by detokenizing)
+2026-10-20 14:44:57 | INFO    |   example raw        : He had a recurring role in 2003 on two episodes of The Bill , as character " Connor Price " . In 2004 Boulter 
+2026-10-20 14:44:57 | INFO    |   example clean      : He had a recurring role in 2003 on two episodes of The Bill, as character "Connor Price". In 2004 Boulter land
+2026-10-20 14:44:57 | INFO    |   checkpoints scored : step 0, step 877,118
+2026-10-20 14:44:57 | INFO    |   metric             : mlm_loss (same evaluation code and masks as training)
+2026-10-20 14:44:57 | INFO    |   device             : NVIDIA H100 80GB HBM3, bf16 autocast
+2026-10-20 14:44:57 | INFO    |   hostname           : qgpu3008
+2026-10-20 14:44:57 | INFO    |   python             : 3.10.14
+2026-10-20 14:44:57 | INFO    |   python_executable  : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 14:44:57 | INFO    |   slurm_job_id       : 4655116
+2026-10-20 14:44:57 | INFO    |   git_commit         : unknown
+2026-10-20 14:44:57 | INFO    |   started_at         : 2026-10-20T14:44:57
+2026-10-20 14:44:57 | INFO    | ==============================================================================
+2026-10-20 14:45:11 | INFO    | step         0 | wikitext_raw   | mlm_loss 1.9438 | 288,609 tokens | 00:00:06 | training log 1.9438 (matches)
+2026-10-20 14:45:13 | INFO    | step         0 | wikitext_clean | mlm_loss 1.9438 | 288,609 tokens | 00:00:02
+2026-10-20 14:45:15 | INFO    | step   877,118 | wikitext_raw   | mlm_loss 2.2522 | 288,609 tokens | 00:00:02 | training log 2.2522 (matches)
+2026-10-20 14:45:17 | INFO    | step   877,118 | wikitext_clean | mlm_loss 2.2522 | 288,609 tokens | 00:00:02
+2026-10-20 14:45:17 | INFO    | ==============================================================================
+2026-10-20 14:45:17 | INFO    | CLEAN-TEXT CHECK RESULT: bert (step 0 -> step 877,118)
+2026-10-20 14:45:17 | INFO    |   raw WikiText (as in training)            : 1.9438 -> 2.2522 (+15.9% mlm_loss; loss 1.9438 -> 2.2522, +15.9%)
+2026-10-20 14:45:17 | INFO    |   clean WikiText (same paragraphs)         : 1.9438 -> 2.2522 (+15.9% mlm_loss; loss 1.9438 -> 2.2522, +15.9%)
+2026-10-20 14:45:17 | INFO    |   share of the loss rise due to formatting : 0%  (1 - clean rise / raw rise, in loss)
+2026-10-20 14:45:17 | INFO    |   raw scores reproduce training log        : True
+2026-10-20 14:45:17 | INFO    |   results                                  : results/clean_text_check/bert_run-job9843493.csv, results/clean_text_check/bert_run-job9843493.json
+2026-10-20 14:45:17 | INFO    |   elapsed                                  : 00:00:21
+2026-10-20 14:45:17 | INFO    | ==============================================================================
+=== clean-text check: gpt2 ===
+2026-10-20 14:45:22 | INFO    | ==============================================================================
+2026-10-20 14:45:22 | INFO    | CLEAN-TEXT CHECK: gpt2
+2026-10-20 14:45:22 | INFO    |   training run       : checkpoints/gpt2/run-job9843505
+2026-10-20 14:45:22 | INFO    |   general-domain set : data/heldout/general.jsonl (2,000 paragraphs; 2,000 changed by detokenizing)
+2026-10-20 14:45:22 | INFO    |   example raw        : He had a recurring role in 2003 on two episodes of The Bill , as character " Connor Price " . In 2004 Boulter 
+2026-10-20 14:45:22 | INFO    |   example clean      : He had a recurring role in 2003 on two episodes of The Bill, as character "Connor Price". In 2004 Boulter land
+2026-10-20 14:45:22 | INFO    |   checkpoints scored : step 0, step 759,917
+2026-10-20 14:45:22 | INFO    |   metric             : perplexity (same evaluation code and masks as training)
+2026-10-20 14:45:22 | INFO    |   device             : NVIDIA H100 80GB HBM3, bf16 autocast
+2026-10-20 14:45:22 | INFO    |   hostname           : qgpu3008
+2026-10-20 14:45:22 | INFO    |   python             : 3.10.14
+2026-10-20 14:45:22 | INFO    |   python_executable  : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 14:45:22 | INFO    |   slurm_job_id       : 4655116
+2026-10-20 14:45:22 | INFO    |   git_commit         : unknown
+2026-10-20 14:45:22 | INFO    |   started_at         : 2026-10-20T14:45:22
+2026-10-20 14:45:22 | INFO    | ==============================================================================
+2026-10-20 14:45:39 | INFO    | step         0 | wikitext_raw   | perplexity 38.8167 | 293,899 tokens | 00:00:10 | training log 38.8167 (matches)
+2026-10-20 14:45:46 | INFO    | step         0 | wikitext_clean | perplexity 33.2214 | 290,971 tokens | 00:00:07
+2026-10-20 14:45:53 | INFO    | step   759,917 | wikitext_raw   | perplexity 137.8234 | 293,899 tokens | 00:00:06 | training log 137.8234 (matches)
+2026-10-20 14:45:58 | INFO    | step   759,917 | wikitext_clean | perplexity 61.6783 | 290,971 tokens | 00:00:06
+2026-10-20 14:45:58 | INFO    | ==============================================================================
+2026-10-20 14:45:58 | INFO    | CLEAN-TEXT CHECK RESULT: gpt2 (step 0 -> step 759,917)
+2026-10-20 14:45:58 | INFO    |   raw WikiText (as in training)            : 38.8167 -> 137.8234 (+255.1% perplexity; loss 3.6589 -> 4.9260, +34.6%)
+2026-10-20 14:45:58 | INFO    |   clean WikiText (same paragraphs)         : 33.2214 -> 61.6783 (+85.7% perplexity; loss 3.5032 -> 4.1219, +17.7%)
+2026-10-20 14:45:58 | INFO    |   share of the loss rise due to formatting : 51%  (1 - clean rise / raw rise, in loss)
+2026-10-20 14:45:58 | INFO    |   raw scores reproduce training log        : True
+2026-10-20 14:45:58 | INFO    |   results                                  : results/clean_text_check/gpt2_run-job9843505.csv, results/clean_text_check/gpt2_run-job9843505.json
+2026-10-20 14:45:58 | INFO    |   elapsed                                  : 00:00:37
+2026-10-20 14:45:58 | INFO    | ==============================================================================
+=== clean-text check: modernbert ===
+2026-10-20 14:46:03 | INFO    | ==============================================================================
+2026-10-20 14:46:03 | INFO    | CLEAN-TEXT CHECK: modernbert
+2026-10-20 14:46:03 | INFO    |   training run       : checkpoints/modernbert/run-job4518432
+2026-10-20 14:46:03 | INFO    |   general-domain set : data/heldout/general.jsonl (2,000 paragraphs; 2,000 changed by detokenizing)
+2026-10-20 14:46:03 | INFO    |   example raw        : He had a recurring role in 2003 on two episodes of The Bill , as character " Connor Price " . In 2004 Boulter 
+2026-10-20 14:46:03 | INFO    |   example clean      : He had a recurring role in 2003 on two episodes of The Bill, as character "Connor Price". In 2004 Boulter land
+2026-10-20 14:46:03 | INFO    |   checkpoints scored : step 0, step 395,974
+2026-10-20 14:46:03 | INFO    |   metric             : mlm_loss (same evaluation code and masks as training)
+2026-10-20 14:46:03 | INFO    |   device             : NVIDIA H100 80GB HBM3, bf16 autocast
+2026-10-20 14:46:03 | INFO    |   hostname           : qgpu3008
+2026-10-20 14:46:03 | INFO    |   python             : 3.10.14
+2026-10-20 14:46:03 | INFO    |   python_executable  : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 14:46:03 | INFO    |   slurm_job_id       : 4655116
+2026-10-20 14:46:03 | INFO    |   git_commit         : unknown
+2026-10-20 14:46:03 | INFO    |   started_at         : 2026-10-20T14:46:03
+2026-10-20 14:46:03 | INFO    | ==============================================================================
+2026-10-20 14:46:12 | INFO    | step         0 | wikitext_raw   | mlm_loss 1.6539 | 299,733 tokens | 00:00:03 | training log 1.6539 (matches)
+2026-10-20 14:46:14 | INFO    | step         0 | wikitext_clean | mlm_loss 1.6303 | 296,722 tokens | 00:00:02
+2026-10-20 14:46:18 | INFO    | step   395,974 | wikitext_raw   | mlm_loss 2.3098 | 299,733 tokens | 00:00:02 | training log 2.3098 (matches)
+2026-10-20 14:46:20 | INFO    | step   395,974 | wikitext_clean | mlm_loss 1.9621 | 296,722 tokens | 00:00:02
+2026-10-20 14:46:20 | INFO    | ==============================================================================
+2026-10-20 14:46:20 | INFO    | CLEAN-TEXT CHECK RESULT: modernbert (step 0 -> step 395,974)
+2026-10-20 14:46:20 | INFO    |   raw WikiText (as in training)            : 1.6539 -> 2.3098 (+39.7% mlm_loss; loss 1.6539 -> 2.3098, +39.7%)
+2026-10-20 14:46:20 | INFO    |   clean WikiText (same paragraphs)         : 1.6303 -> 1.9621 (+20.4% mlm_loss; loss 1.6303 -> 1.9621, +20.4%)
+2026-10-20 14:46:20 | INFO    |   share of the loss rise due to formatting : 49%  (1 - clean rise / raw rise, in loss)
+2026-10-20 14:46:20 | INFO    |   raw scores reproduce training log        : True
+2026-10-20 14:46:20 | INFO    |   results                                  : results/clean_text_check/modernbert_run-job4518432.csv, results/clean_text_check/modernbert_run-job4518432.json
+2026-10-20 14:46:20 | INFO    |   elapsed                                  : 00:00:18
+2026-10-20 14:46:20 | INFO    | ==============================================================================
+=== clean-text check: qwen3 ===
+2026-10-20 14:46:25 | INFO    | ==============================================================================
+2026-10-20 14:46:25 | INFO    | CLEAN-TEXT CHECK: qwen3
+2026-10-20 14:46:25 | INFO    |   training run       : checkpoints/qwen3/run-job4518430
+2026-10-20 14:46:25 | INFO    |   general-domain set : data/heldout/general.jsonl (2,000 paragraphs; 2,000 changed by detokenizing)
+2026-10-20 14:46:25 | INFO    |   example raw        : He had a recurring role in 2003 on two episodes of The Bill , as character " Connor Price " . In 2004 Boulter 
+2026-10-20 14:46:25 | INFO    |   example clean      : He had a recurring role in 2003 on two episodes of The Bill, as character "Connor Price". In 2004 Boulter land
+2026-10-20 14:46:25 | INFO    |   checkpoints scored : step 0, step 481,486
+2026-10-20 14:46:25 | INFO    |   metric             : perplexity (same evaluation code and masks as training)
+2026-10-20 14:46:25 | INFO    |   device             : NVIDIA H100 80GB HBM3, bf16 autocast
+2026-10-20 14:46:25 | INFO    |   hostname           : qgpu3008
+2026-10-20 14:46:25 | INFO    |   python             : 3.10.14
+2026-10-20 14:46:25 | INFO    |   python_executable  : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 14:46:25 | INFO    |   slurm_job_id       : 4655116
+2026-10-20 14:46:25 | INFO    |   git_commit         : unknown
+2026-10-20 14:46:25 | INFO    |   started_at         : 2026-10-20T14:46:25
+2026-10-20 14:46:25 | INFO    | ==============================================================================
+2026-10-20 14:46:48 | INFO    | step         0 | wikitext_raw   | perplexity 18.4794 | 312,552 tokens | 00:00:16 | training log 18.4794 (matches)
+2026-10-20 14:47:03 | INFO    | step         0 | wikitext_clean | perplexity 17.6518 | 308,717 tokens | 00:00:15
+2026-10-20 14:47:21 | INFO    | step   481,486 | wikitext_raw   | perplexity 94.0760 | 312,552 tokens | 00:00:15 | training log 94.0760 (matches)
+2026-10-20 14:47:36 | INFO    | step   481,486 | wikitext_clean | perplexity 42.0640 | 308,717 tokens | 00:00:15
+2026-10-20 14:47:36 | INFO    | ==============================================================================
+2026-10-20 14:47:36 | INFO    | CLEAN-TEXT CHECK RESULT: qwen3 (step 0 -> step 481,486)
+2026-10-20 14:47:36 | INFO    |   raw WikiText (as in training)            : 18.4794 -> 94.0760 (+409.1% perplexity; loss 2.9167 -> 4.5441, +55.8%)
+2026-10-20 14:47:36 | INFO    |   clean WikiText (same paragraphs)         : 17.6518 -> 42.0640 (+138.3% perplexity; loss 2.8708 -> 3.7392, +30.2%)
+2026-10-20 14:47:36 | INFO    |   share of the loss rise due to formatting : 47%  (1 - clean rise / raw rise, in loss)
+2026-10-20 14:47:36 | INFO    |   raw scores reproduce training log        : True
+2026-10-20 14:47:36 | INFO    |   results                                  : results/clean_text_check/qwen3_run-job4518430.csv, results/clean_text_check/qwen3_run-job4518430.json
+2026-10-20 14:47:36 | INFO    |   elapsed                                  : 00:01:12
+2026-10-20 14:47:36 | INFO    | ==============================================================================

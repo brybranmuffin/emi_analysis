@@ -1,0 +1,35 @@
+{
+  "model": "gpt2",
+  "run_dir": "checkpoints/gpt2/run-job9843505",
+  "final_step": 759917,
+  "metric": "perplexity",
+  "rise": {
+    "wikitext_raw": {
+      "step0": 38.816692,
+      "final": 137.823362,
+      "change_pct": 255.06,
+      "loss_step0": 3.65885,
+      "loss_final": 4.925973,
+      "loss_change": 1.267123,
+      "loss_change_pct": 34.63
+    },
+    "wikitext_clean": {
+      "step0": 33.221359,
+      "final": 61.678285,
+      "change_pct": 85.66,
+      "loss_step0": 3.503193,
+      "loss_final": 4.121932,
+      "loss_change": 0.618739,
+      "loss_change_pct": 17.66
+    }
+  },
+  "share_of_rise_from_formatting": 0.5117,
+  "raw_reproduces_training_log": true,
+  "outputs": {
+    "csv": "results/clean_text_check/gpt2_run-job9843505.csv",
+    "json": "results/clean_text_check/gpt2_run-job9843505.json",
+    "log": "results/clean_text_check/gpt2_check.log"
+  },
+  "finished_at": "2026-10-20T14:45:58",
+  "elapsed_seconds": 36.8
+}

@@ -1,0 +1,35 @@
+{
+  "model": "bert",
+  "run_dir": "checkpoints/bert/run-job9843493",
+  "final_step": 877118,
+  "metric": "mlm_loss",
+  "rise": {
+    "wikitext_raw": {
+      "step0": 1.943815,
+      "final": 2.252198,
+      "change_pct": 15.86,
+      "loss_step0": 1.943815,
+      "loss_final": 2.252198,
+      "loss_change": 0.308383,
+      "loss_change_pct": 15.86
+    },
+    "wikitext_clean": {
+      "step0": 1.943815,
+      "final": 2.252198,
+      "change_pct": 15.86,
+      "loss_step0": 1.943815,
+      "loss_final": 2.252198,
+      "loss_change": 0.308383,
+      "loss_change_pct": 15.86
+    }
+  },
+  "share_of_rise_from_formatting": 0.0,
+  "raw_reproduces_training_log": true,
+  "outputs": {
+    "csv": "results/clean_text_check/bert_run-job9843493.csv",
+    "json": "results/clean_text_check/bert_run-job9843493.json",
+    "log": "results/clean_text_check/bert_check.log"
+  },
+  "finished_at": "2026-10-20T14:45:17",
+  "elapsed_seconds": 20.7
+}

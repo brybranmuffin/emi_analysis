@@ -1,0 +1,35 @@
+{
+  "model": "qwen3",
+  "run_dir": "checkpoints/qwen3/run-job4518430",
+  "final_step": 481486,
+  "metric": "perplexity",
+  "rise": {
+    "wikitext_raw": {
+      "step0": 18.479428,
+      "final": 94.076038,
+      "change_pct": 409.09,
+      "loss_step0": 2.916658,
+      "loss_final": 4.544103,
+      "loss_change": 1.627445,
+      "loss_change_pct": 55.8
+    },
+    "wikitext_clean": {
+      "step0": 17.651805,
+      "final": 42.064,
+      "change_pct": 138.3,
+      "loss_step0": 2.870838,
+      "loss_final": 3.739192,
+      "loss_change": 0.868354,
+      "loss_change_pct": 30.25
+    }
+  },
+  "share_of_rise_from_formatting": 0.4664,
+  "raw_reproduces_training_log": true,
+  "outputs": {
+    "csv": "results/clean_text_check/qwen3_run-job4518430.csv",
+    "json": "results/clean_text_check/qwen3_run-job4518430.json",
+    "log": "results/clean_text_check/qwen3_check.log"
+  },
+  "finished_at": "2026-10-20T14:47:36",
+  "elapsed_seconds": 71.7
+}

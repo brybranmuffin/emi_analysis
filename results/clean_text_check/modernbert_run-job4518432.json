@@ -1,0 +1,35 @@
+{
+  "model": "modernbert",
+  "run_dir": "checkpoints/modernbert/run-job4518432",
+  "final_step": 395974,
+  "metric": "mlm_loss",
+  "rise": {
+    "wikitext_raw": {
+      "step0": 1.653862,
+      "final": 2.309826,
+      "change_pct": 39.66,
+      "loss_step0": 1.653862,
+      "loss_final": 2.309826,
+      "loss_change": 0.655964,
+      "loss_change_pct": 39.66
+    },
+    "wikitext_clean": {
+      "step0": 1.63027,
+      "final": 1.96213,
+      "change_pct": 20.36,
+      "loss_step0": 1.63027,
+      "loss_final": 1.96213,
+      "loss_change": 0.33186,
+      "loss_change_pct": 20.36
+    }
+  },
+  "share_of_rise_from_formatting": 0.4941,
+  "raw_reproduces_training_log": true,
+  "outputs": {
+    "csv": "results/clean_text_check/modernbert_run-job4518432.csv",
+    "json": "results/clean_text_check/modernbert_run-job4518432.json",
+    "log": "results/clean_text_check/modernbert_check.log"
+  },
+  "finished_at": "2026-10-20T14:46:20",
+  "elapsed_seconds": 18.3
+}
