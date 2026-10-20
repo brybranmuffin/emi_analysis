@@ -1,0 +1,52 @@
+#!/bin/bash
+#SBATCH --job-name=emi-cleantext
+#SBATCH --account=e32706
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=8
+#SBATCH --gres=gpu:h100:1
+#SBATCH --time=02:00:00
+#SBATCH --mem=64G
+#SBATCH --output=logs/cleantext_%j.out
+#SBATCH --error=logs/cleantext_%j.err
+#SBATCH --partition=gengpu
+#SBATCH --mail-user=bettencourt@u.northwestern.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+# Clean-text check (evaluation only): scores the general-domain set raw and detokenized for the unadapted model
+# and the latest completed run of each model. Results: results/clean_text_check/.
+#   sbatch slurm/clean_text_check.sh                          # all four models, step 0 + final checkpoint
+#   sbatch slurm/clean_text_check.sh qwen3 gpt2               # selected models
+#   sbatch slurm/clean_text_check.sh qwen3 --all-checkpoints  # extra flags are passed to every model
+
+set -euo pipefail
+
+cd "$SLURM_SUBMIT_DIR" || cd "$(dirname "$0")/.."
+mkdir -p logs results/clean_text_check .cache/huggingface
+
+export PYTHONUNBUFFERED=1
+export HF_HUB_DISABLE_PROGRESS_BARS=1
+export TOKENIZERS_PARALLELISM=false
+
+if [[ -f .venv/bin/activate ]]; then
+  source .venv/bin/activate
+else
+  echo "WARNING: no .venv in $PWD; using $(command -v python)" >&2
+fi
+echo "job ${SLURM_JOB_ID:-local} on $(hostname) at $(date '+%Y-%m-%d %H:%M:%S')"
+echo "python $(command -v python) ($(python --version 2>&1)); git $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader || echo "nvidia-smi unavailable"
+
+models=()
+flags=()
+for arg in "$@"; do
+  if [[ "$arg" == --* ]]; then flags+=("$arg"); else models+=("$arg"); fi
+done
+[[ ${#models[@]} -eq 0 ]] && models=(bert gpt2 modernbert qwen3)
+
+status=0
+for model in "${models[@]}"; do
+  echo "=== clean-text check: $model ==="
+  python -m emi_analysis.clean_text_check --model "$model" --require-gpu "${flags[@]+"${flags[@]}"}" || status=1
+done
+exit $status

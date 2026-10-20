@@ -108,6 +108,18 @@ All four use the same learning rate (5e-5, linear decay, no warmup), data, held-
 
 `tests/test_packing.py` proves this. A chunk's outputs inside a pack match its outputs alone, and changing its neighbour changes nothing; the real ModernBERT-base and Qwen3-0.6B-Base give identical outputs, a difference of exactly 0. The PACKING block in the log reports the packs, the fill rate, and a check that no chunk or token was lost.
 
+## Clean-text check (is the general-domain rise real?)
+
+The general-domain set is raw WikiText, which spaces out punctuation ("film , television", "player 's"). Byte-level tokenizers (GPT-2, ModernBERT, Qwen3) see that spacing, so part of a measured general-domain rise can be formatting rather than forgetting. The check scores the same paragraphs raw and detokenized, for the unadapted model and the final checkpoint, using the training evaluation code. The raw scores therefore reproduce the training log.
+
+```bash
+sbatch slurm/clean_text_check.sh                          # all four models (latest completed run of each)
+sbatch slurm/clean_text_check.sh qwen3 --all-checkpoints  # one model, every checkpoint
+python -m emi_analysis.clean_text_check --model gpt2 --run-dir checkpoints/gpt2/run-job9843505
+```
+
+Each model gets `results/clean_text_check/<model>_<run>.csv`, with one row per checkpoint and text set, and a `.json` summary. The summary holds the rise on raw and clean text and the share of the raw loss rise explained by formatting. BERT is a control: its tokenizer ignores the spacing, so its raw and clean scores are identical.
+
 ## Reading a training run
 
 Each run gets its own folder, `checkpoints/<model>/run-job<SLURM_JOB_ID>/` (or `checkpoints/<data-root name>/<model>/...` with `--data-root`), so reruns never mix with older checkpoints:

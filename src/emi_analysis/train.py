@@ -397,6 +397,31 @@ def seed_drift(start: torch.Tensor, now: torch.Tensor) -> tuple[float, float]:
 # ------------------------------------------------------------------ training
 
 
+def autocast_for(config: ModelConfig, device: torch.device):
+    """bf16 autocast context factory on GPUs that support it (weights stay float32); a no-op otherwise."""
+    use_bf16 = config.bf16 and device.type == "cuda" and torch.cuda.is_bf16_supported()
+    if device.type == "cuda":
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+    return ((lambda: torch.autocast("cuda", dtype=torch.bfloat16)) if use_bf16 else contextlib.nullcontext), use_bf16
+
+
+def load_model_and_tokenizer(config: ModelConfig, name_or_path: str, device: torch.device):
+    """Load a base model (hub name) or a saved checkpoint exactly as training does."""
+    from transformers import AutoModelForCausalLM, AutoModelForMaskedLM, AutoTokenizer
+
+    tokenizer = AutoTokenizer.from_pretrained(name_or_path, cache_dir=config.local_cache_dir)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    model_cls = AutoModelForMaskedLM if config.objective == "mlm" else AutoModelForCausalLM
+    # Packed batches rely on SDPA/eager attention masks; flash-attention kernels would ignore them.
+    load_kwargs = {"attn_implementation": "sdpa"} if config.packing else {}
+    # Always train float32 weights (bf16 only inside autocast). transformers otherwise keeps a checkpoint's stored
+    # dtype, and Qwen3 is stored in bf16, where updates of size lr x gradient are largely rounded away.
+    model = model_cls.from_pretrained(name_or_path, cache_dir=config.local_cache_dir, dtype=torch.float32, **load_kwargs)
+    return model.to(device), tokenizer
+
+
 def _change(value: float, base: float) -> str:
     return f"{value:.4f} ({(value - base) / base:+.2%} vs step 0)" if base else f"{value:.4f}"
 
@@ -404,7 +429,7 @@ def _change(value: float, base: float) -> str:
 def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     import datasets
     import transformers
-    from transformers import AutoModelForCausalLM, AutoModelForMaskedLM, AutoTokenizer, get_scheduler
+    from transformers import get_scheduler
 
     started = time.time()
     datasets.disable_progress_bars()
@@ -418,11 +443,7 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if args.require_gpu and device.type != "cuda":
         raise RuntimeError("--require-gpu was set but CUDA is not available on this node.")
-    use_bf16 = config.bf16 and device.type == "cuda" and torch.cuda.is_bf16_supported()
-    if device.type == "cuda":
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cudnn.allow_tf32 = True
-    autocast = (lambda: torch.autocast("cuda", dtype=torch.bfloat16)) if use_bf16 else contextlib.nullcontext
+    autocast, use_bf16 = autocast_for(config, device)
     device_name = torch.cuda.get_device_name(device) if device.type == "cuda" else "cpu"
     environment = {**environment_info(), "device": device_name, "precision": "bf16 autocast" if use_bf16 else "fp32",
                    "torch": torch.__version__, "transformers": transformers.__version__}
@@ -449,16 +470,7 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     else:
         logger.info(f"Loaded {len(seed_words)} seed words from {lexicon_paths[0]} and {lexicon_paths[1]}")
 
-    tokenizer = AutoTokenizer.from_pretrained(config.model_name, cache_dir=config.local_cache_dir)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    model_cls = AutoModelForMaskedLM if objective == "mlm" else AutoModelForCausalLM
-    # Packed batches rely on SDPA/eager attention masks; flash-attention kernels would ignore them.
-    load_kwargs = {"attn_implementation": "sdpa"} if config.packing else {}
-    # Always train float32 weights (bf16 only inside autocast). transformers otherwise keeps a checkpoint's stored
-    # dtype, and Qwen3 is stored in bf16, where updates of size lr x gradient are largely rounded away.
-    model = model_cls.from_pretrained(config.model_name, cache_dir=config.local_cache_dir, dtype=torch.float32,
-                                      **load_kwargs).to(device)
+    model, tokenizer = load_model_and_tokenizer(config, config.model_name, device)
     model.train()
     environment["weights_dtype"] = str(model.dtype)
     logger.info(f"Loaded {type(model).__name__} with {sum(p.numel() for p in model.parameters()):,} parameters onto {device_name} "
