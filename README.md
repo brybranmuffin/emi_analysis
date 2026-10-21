@@ -120,6 +120,21 @@ python -m emi_analysis.clean_text_check --model gpt2 --run-dir checkpoints/gpt2/
 
 Each model gets `results/clean_text_check/<model>_<run>.csv`, with one row per checkpoint and text set, and a `.json` summary. The summary holds the rise on raw and clean text and the share of the raw loss rise explained by formatting. BERT is a control: its tokenizer ignores the spacing, so its raw and clean scores are identical.
 
+## Seed-axis check and the adaptation table
+
+Training's seed-drift number measures how far each seed word's embedding moved. A shift shared by all embeddings inflates it without changing what EMI uses. `emi_analysis.seed_axis_check` re-embeds the seed words at step 0 and at every checkpoint and measures:
+- **axis cosine:** does the evidence-minus-intuition direction still point the same way?
+- **relational stability:** do the seed words keep the same pairwise-similarity pattern?
+- **seed order along the axis**;
+- **pole separation:** is each word still closer to its own leave-one-out pole?
+
+It then joins these with congressional loss and clean general-domain loss into one table per checkpoint, `results/seed_axis_check/<model>_<run>.csv`. Each checkpoint gets a provisional verdict: `stable`, `watch` or `moved`. The recomputed raw drift is checked against the training log.
+
+```bash
+sbatch slurm/adaptation_check.sh               # all four models: clean-text check on every checkpoint, then seed-axis check
+sbatch slurm/adaptation_check.sh qwen3         # one model
+```
+
 ## Reading a training run
 
 Each run gets its own folder, `checkpoints/<model>/run-job<SLURM_JOB_ID>/` (or `checkpoints/<data-root name>/<model>/...` with `--data-root`), so reruns never mix with older checkpoints:

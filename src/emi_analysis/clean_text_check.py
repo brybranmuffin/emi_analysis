@@ -113,6 +113,9 @@ def pct(new: float, old: float) -> float:
 
 
 def run_check(args: argparse.Namespace) -> dict:
+    import datasets
+
+    datasets.disable_progress_bars()
     started = time.time()
     config = parse_config(args.config or f"configs/{args.model}_continued_pretraining.json")
     run_dir = Path(args.run_dir) if args.run_dir else latest_completed_run(Path(config.output_dir))
