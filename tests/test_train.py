@@ -425,3 +425,25 @@ def test_bf16_checkpoints_are_trained_and_saved_in_float32(tmp_path, tiny_qwen3_
 
     with safe_open(str(run_dir / "checkpoint-2" / "model.safetensors"), "pt") as handle:
         assert {str(handle.get_slice(k).get_dtype()) for k in handle.keys()} == {"F32"}
+
+
+def test_continuation_starts_from_checkpoint_with_its_own_schedule(tmp_path):
+    config_path = _make_run_inputs(tmp_path, "bert", seed_drift_threshold=2.0, general_loss_max_rel_increase=100.0)
+    first = train_main(["--config", str(config_path), "--max-steps", "4", "--checkpoint-every", "2", "--run-name", "first"])
+    checkpoint = first / "checkpoint-4"
+
+    cont = train_main(["--config", str(config_path), "--init-from", str(checkpoint), "--output-dir", str(tmp_path / "cont"),
+                       "--epochs", "2", "--learning-rate", "2e-5", "--warmup-ratio", "0.25", "--shuffle-seed", "7",
+                       "--max-steps", "4", "--checkpoint-every", "2", "--run-name", "c"])
+
+    original_final, cont_start = _read_metrics(first)[-1], _read_metrics(cont)[0]
+    # Same weights, same fixed evaluation set and masks: the continuation's step 0 is the original run's last evaluation.
+    assert cont_start["congressional_loss"] == original_final["congressional_loss"]
+    assert cont_start["general_loss"] == original_final["general_loss"]
+    run_config = json.loads((cont / "run_config.json").read_text())
+    assert run_config["init_from"] == str(checkpoint)
+    assert run_config["config"]["learning_rate"] == 2e-5
+    assert run_config["config"]["warmup_ratio"] == 0.25
+    assert run_config["config"]["epochs"] == 2.0
+    assert run_config["schedule"]["shuffle_seed"] == 7
+    assert run_config["schedule"]["warmup_steps"] == 1

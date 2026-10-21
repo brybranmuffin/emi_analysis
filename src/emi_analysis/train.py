@@ -84,6 +84,13 @@ def build_cli() -> argparse.ArgumentParser:
     parser.add_argument("--require-gpu", action="store_true", help="Fail instead of falling back to CPU.")
     parser.add_argument("--legacy-truncation", action="store_true", help="Reproduce the old loader: keep only the first window of each speech.")
     parser.add_argument("--allow-missing-lexicons", action="store_true", help="Smoke tests only: skip seed drift if lexicons are missing.")
+    parser.add_argument("--init-from", type=str, default=None,
+                        help="Continue training from a saved checkpoint instead of the base model (fresh optimizer and schedule).")
+    parser.add_argument("--epochs", type=float, default=None, help="Override the config's epochs.")
+    parser.add_argument("--learning-rate", type=float, default=None, help="Override the config's peak learning rate.")
+    parser.add_argument("--warmup-ratio", type=float, default=None, help="Override the config's warmup fraction.")
+    parser.add_argument("--shuffle-seed", type=int, default=None,
+                        help="Seed for training order and training masks only (default: config seed). Evaluation stays fixed.")
     parser.add_argument(
         "--stop-on-flag",
         action=argparse.BooleanOptionalAction,
@@ -448,7 +455,8 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
     environment = {**environment_info(), "device": device_name, "precision": "bf16 autocast" if use_bf16 else "fp32",
                    "torch": torch.__version__, "transformers": transformers.__version__}
     banner(logger, f"EMI continued pretraining: {family} ({config.model_name})",
-           {"run directory": run_dir, "config file": args.config, **environment})
+           {"run directory": run_dir, "config file": args.config,
+            "initialised from": args.init_from or f"{config.model_name} (base model)", **environment})
     if device.type != "cuda":
         logger.warning("Training on CPU. This is only reasonable for smoke tests.")
 
@@ -561,7 +569,8 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
 
     # ---- schedule
     # One sampler unit is a chunk (bucketed by length) or, with packing, a whole pack.
-    sampler = LengthGroupedBatchSampler(unit_lengths, config.batch_size, config.seed)
+    shuffle_seed = config.seed if args.shuffle_seed is None else args.shuffle_seed
+    sampler = LengthGroupedBatchSampler(unit_lengths, config.batch_size, shuffle_seed)
     batches_per_epoch = len(sampler)
     steps_per_epoch = math.ceil(batches_per_epoch / config.gradient_accumulation_steps)
     epoch_steps = math.ceil(config.epochs * steps_per_epoch)
@@ -592,10 +601,12 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
         "epoch_end_steps": epoch_ends,
         "epochs_planned": epochs_planned,
         "warmup_steps": warmup_steps,
+        "shuffle_seed": shuffle_seed,
     }
     run_config = {
         "config": asdict(config),
         "cli": vars(args),
+        "init_from": args.init_from,
         "environment": environment,
         "data": {"train": train_stats, **{f"{k}_eval": v for k, v in eval_stats.items()}},
         "packing": pack_info or None,
@@ -718,7 +729,7 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
         cancel["signal"] = signal.Signals(signum).name
 
     previous_handler = signal.signal(signal.SIGTERM, request_cancel)
-    train_generator = torch.Generator().manual_seed(config.seed)
+    train_generator = torch.Generator().manual_seed(shuffle_seed)
     epoch, position = 0, 0
     epoch_batches = sampler.epoch_batches(epoch)
     logger.info(f"Starting epoch 1 ({batches_per_epoch:,} batches)")
@@ -742,7 +753,7 @@ def run(config: ModelConfig, args: argparse.Namespace, run_dir: Path) -> str:
             if position >= len(epoch_batches):
                 epoch, position = epoch + 1, 0
                 epoch_batches = sampler.epoch_batches(epoch)
-                logger.info(f"Starting epoch {epoch + 1} ({batches_per_epoch:,} batches, reshuffled with seed {config.seed + epoch})")
+                logger.info(f"Starting epoch {epoch + 1} ({batches_per_epoch:,} batches, reshuffled with seed {shuffle_seed + epoch})")
             if train_packs is None:
                 rows_in_batch = train_chunks[epoch_batches[position]]["input_ids"]
             else:
@@ -895,6 +906,10 @@ def main(argv: list[str] | None = None) -> Path:
         "num_proc": args.num_proc,
         "legacy_truncation": True if args.legacy_truncation else None,
         "stop_on_flag": args.stop_on_flag,
+        "epochs": args.epochs,
+        "learning_rate": args.learning_rate,
+        "warmup_ratio": args.warmup_ratio,
+        "model_name": args.init_from,
     }
     if args.data_root:
         root = Path(args.data_root)
