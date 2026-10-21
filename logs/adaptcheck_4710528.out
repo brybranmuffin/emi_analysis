@@ -1,0 +1,346 @@
+job 4710528 on qgpu3003 at 2026-10-20 22:21:15
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+NVIDIA H100 80GB HBM3, 81559 MiB
+=== adaptation check: bert ===
+2026-10-20 22:21:21 | INFO    | ==============================================================================
+2026-10-20 22:21:21 | INFO    | CLEAN-TEXT CHECK: bert
+2026-10-20 22:21:21 | INFO    |   training run       : checkpoints/bert/run-job9843493
+2026-10-20 22:21:21 | INFO    |   general-domain set : data/heldout/general.jsonl (2,000 paragraphs; 2,000 changed by detokenizing)
+2026-10-20 22:21:21 | INFO    |   example raw        : He had a recurring role in 2003 on two episodes of The Bill , as character " Connor Price " . In 2004 Boulter 
+2026-10-20 22:21:21 | INFO    |   example clean      : He had a recurring role in 2003 on two episodes of The Bill, as character "Connor Price". In 2004 Boulter land
+2026-10-20 22:21:21 | INFO    |   checkpoints scored : step 0, step 87,712, step 175,424, step 263,135, step 350,847, step 438,559, step 526,271, step 613,983, step 701,694, step 789,406, step 877,118
+2026-10-20 22:21:21 | INFO    |   metric             : mlm_loss (same evaluation code and masks as training)
+2026-10-20 22:21:21 | INFO    |   device             : NVIDIA H100 80GB HBM3, bf16 autocast
+2026-10-20 22:21:21 | INFO    |   hostname           : qgpu3003
+2026-10-20 22:21:21 | INFO    |   python             : 3.10.14
+2026-10-20 22:21:21 | INFO    |   python_executable  : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 22:21:21 | INFO    |   slurm_job_id       : 4710528
+2026-10-20 22:21:21 | INFO    |   git_commit         : unknown
+2026-10-20 22:21:21 | INFO    |   started_at         : 2026-10-20T22:21:21
+2026-10-20 22:21:21 | INFO    | ==============================================================================
+2026-10-20 22:21:31 | INFO    | step         0 | wikitext_raw   | mlm_loss 1.9438 | 288,609 tokens | 00:00:04 | training log 1.9438 (matches)
+2026-10-20 22:21:33 | INFO    | step         0 | wikitext_clean | mlm_loss 1.9438 | 288,609 tokens | 00:00:02
+2026-10-20 22:21:36 | INFO    | step    87,712 | wikitext_raw   | mlm_loss 2.2351 | 288,609 tokens | 00:00:02 | training log 2.2351 (matches)
+2026-10-20 22:21:37 | INFO    | step    87,712 | wikitext_clean | mlm_loss 2.2351 | 288,609 tokens | 00:00:02
+2026-10-20 22:21:40 | INFO    | step   175,424 | wikitext_raw   | mlm_loss 2.3356 | 288,609 tokens | 00:00:02 | training log 2.3356 (matches)
+2026-10-20 22:21:42 | INFO    | step   175,424 | wikitext_clean | mlm_loss 2.3356 | 288,609 tokens | 00:00:02
+2026-10-20 22:21:44 | INFO    | step   263,135 | wikitext_raw   | mlm_loss 2.3517 | 288,609 tokens | 00:00:02 | training log 2.3517 (matches)
+2026-10-20 22:21:46 | INFO    | step   263,135 | wikitext_clean | mlm_loss 2.3517 | 288,609 tokens | 00:00:02
+2026-10-20 22:21:49 | INFO    | step   350,847 | wikitext_raw   | mlm_loss 2.3670 | 288,609 tokens | 00:00:02 | training log 2.3670 (matches)
+2026-10-20 22:21:51 | INFO    | step   350,847 | wikitext_clean | mlm_loss 2.3670 | 288,609 tokens | 00:00:02
+2026-10-20 22:21:53 | INFO    | step   438,559 | wikitext_raw   | mlm_loss 2.3644 | 288,609 tokens | 00:00:02 | training log 2.3644 (matches)
+2026-10-20 22:21:55 | INFO    | step   438,559 | wikitext_clean | mlm_loss 2.3644 | 288,609 tokens | 00:00:02
+2026-10-20 22:21:57 | INFO    | step   526,271 | wikitext_raw   | mlm_loss 2.3389 | 288,609 tokens | 00:00:02 | training log 2.3389 (matches)
+2026-10-20 22:21:59 | INFO    | step   526,271 | wikitext_clean | mlm_loss 2.3389 | 288,609 tokens | 00:00:02
+2026-10-20 22:22:02 | INFO    | step   613,983 | wikitext_raw   | mlm_loss 2.3185 | 288,609 tokens | 00:00:02 | training log 2.3185 (matches)
+2026-10-20 22:22:04 | INFO    | step   613,983 | wikitext_clean | mlm_loss 2.3185 | 288,609 tokens | 00:00:02
+2026-10-20 22:22:06 | INFO    | step   701,694 | wikitext_raw   | mlm_loss 2.2901 | 288,609 tokens | 00:00:02 | training log 2.2901 (matches)
+2026-10-20 22:22:08 | INFO    | step   701,694 | wikitext_clean | mlm_loss 2.2901 | 288,609 tokens | 00:00:02
+2026-10-20 22:22:10 | INFO    | step   789,406 | wikitext_raw   | mlm_loss 2.2673 | 288,609 tokens | 00:00:02 | training log 2.2673 (matches)
+2026-10-20 22:22:12 | INFO    | step   789,406 | wikitext_clean | mlm_loss 2.2673 | 288,609 tokens | 00:00:02
+2026-10-20 22:22:15 | INFO    | step   877,118 | wikitext_raw   | mlm_loss 2.2522 | 288,609 tokens | 00:00:02 | training log 2.2522 (matches)
+2026-10-20 22:22:17 | INFO    | step   877,118 | wikitext_clean | mlm_loss 2.2522 | 288,609 tokens | 00:00:02
+2026-10-20 22:22:17 | INFO    | ==============================================================================
+2026-10-20 22:22:17 | INFO    | CLEAN-TEXT CHECK RESULT: bert (step 0 -> step 877,118)
+2026-10-20 22:22:17 | INFO    |   raw WikiText (as in training)            : 1.9438 -> 2.2522 (+15.9% mlm_loss; loss 1.9438 -> 2.2522, +15.9%)
+2026-10-20 22:22:17 | INFO    |   clean WikiText (same paragraphs)         : 1.9438 -> 2.2522 (+15.9% mlm_loss; loss 1.9438 -> 2.2522, +15.9%)
+2026-10-20 22:22:17 | INFO    |   share of the loss rise due to formatting : 0%  (1 - clean rise / raw rise, in loss)
+2026-10-20 22:22:17 | INFO    |   raw scores reproduce training log        : True
+2026-10-20 22:22:17 | INFO    |   results                                  : results/clean_text_check/bert_run-job9843493.csv, results/clean_text_check/bert_run-job9843493.json
+2026-10-20 22:22:17 | INFO    |   elapsed                                  : 00:00:57
+2026-10-20 22:22:17 | INFO    | ==============================================================================
+2026-10-20 22:22:21 | INFO    | ==============================================================================
+2026-10-20 22:22:21 | INFO    | SEED-AXIS CHECK: bert
+2026-10-20 22:22:21 | INFO    |   training run                : checkpoints/bert/run-job9843493
+2026-10-20 22:22:21 | INFO    |   seed words                  : 49 evidence + 35 intuition
+2026-10-20 22:22:21 | INFO    |   checkpoints                 : 11 (step 0 and every saved checkpoint)
+2026-10-20 22:22:21 | INFO    |   clean general-domain scores : results/clean_text_check/bert_run-job9843493.csv
+2026-10-20 22:22:21 | INFO    |   reading guide (provisional) : stable: axis cosine and relational >= 0.9, separation within 5% of step 0; moved: either < 0.7 or separation down > 10%
+2026-10-20 22:22:21 | INFO    |   hostname                    : qgpu3003
+2026-10-20 22:22:21 | INFO    |   python                      : 3.10.14
+2026-10-20 22:22:21 | INFO    |   python_executable           : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 22:22:21 | INFO    |   slurm_job_id                : 4710528
+2026-10-20 22:22:21 | INFO    |   git_commit                  : unknown
+2026-10-20 22:22:21 | INFO    |   started_at                  : 2026-10-20T22:22:21
+2026-10-20 22:22:21 | INFO    | ==============================================================================
+2026-10-20 22:22:31 | INFO    | step         0 | congressional     0.0% | general(clean)     0.0% | drift 0.000 | axis cos 1.000 | relational 1.000 | order 1.000 | separation 0.73 (step 0 0.73) | baseline
+2026-10-20 22:22:31 | INFO    | step    87,712 | congressional  -40.61% | general(clean)   14.99% | drift 0.321 | axis cos 0.647 | relational 0.619 | order 0.807 | separation 0.73 (step 0 0.73) | moved
+2026-10-20 22:22:31 | INFO    | step   175,424 | congressional  -43.53% | general(clean)   20.15% | drift 0.416 | axis cos 0.577 | relational 0.623 | order 0.773 | separation 0.73 (step 0 0.73) | moved
+2026-10-20 22:22:31 | INFO    | step   263,135 | congressional  -45.26% | general(clean)   20.98% | drift 0.453 | axis cos 0.548 | relational 0.604 | order 0.681 | separation 0.68 (step 0 0.73) | moved
+2026-10-20 22:22:31 | INFO    | step   350,847 | congressional   -46.8% | general(clean)   21.77% | drift 0.467 | axis cos 0.568 | relational 0.680 | order 0.671 | separation 0.71 (step 0 0.73) | moved
+2026-10-20 22:22:31 | INFO    | step   438,559 | congressional  -47.93% | general(clean)   21.64% | drift 0.486 | axis cos 0.539 | relational 0.562 | order 0.647 | separation 0.68 (step 0 0.73) | moved
+2026-10-20 22:22:31 | INFO    | step   526,271 | congressional   -49.1% | general(clean)   20.32% | drift 0.499 | axis cos 0.548 | relational 0.557 | order 0.786 | separation 0.82 (step 0 0.73) | moved
+2026-10-20 22:22:31 | INFO    | step   613,983 | congressional  -50.03% | general(clean)   19.27% | drift 0.492 | axis cos 0.541 | relational 0.701 | order 0.789 | separation 0.70 (step 0 0.73) | moved
+2026-10-20 22:22:31 | INFO    | step   701,694 | congressional  -50.99% | general(clean)   17.82% | drift 0.491 | axis cos 0.545 | relational 0.690 | order 0.803 | separation 0.73 (step 0 0.73) | moved
+2026-10-20 22:22:31 | INFO    | step   789,406 | congressional  -51.76% | general(clean)   16.64% | drift 0.488 | axis cos 0.556 | relational 0.617 | order 0.774 | separation 0.81 (step 0 0.73) | moved
+2026-10-20 22:22:31 | INFO    | step   877,118 | congressional  -52.22% | general(clean)   15.86% | drift 0.492 | axis cos 0.561 | relational 0.651 | order 0.761 | separation 0.75 (step 0 0.73) | moved
+2026-10-20 22:22:31 | INFO    | ==============================================================================
+2026-10-20 22:22:31 | INFO    | SEED-AXIS CHECK RESULT: bert (final step 877,118)
+2026-10-20 22:22:31 | INFO    |   raw drift (training metric)   : 0.492 mean / 0.662 max
+2026-10-20 22:22:31 | INFO    |   axis cosine                   : 0.561
+2026-10-20 22:22:31 | INFO    |   relational stability          : 0.651
+2026-10-20 22:22:31 | INFO    |   seed order along axis         : 0.761
+2026-10-20 22:22:31 | INFO    |   pole separation               : 0.75 (step 0: 0.73)
+2026-10-20 22:22:31 | INFO    |   verdict                       : moved
+2026-10-20 22:22:31 | INFO    |   drift reproduces training log : True
+2026-10-20 22:22:31 | INFO    |   results                       : results/seed_axis_check/bert_run-job9843493.csv, results/seed_axis_check/bert_run-job9843493.json
+2026-10-20 22:22:31 | INFO    |   elapsed                       : 00:00:11
+2026-10-20 22:22:31 | INFO    | ==============================================================================
+=== adaptation check: gpt2 ===
+2026-10-20 22:22:35 | INFO    | ==============================================================================
+2026-10-20 22:22:35 | INFO    | CLEAN-TEXT CHECK: gpt2
+2026-10-20 22:22:35 | INFO    |   training run       : checkpoints/gpt2/run-job9843505
+2026-10-20 22:22:35 | INFO    |   general-domain set : data/heldout/general.jsonl (2,000 paragraphs; 2,000 changed by detokenizing)
+2026-10-20 22:22:35 | INFO    |   example raw        : He had a recurring role in 2003 on two episodes of The Bill , as character " Connor Price " . In 2004 Boulter 
+2026-10-20 22:22:35 | INFO    |   example clean      : He had a recurring role in 2003 on two episodes of The Bill, as character "Connor Price". In 2004 Boulter land
+2026-10-20 22:22:35 | INFO    |   checkpoints scored : step 0, step 75,992, step 151,983, step 227,975, step 303,967, step 379,958, step 455,950, step 506,611, step 531,942, step 607,934, step 683,925, step 759,917
+2026-10-20 22:22:35 | INFO    |   metric             : perplexity (same evaluation code and masks as training)
+2026-10-20 22:22:35 | INFO    |   device             : NVIDIA H100 80GB HBM3, bf16 autocast
+2026-10-20 22:22:35 | INFO    |   hostname           : qgpu3003
+2026-10-20 22:22:35 | INFO    |   python             : 3.10.14
+2026-10-20 22:22:35 | INFO    |   python_executable  : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 22:22:35 | INFO    |   slurm_job_id       : 4710528
+2026-10-20 22:22:35 | INFO    |   git_commit         : unknown
+2026-10-20 22:22:35 | INFO    |   started_at         : 2026-10-20T22:22:35
+2026-10-20 22:22:35 | INFO    | ==============================================================================
+2026-10-20 22:22:50 | INFO    | step         0 | wikitext_raw   | perplexity 38.8167 | 293,899 tokens | 00:00:10 | training log 38.8167 (matches)
+2026-10-20 22:22:57 | INFO    | step         0 | wikitext_clean | perplexity 33.2214 | 290,971 tokens | 00:00:07
+2026-10-20 22:23:03 | INFO    | step    75,992 | wikitext_raw   | perplexity 106.4833 | 293,899 tokens | 00:00:05 | training log 106.4833 (matches)
+2026-10-20 22:23:09 | INFO    | step    75,992 | wikitext_clean | perplexity 51.8661 | 290,971 tokens | 00:00:05
+2026-10-20 22:23:15 | INFO    | step   151,983 | wikitext_raw   | perplexity 110.0952 | 293,899 tokens | 00:00:05 | training log 110.0952 (matches)
+2026-10-20 22:23:20 | INFO    | step   151,983 | wikitext_clean | perplexity 56.4140 | 290,971 tokens | 00:00:06
+2026-10-20 22:23:27 | INFO    | step   227,975 | wikitext_raw   | perplexity 130.2878 | 293,899 tokens | 00:00:06 | training log 130.2878 (matches)
+2026-10-20 22:23:32 | INFO    | step   227,975 | wikitext_clean | perplexity 58.2799 | 290,971 tokens | 00:00:06
+2026-10-20 22:23:38 | INFO    | step   303,967 | wikitext_raw   | perplexity 131.8118 | 293,899 tokens | 00:00:06 | training log 131.8118 (matches)
+2026-10-20 22:23:44 | INFO    | step   303,967 | wikitext_clean | perplexity 60.3494 | 290,971 tokens | 00:00:06
+2026-10-20 22:23:50 | INFO    | step   379,958 | wikitext_raw   | perplexity 135.1133 | 293,899 tokens | 00:00:06 | training log 135.1133 (matches)
+2026-10-20 22:23:56 | INFO    | step   379,958 | wikitext_clean | perplexity 60.8995 | 290,971 tokens | 00:00:06
+2026-10-20 22:24:02 | INFO    | step   455,950 | wikitext_raw   | perplexity 142.7955 | 293,899 tokens | 00:00:06 | training log 142.7955 (matches)
+2026-10-20 22:24:08 | INFO    | step   455,950 | wikitext_clean | perplexity 62.0467 | 290,971 tokens | 00:00:06
+2026-10-20 22:24:14 | INFO    | step   506,611 | wikitext_raw   | perplexity 140.8518 | 293,899 tokens | 00:00:06 | training log 140.8518 (matches)
+2026-10-20 22:24:20 | INFO    | step   506,611 | wikitext_clean | perplexity 62.1613 | 290,971 tokens | 00:00:06
+2026-10-20 22:24:26 | INFO    | step   531,942 | wikitext_raw   | perplexity 135.5188 | 293,899 tokens | 00:00:06 | training log 135.5188 (matches)
+2026-10-20 22:24:32 | INFO    | step   531,942 | wikitext_clean | perplexity 61.7248 | 290,971 tokens | 00:00:06
+2026-10-20 22:24:38 | INFO    | step   607,934 | wikitext_raw   | perplexity 140.9634 | 293,899 tokens | 00:00:06 | training log 140.9634 (matches)
+2026-10-20 22:24:44 | INFO    | step   607,934 | wikitext_clean | perplexity 62.5076 | 290,971 tokens | 00:00:06
+2026-10-20 22:24:50 | INFO    | step   683,925 | wikitext_raw   | perplexity 138.8110 | 293,899 tokens | 00:00:06 | training log 138.8110 (matches)
+2026-10-20 22:24:56 | INFO    | step   683,925 | wikitext_clean | perplexity 62.0561 | 290,971 tokens | 00:00:06
+2026-10-20 22:25:02 | INFO    | step   759,917 | wikitext_raw   | perplexity 137.8234 | 293,899 tokens | 00:00:06 | training log 137.8234 (matches)
+2026-10-20 22:25:08 | INFO    | step   759,917 | wikitext_clean | perplexity 61.6783 | 290,971 tokens | 00:00:06
+2026-10-20 22:25:08 | INFO    | ==============================================================================
+2026-10-20 22:25:08 | INFO    | CLEAN-TEXT CHECK RESULT: gpt2 (step 0 -> step 759,917)
+2026-10-20 22:25:08 | INFO    |   raw WikiText (as in training)            : 38.8167 -> 137.8234 (+255.1% perplexity; loss 3.6589 -> 4.9260, +34.6%)
+2026-10-20 22:25:08 | INFO    |   clean WikiText (same paragraphs)         : 33.2214 -> 61.6783 (+85.7% perplexity; loss 3.5032 -> 4.1219, +17.7%)
+2026-10-20 22:25:08 | INFO    |   share of the loss rise due to formatting : 51%  (1 - clean rise / raw rise, in loss)
+2026-10-20 22:25:08 | INFO    |   raw scores reproduce training log        : True
+2026-10-20 22:25:08 | INFO    |   results                                  : results/clean_text_check/gpt2_run-job9843505.csv, results/clean_text_check/gpt2_run-job9843505.json
+2026-10-20 22:25:08 | INFO    |   elapsed                                  : 00:02:33
+2026-10-20 22:25:08 | INFO    | ==============================================================================
+2026-10-20 22:25:12 | INFO    | ==============================================================================
+2026-10-20 22:25:12 | INFO    | SEED-AXIS CHECK: gpt2
+2026-10-20 22:25:12 | INFO    |   training run                : checkpoints/gpt2/run-job9843505
+2026-10-20 22:25:12 | INFO    |   seed words                  : 49 evidence + 35 intuition
+2026-10-20 22:25:12 | INFO    |   checkpoints                 : 12 (step 0 and every saved checkpoint)
+2026-10-20 22:25:12 | INFO    |   clean general-domain scores : results/clean_text_check/gpt2_run-job9843505.csv
+2026-10-20 22:25:12 | INFO    |   reading guide (provisional) : stable: axis cosine and relational >= 0.9, separation within 5% of step 0; moved: either < 0.7 or separation down > 10%
+2026-10-20 22:25:12 | INFO    |   hostname                    : qgpu3003
+2026-10-20 22:25:12 | INFO    |   python                      : 3.10.14
+2026-10-20 22:25:12 | INFO    |   python_executable           : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 22:25:12 | INFO    |   slurm_job_id                : 4710528
+2026-10-20 22:25:12 | INFO    |   git_commit                  : unknown
+2026-10-20 22:25:12 | INFO    |   started_at                  : 2026-10-20T22:25:12
+2026-10-20 22:25:12 | INFO    | ==============================================================================
+2026-10-20 22:25:26 | INFO    | step         0 | congressional     0.0% | general(clean)     0.0% | drift 0.000 | axis cos 1.000 | relational 1.000 | order 1.000 | separation 0.67 (step 0 0.67) | baseline
+2026-10-20 22:25:26 | INFO    | step    75,992 | congressional  -18.05% | general(clean)   12.72% | drift 1.075 | axis cos 0.807 | relational 0.382 | order 0.747 | separation 0.73 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | step   151,983 | congressional  -19.12% | general(clean)   15.12% | drift 0.935 | axis cos 0.596 | relational 0.375 | order 0.763 | separation 0.68 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | step   227,975 | congressional   -19.8% | general(clean)   16.04% | drift 0.926 | axis cos 0.503 | relational 0.367 | order 0.767 | separation 0.64 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | step   303,967 | congressional  -20.24% | general(clean)   17.04% | drift 0.951 | axis cos 0.467 | relational 0.351 | order 0.728 | separation 0.67 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | step   379,958 | congressional  -20.64% | general(clean)    17.3% | drift 0.928 | axis cos 0.416 | relational 0.392 | order 0.739 | separation 0.62 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | step   455,950 | congressional  -20.98% | general(clean)   17.83% | drift 0.807 | axis cos 0.363 | relational 0.393 | order 0.750 | separation 0.61 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | step   506,611 | congressional  -21.19% | general(clean)   17.88% | drift 0.693 | axis cos 0.304 | relational 0.391 | order 0.750 | separation 0.60 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | step   531,942 | congressional   -21.3% | general(clean)   17.68% | drift 0.744 | axis cos 0.395 | relational 0.418 | order 0.773 | separation 0.62 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | step   607,934 | congressional  -21.48% | general(clean)   18.04% | drift 0.666 | axis cos 0.362 | relational 0.408 | order 0.790 | separation 0.65 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | step   683,925 | congressional   -21.7% | general(clean)   17.84% | drift 0.640 | axis cos 0.362 | relational 0.384 | order 0.790 | separation 0.64 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | step   759,917 | congressional  -21.81% | general(clean)   17.66% | drift 0.634 | axis cos 0.360 | relational 0.389 | order 0.787 | separation 0.63 (step 0 0.67) | moved
+2026-10-20 22:25:26 | INFO    | ==============================================================================
+2026-10-20 22:25:26 | INFO    | SEED-AXIS CHECK RESULT: gpt2 (final step 759,917)
+2026-10-20 22:25:26 | INFO    |   raw drift (training metric)   : 0.634 mean / 1.085 max
+2026-10-20 22:25:26 | INFO    |   axis cosine                   : 0.360
+2026-10-20 22:25:26 | INFO    |   relational stability          : 0.389
+2026-10-20 22:25:26 | INFO    |   seed order along axis         : 0.787
+2026-10-20 22:25:26 | INFO    |   pole separation               : 0.63 (step 0: 0.67)
+2026-10-20 22:25:26 | INFO    |   verdict                       : moved
+2026-10-20 22:25:26 | INFO    |   drift reproduces training log : True
+2026-10-20 22:25:26 | INFO    |   results                       : results/seed_axis_check/gpt2_run-job9843505.csv, results/seed_axis_check/gpt2_run-job9843505.json
+2026-10-20 22:25:26 | INFO    |   elapsed                       : 00:00:14
+2026-10-20 22:25:26 | INFO    | ==============================================================================
+=== adaptation check: modernbert ===
+2026-10-20 22:25:30 | INFO    | ==============================================================================
+2026-10-20 22:25:30 | INFO    | CLEAN-TEXT CHECK: modernbert
+2026-10-20 22:25:30 | INFO    |   training run       : checkpoints/modernbert/run-job4518432
+2026-10-20 22:25:30 | INFO    |   general-domain set : data/heldout/general.jsonl (2,000 paragraphs; 2,000 changed by detokenizing)
+2026-10-20 22:25:30 | INFO    |   example raw        : He had a recurring role in 2003 on two episodes of The Bill , as character " Connor Price " . In 2004 Boulter 
+2026-10-20 22:25:30 | INFO    |   example clean      : He had a recurring role in 2003 on two episodes of The Bill, as character "Connor Price". In 2004 Boulter land
+2026-10-20 22:25:30 | INFO    |   checkpoints scored : step 0, step 39,597, step 79,195, step 118,792, step 158,390, step 197,987, step 237,584, step 277,182, step 316,779, step 356,377, step 395,974
+2026-10-20 22:25:30 | INFO    |   metric             : mlm_loss (same evaluation code and masks as training)
+2026-10-20 22:25:30 | INFO    |   device             : NVIDIA H100 80GB HBM3, bf16 autocast
+2026-10-20 22:25:30 | INFO    |   hostname           : qgpu3003
+2026-10-20 22:25:30 | INFO    |   python             : 3.10.14
+2026-10-20 22:25:30 | INFO    |   python_executable  : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 22:25:30 | INFO    |   slurm_job_id       : 4710528
+2026-10-20 22:25:30 | INFO    |   git_commit         : unknown
+2026-10-20 22:25:30 | INFO    |   started_at         : 2026-10-20T22:25:30
+2026-10-20 22:25:30 | INFO    | ==============================================================================
+2026-10-20 22:25:38 | INFO    | step         0 | wikitext_raw   | mlm_loss 1.6539 | 299,733 tokens | 00:00:03 | training log 1.6539 (matches)
+2026-10-20 22:25:40 | INFO    | step         0 | wikitext_clean | mlm_loss 1.6303 | 296,722 tokens | 00:00:02
+2026-10-20 22:25:44 | INFO    | step    39,597 | wikitext_raw   | mlm_loss 2.1413 | 299,733 tokens | 00:00:02 | training log 2.1413 (matches)
+2026-10-20 22:25:46 | INFO    | step    39,597 | wikitext_clean | mlm_loss 1.9137 | 296,722 tokens | 00:00:02
+2026-10-20 22:25:49 | INFO    | step    79,195 | wikitext_raw   | mlm_loss 2.2250 | 299,733 tokens | 00:00:02 | training log 2.2250 (matches)
+2026-10-20 22:25:51 | INFO    | step    79,195 | wikitext_clean | mlm_loss 1.9607 | 296,722 tokens | 00:00:02
+2026-10-20 22:25:55 | INFO    | step   118,792 | wikitext_raw   | mlm_loss 2.3135 | 299,733 tokens | 00:00:02 | training log 2.3135 (matches)
+2026-10-20 22:25:57 | INFO    | step   118,792 | wikitext_clean | mlm_loss 1.9835 | 296,722 tokens | 00:00:02
+2026-10-20 22:26:00 | INFO    | step   158,390 | wikitext_raw   | mlm_loss 2.2910 | 299,733 tokens | 00:00:02 | training log 2.2910 (matches)
+2026-10-20 22:26:02 | INFO    | step   158,390 | wikitext_clean | mlm_loss 1.9859 | 296,722 tokens | 00:00:02
+2026-10-20 22:26:06 | INFO    | step   197,987 | wikitext_raw   | mlm_loss 2.3477 | 299,733 tokens | 00:00:02 | training log 2.3477 (matches)
+2026-10-20 22:26:08 | INFO    | step   197,987 | wikitext_clean | mlm_loss 1.9873 | 296,722 tokens | 00:00:02
+2026-10-20 22:26:11 | INFO    | step   237,584 | wikitext_raw   | mlm_loss 2.3534 | 299,733 tokens | 00:00:02 | training log 2.3534 (matches)
+2026-10-20 22:26:14 | INFO    | step   237,584 | wikitext_clean | mlm_loss 1.9893 | 296,722 tokens | 00:00:02
+2026-10-20 22:26:17 | INFO    | step   277,182 | wikitext_raw   | mlm_loss 2.3193 | 299,733 tokens | 00:00:02 | training log 2.3193 (matches)
+2026-10-20 22:26:19 | INFO    | step   277,182 | wikitext_clean | mlm_loss 1.9789 | 296,722 tokens | 00:00:02
+2026-10-20 22:26:22 | INFO    | step   316,779 | wikitext_raw   | mlm_loss 2.3309 | 299,733 tokens | 00:00:02 | training log 2.3309 (matches)
+2026-10-20 22:26:25 | INFO    | step   316,779 | wikitext_clean | mlm_loss 1.9783 | 296,722 tokens | 00:00:02
+2026-10-20 22:26:28 | INFO    | step   356,377 | wikitext_raw   | mlm_loss 2.3109 | 299,733 tokens | 00:00:02 | training log 2.3109 (matches)
+2026-10-20 22:26:30 | INFO    | step   356,377 | wikitext_clean | mlm_loss 1.9680 | 296,722 tokens | 00:00:02
+2026-10-20 22:26:34 | INFO    | step   395,974 | wikitext_raw   | mlm_loss 2.3098 | 299,733 tokens | 00:00:02 | training log 2.3098 (matches)
+2026-10-20 22:26:36 | INFO    | step   395,974 | wikitext_clean | mlm_loss 1.9621 | 296,722 tokens | 00:00:02
+2026-10-20 22:26:36 | INFO    | ==============================================================================
+2026-10-20 22:26:36 | INFO    | CLEAN-TEXT CHECK RESULT: modernbert (step 0 -> step 395,974)
+2026-10-20 22:26:36 | INFO    |   raw WikiText (as in training)            : 1.6539 -> 2.3098 (+39.7% mlm_loss; loss 1.6539 -> 2.3098, +39.7%)
+2026-10-20 22:26:36 | INFO    |   clean WikiText (same paragraphs)         : 1.6303 -> 1.9621 (+20.4% mlm_loss; loss 1.6303 -> 1.9621, +20.4%)
+2026-10-20 22:26:36 | INFO    |   share of the loss rise due to formatting : 49%  (1 - clean rise / raw rise, in loss)
+2026-10-20 22:26:36 | INFO    |   raw scores reproduce training log        : True
+2026-10-20 22:26:36 | INFO    |   results                                  : results/clean_text_check/modernbert_run-job4518432.csv, results/clean_text_check/modernbert_run-job4518432.json
+2026-10-20 22:26:36 | INFO    |   elapsed                                  : 00:01:07
+2026-10-20 22:26:36 | INFO    | ==============================================================================
+2026-10-20 22:26:41 | INFO    | ==============================================================================
+2026-10-20 22:26:41 | INFO    | SEED-AXIS CHECK: modernbert
+2026-10-20 22:26:41 | INFO    |   training run                : checkpoints/modernbert/run-job4518432
+2026-10-20 22:26:41 | INFO    |   seed words                  : 49 evidence + 35 intuition
+2026-10-20 22:26:41 | INFO    |   checkpoints                 : 11 (step 0 and every saved checkpoint)
+2026-10-20 22:26:41 | INFO    |   clean general-domain scores : results/clean_text_check/modernbert_run-job4518432.csv
+2026-10-20 22:26:41 | INFO    |   reading guide (provisional) : stable: axis cosine and relational >= 0.9, separation within 5% of step 0; moved: either < 0.7 or separation down > 10%
+2026-10-20 22:26:41 | INFO    |   hostname                    : qgpu3003
+2026-10-20 22:26:41 | INFO    |   python                      : 3.10.14
+2026-10-20 22:26:41 | INFO    |   python_executable           : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 22:26:41 | INFO    |   slurm_job_id                : 4710528
+2026-10-20 22:26:41 | INFO    |   git_commit                  : unknown
+2026-10-20 22:26:41 | INFO    |   started_at                  : 2026-10-20T22:26:41
+2026-10-20 22:26:41 | INFO    | ==============================================================================
+2026-10-20 22:26:54 | INFO    | step         0 | congressional     0.0% | general(clean)     0.0% | drift 0.000 | axis cos 1.000 | relational 1.000 | order 1.000 | separation 0.61 (step 0 0.61) | baseline
+2026-10-20 22:26:54 | INFO    | step    39,597 | congressional  -17.73% | general(clean)   17.39% | drift 0.279 | axis cos 0.374 | relational 0.212 | order 0.700 | separation 0.67 (step 0 0.61) | moved
+2026-10-20 22:26:54 | INFO    | step    79,195 | congressional  -19.81% | general(clean)   20.27% | drift 0.298 | axis cos 0.325 | relational 0.182 | order 0.601 | separation 0.68 (step 0 0.61) | moved
+2026-10-20 22:26:54 | INFO    | step   118,792 | congressional   -21.2% | general(clean)   21.67% | drift 0.195 | axis cos 0.446 | relational 0.126 | order 0.783 | separation 0.62 (step 0 0.61) | moved
+2026-10-20 22:26:54 | INFO    | step   158,390 | congressional  -22.39% | general(clean)   21.81% | drift 0.409 | axis cos 0.250 | relational 0.168 | order 0.724 | separation 0.67 (step 0 0.61) | moved
+2026-10-20 22:26:54 | INFO    | step   197,987 | congressional  -23.32% | general(clean)    21.9% | drift 0.314 | axis cos 0.323 | relational 0.179 | order 0.730 | separation 0.67 (step 0 0.61) | moved
+2026-10-20 22:26:54 | INFO    | step   237,584 | congressional  -24.17% | general(clean)   22.02% | drift 0.355 | axis cos 0.333 | relational 0.173 | order 0.673 | separation 0.68 (step 0 0.61) | moved
+2026-10-20 22:26:54 | INFO    | step   277,182 | congressional  -24.93% | general(clean)   21.39% | drift 0.311 | axis cos 0.365 | relational 0.139 | order 0.738 | separation 0.63 (step 0 0.61) | moved
+2026-10-20 22:26:54 | INFO    | step   316,779 | congressional  -25.59% | general(clean)   21.35% | drift 0.311 | axis cos 0.316 | relational 0.205 | order 0.742 | separation 0.68 (step 0 0.61) | moved
+2026-10-20 22:26:54 | INFO    | step   356,377 | congressional  -26.14% | general(clean)   20.72% | drift 0.284 | axis cos 0.394 | relational 0.264 | order 0.750 | separation 0.64 (step 0 0.61) | moved
+2026-10-20 22:26:54 | INFO    | step   395,974 | congressional   -26.5% | general(clean)   20.36% | drift 0.295 | axis cos 0.392 | relational 0.242 | order 0.757 | separation 0.65 (step 0 0.61) | moved
+2026-10-20 22:26:54 | INFO    | ==============================================================================
+2026-10-20 22:26:54 | INFO    | SEED-AXIS CHECK RESULT: modernbert (final step 395,974)
+2026-10-20 22:26:54 | INFO    |   raw drift (training metric)   : 0.295 mean / 0.580 max
+2026-10-20 22:26:54 | INFO    |   axis cosine                   : 0.392
+2026-10-20 22:26:54 | INFO    |   relational stability          : 0.242
+2026-10-20 22:26:54 | INFO    |   seed order along axis         : 0.757
+2026-10-20 22:26:54 | INFO    |   pole separation               : 0.65 (step 0: 0.61)
+2026-10-20 22:26:54 | INFO    |   verdict                       : moved
+2026-10-20 22:26:54 | INFO    |   drift reproduces training log : True
+2026-10-20 22:26:54 | INFO    |   results                       : results/seed_axis_check/modernbert_run-job4518432.csv, results/seed_axis_check/modernbert_run-job4518432.json
+2026-10-20 22:26:54 | INFO    |   elapsed                       : 00:00:14
+2026-10-20 22:26:54 | INFO    | ==============================================================================
+=== adaptation check: qwen3 ===
+2026-10-20 22:26:58 | INFO    | ==============================================================================
+2026-10-20 22:26:58 | INFO    | CLEAN-TEXT CHECK: qwen3
+2026-10-20 22:26:58 | INFO    |   training run       : checkpoints/qwen3/run-job4518430
+2026-10-20 22:26:58 | INFO    |   general-domain set : data/heldout/general.jsonl (2,000 paragraphs; 2,000 changed by detokenizing)
+2026-10-20 22:26:58 | INFO    |   example raw        : He had a recurring role in 2003 on two episodes of The Bill , as character " Connor Price " . In 2004 Boulter 
+2026-10-20 22:26:58 | INFO    |   example clean      : He had a recurring role in 2003 on two episodes of The Bill, as character "Connor Price". In 2004 Boulter land
+2026-10-20 22:26:58 | INFO    |   checkpoints scored : step 0, step 48,149, step 96,297, step 144,446, step 192,594, step 240,743, step 288,892, step 337,040, step 385,189, step 433,337, step 481,486
+2026-10-20 22:26:58 | INFO    |   metric             : perplexity (same evaluation code and masks as training)
+2026-10-20 22:26:58 | INFO    |   device             : NVIDIA H100 80GB HBM3, bf16 autocast
+2026-10-20 22:26:58 | INFO    |   hostname           : qgpu3003
+2026-10-20 22:26:58 | INFO    |   python             : 3.10.14
+2026-10-20 22:26:58 | INFO    |   python_executable  : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 22:26:58 | INFO    |   slurm_job_id       : 4710528
+2026-10-20 22:26:58 | INFO    |   git_commit         : unknown
+2026-10-20 22:26:58 | INFO    |   started_at         : 2026-10-20T22:26:58
+2026-10-20 22:26:58 | INFO    | ==============================================================================
+2026-10-20 22:27:19 | INFO    | step         0 | wikitext_raw   | perplexity 18.4794 | 312,552 tokens | 00:00:15 | training log 18.4794 (matches)
+2026-10-20 22:27:34 | INFO    | step         0 | wikitext_clean | perplexity 17.6518 | 308,717 tokens | 00:00:15
+2026-10-20 22:27:51 | INFO    | step    48,149 | wikitext_raw   | perplexity 105.5386 | 312,552 tokens | 00:00:14 | training log 105.5386 (matches)
+2026-10-20 22:28:06 | INFO    | step    48,149 | wikitext_clean | perplexity 46.9205 | 308,717 tokens | 00:00:15
+2026-10-20 22:28:24 | INFO    | step    96,297 | wikitext_raw   | perplexity 111.3633 | 312,552 tokens | 00:00:15 | training log 111.3633 (matches)
+2026-10-20 22:28:39 | INFO    | step    96,297 | wikitext_clean | perplexity 47.8521 | 308,717 tokens | 00:00:15
+2026-10-20 22:28:57 | INFO    | step   144,446 | wikitext_raw   | perplexity 107.6622 | 312,552 tokens | 00:00:15 | training log 107.6622 (matches)
+2026-10-20 22:29:12 | INFO    | step   144,446 | wikitext_clean | perplexity 48.2068 | 308,717 tokens | 00:00:15
+2026-10-20 22:29:30 | INFO    | step   192,594 | wikitext_raw   | perplexity 111.0796 | 312,552 tokens | 00:00:15 | training log 111.0796 (matches)
+2026-10-20 22:29:45 | INFO    | step   192,594 | wikitext_clean | perplexity 47.2153 | 308,717 tokens | 00:00:15
+2026-10-20 22:30:04 | INFO    | step   240,743 | wikitext_raw   | perplexity 100.0311 | 312,552 tokens | 00:00:15 | training log 100.0311 (matches)
+2026-10-20 22:30:19 | INFO    | step   240,743 | wikitext_clean | perplexity 46.2057 | 308,717 tokens | 00:00:15
+2026-10-20 22:30:37 | INFO    | step   288,892 | wikitext_raw   | perplexity 97.0534 | 312,552 tokens | 00:00:15 | training log 97.0534 (matches)
+2026-10-20 22:30:52 | INFO    | step   288,892 | wikitext_clean | perplexity 45.2018 | 308,717 tokens | 00:00:15
+2026-10-20 22:31:10 | INFO    | step   337,040 | wikitext_raw   | perplexity 93.6595 | 312,552 tokens | 00:00:15 | training log 93.6595 (matches)
+2026-10-20 22:31:25 | INFO    | step   337,040 | wikitext_clean | perplexity 44.1515 | 308,717 tokens | 00:00:15
+2026-10-20 22:31:44 | INFO    | step   385,189 | wikitext_raw   | perplexity 99.0095 | 312,552 tokens | 00:00:15 | training log 99.0095 (matches)
+2026-10-20 22:31:59 | INFO    | step   385,189 | wikitext_clean | perplexity 44.0246 | 308,717 tokens | 00:00:15
+2026-10-20 22:32:17 | INFO    | step   433,337 | wikitext_raw   | perplexity 96.2818 | 312,552 tokens | 00:00:15 | training log 96.2818 (matches)
+2026-10-20 22:32:32 | INFO    | step   433,337 | wikitext_clean | perplexity 42.8849 | 308,717 tokens | 00:00:15
+2026-10-20 22:32:50 | INFO    | step   481,486 | wikitext_raw   | perplexity 94.0760 | 312,552 tokens | 00:00:15 | training log 94.0760 (matches)
+2026-10-20 22:33:05 | INFO    | step   481,486 | wikitext_clean | perplexity 42.0640 | 308,717 tokens | 00:00:15
+2026-10-20 22:33:05 | INFO    | ==============================================================================
+2026-10-20 22:33:05 | INFO    | CLEAN-TEXT CHECK RESULT: qwen3 (step 0 -> step 481,486)
+2026-10-20 22:33:05 | INFO    |   raw WikiText (as in training)            : 18.4794 -> 94.0760 (+409.1% perplexity; loss 2.9167 -> 4.5441, +55.8%)
+2026-10-20 22:33:05 | INFO    |   clean WikiText (same paragraphs)         : 17.6518 -> 42.0640 (+138.3% perplexity; loss 2.8708 -> 3.7392, +30.2%)
+2026-10-20 22:33:05 | INFO    |   share of the loss rise due to formatting : 47%  (1 - clean rise / raw rise, in loss)
+2026-10-20 22:33:05 | INFO    |   raw scores reproduce training log        : True
+2026-10-20 22:33:05 | INFO    |   results                                  : results/clean_text_check/qwen3_run-job4518430.csv, results/clean_text_check/qwen3_run-job4518430.json
+2026-10-20 22:33:05 | INFO    |   elapsed                                  : 00:06:08
+2026-10-20 22:33:05 | INFO    | ==============================================================================
+2026-10-20 22:33:11 | INFO    | ==============================================================================
+2026-10-20 22:33:11 | INFO    | SEED-AXIS CHECK: qwen3
+2026-10-20 22:33:11 | INFO    |   training run                : checkpoints/qwen3/run-job4518430
+2026-10-20 22:33:11 | INFO    |   seed words                  : 49 evidence + 35 intuition
+2026-10-20 22:33:11 | INFO    |   checkpoints                 : 11 (step 0 and every saved checkpoint)
+2026-10-20 22:33:11 | INFO    |   clean general-domain scores : results/clean_text_check/qwen3_run-job4518430.csv
+2026-10-20 22:33:11 | INFO    |   reading guide (provisional) : stable: axis cosine and relational >= 0.9, separation within 5% of step 0; moved: either < 0.7 or separation down > 10%
+2026-10-20 22:33:11 | INFO    |   hostname                    : qgpu3003
+2026-10-20 22:33:11 | INFO    |   python                      : 3.10.14
+2026-10-20 22:33:11 | INFO    |   python_executable           : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-10-20 22:33:11 | INFO    |   slurm_job_id                : 4710528
+2026-10-20 22:33:11 | INFO    |   git_commit                  : unknown
+2026-10-20 22:33:11 | INFO    |   started_at                  : 2026-10-20T22:33:11
+2026-10-20 22:33:11 | INFO    | ==============================================================================
+2026-10-20 22:33:48 | INFO    | step         0 | congressional     0.0% | general(clean)     0.0% | drift 0.000 | axis cos 1.000 | relational 1.000 | order 1.000 | separation 0.68 (step 0 0.68) | baseline
+2026-10-20 22:33:48 | INFO    | step    48,149 | congressional  -16.68% | general(clean)   34.05% | drift 0.546 | axis cos 0.606 | relational 0.409 | order 0.868 | separation 0.63 (step 0 0.68) | moved
+2026-10-20 22:33:48 | INFO    | step    96,297 | congressional  -18.77% | general(clean)   34.74% | drift 0.549 | axis cos 0.645 | relational 0.352 | order 0.847 | separation 0.63 (step 0 0.68) | moved
+2026-10-20 22:33:48 | INFO    | step   144,446 | congressional  -20.16% | general(clean)    35.0% | drift 0.598 | axis cos 0.496 | relational 0.367 | order 0.879 | separation 0.68 (step 0 0.68) | moved
+2026-10-20 22:33:48 | INFO    | step   192,594 | congressional  -21.18% | general(clean)   34.27% | drift 0.617 | axis cos 0.525 | relational 0.394 | order 0.869 | separation 0.68 (step 0 0.68) | moved
+2026-10-20 22:33:48 | INFO    | step   240,743 | congressional  -22.03% | general(clean)   33.52% | drift 0.626 | axis cos 0.567 | relational 0.413 | order 0.879 | separation 0.65 (step 0 0.68) | moved
+2026-10-20 22:33:48 | INFO    | step   288,892 | congressional  -22.84% | general(clean)   32.75% | drift 0.638 | axis cos 0.529 | relational 0.453 | order 0.903 | separation 0.68 (step 0 0.68) | moved
+2026-10-20 22:33:48 | INFO    | step   337,040 | congressional  -23.56% | general(clean)   31.93% | drift 0.692 | axis cos 0.483 | relational 0.367 | order 0.912 | separation 0.68 (step 0 0.68) | moved
+2026-10-20 22:33:48 | INFO    | step   385,189 | congressional  -24.22% | general(clean)   31.83% | drift 0.678 | axis cos 0.490 | relational 0.399 | order 0.909 | separation 0.68 (step 0 0.68) | moved
+2026-10-20 22:33:48 | INFO    | step   433,337 | congressional  -24.79% | general(clean)   30.92% | drift 0.666 | axis cos 0.462 | relational 0.396 | order 0.922 | separation 0.70 (step 0 0.68) | moved
+2026-10-20 22:33:48 | INFO    | step   481,486 | congressional  -25.16% | general(clean)   30.25% | drift 0.678 | axis cos 0.420 | relational 0.393 | order 0.908 | separation 0.70 (step 0 0.68) | moved
+2026-10-20 22:33:48 | INFO    | ==============================================================================
+2026-10-20 22:33:48 | INFO    | SEED-AXIS CHECK RESULT: qwen3 (final step 481,486)
+2026-10-20 22:33:48 | INFO    |   raw drift (training metric)   : 0.678 mean / 1.094 max
+2026-10-20 22:33:48 | INFO    |   axis cosine                   : 0.420
+2026-10-20 22:33:48 | INFO    |   relational stability          : 0.393
+2026-10-20 22:33:48 | INFO    |   seed order along axis         : 0.908
+2026-10-20 22:33:48 | INFO    |   pole separation               : 0.70 (step 0: 0.68)
+2026-10-20 22:33:48 | INFO    |   verdict                       : moved
+2026-10-20 22:33:48 | INFO    |   drift reproduces training log : True
+2026-10-20 22:33:48 | INFO    |   results                       : results/seed_axis_check/qwen3_run-job4518430.csv, results/seed_axis_check/qwen3_run-job4518430.json
+2026-10-20 22:33:48 | INFO    |   elapsed                       : 00:00:38
+2026-10-20 22:33:48 | INFO    | ==============================================================================

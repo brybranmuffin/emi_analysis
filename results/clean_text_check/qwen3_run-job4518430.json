@@ -30,6 +30,6 @@
     "json": "results/clean_text_check/qwen3_run-job4518430.json",
     "log": "results/clean_text_check/qwen3_check.log"
   },
-  "finished_at": "2026-10-20T14:47:36",
-  "elapsed_seconds": 71.7
+  "finished_at": "2026-10-20T22:33:05",
+  "elapsed_seconds": 368.4
 }

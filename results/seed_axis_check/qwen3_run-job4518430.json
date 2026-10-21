@@ -1,0 +1,49 @@
+{
+  "model": "qwen3",
+  "run_dir": "checkpoints/qwen3/run-job4518430",
+  "final": {
+    "model": "qwen3",
+    "step": 481486,
+    "epoch": "1.0",
+    "event": "checkpoint+epoch_end",
+    "checkpoint": "checkpoints/qwen3/run-job4518430/checkpoint-481486",
+    "loss_metric": "perplexity",
+    "congressional": 10.207793,
+    "congressional_loss_change_pct": -25.16,
+    "general_clean": 42.064,
+    "general_clean_loss_change_pct": 30.25,
+    "mean_drift": 0.678121,
+    "max_drift": 1.0942,
+    "axis_cosine": 0.419564,
+    "relational_spearman": 0.393424,
+    "axis_order_spearman": 0.908454,
+    "separation_accuracy": 0.702381,
+    "separation_margin": 0.045081,
+    "separation_accuracy_step0": 0.678571,
+    "training_log_drift": "0.678163",
+    "matches_training_log": true,
+    "verdict": "moved"
+  },
+  "verdicts": {
+    "0": "baseline",
+    "48149": "moved",
+    "96297": "moved",
+    "144446": "moved",
+    "192594": "moved",
+    "240743": "moved",
+    "288892": "moved",
+    "337040": "moved",
+    "385189": "moved",
+    "433337": "moved",
+    "481486": "moved"
+  },
+  "drift_reproduces_training_log": true,
+  "clean_text_scores_included": true,
+  "outputs": {
+    "csv": "results/seed_axis_check/qwen3_run-job4518430.csv",
+    "json": "results/seed_axis_check/qwen3_run-job4518430.json",
+    "log": "results/seed_axis_check/qwen3_check.log"
+  },
+  "finished_at": "2026-10-20T22:33:48",
+  "elapsed_seconds": 38.1
+}

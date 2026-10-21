@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=emi-adaptcheck
-#SBATCH --account=e32706
+#SBATCH --account=p53299
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8

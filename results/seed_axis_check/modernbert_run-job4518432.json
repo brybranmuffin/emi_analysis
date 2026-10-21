@@ -1,0 +1,49 @@
+{
+  "model": "modernbert",
+  "run_dir": "checkpoints/modernbert/run-job4518432",
+  "final": {
+    "model": "modernbert",
+    "step": 395974,
+    "epoch": "1.25",
+    "event": "checkpoint",
+    "checkpoint": "checkpoints/modernbert/run-job4518432/checkpoint-395974",
+    "loss_metric": "mlm_loss",
+    "congressional": 1.261387,
+    "congressional_loss_change_pct": -26.5,
+    "general_clean": 1.96213,
+    "general_clean_loss_change_pct": 20.36,
+    "mean_drift": 0.295455,
+    "max_drift": 0.579617,
+    "axis_cosine": 0.391725,
+    "relational_spearman": 0.242419,
+    "axis_order_spearman": 0.75689,
+    "separation_accuracy": 0.654762,
+    "separation_margin": 0.009264,
+    "separation_accuracy_step0": 0.607143,
+    "training_log_drift": "0.295511",
+    "matches_training_log": true,
+    "verdict": "moved"
+  },
+  "verdicts": {
+    "0": "baseline",
+    "39597": "moved",
+    "79195": "moved",
+    "118792": "moved",
+    "158390": "moved",
+    "197987": "moved",
+    "237584": "moved",
+    "277182": "moved",
+    "316779": "moved",
+    "356377": "moved",
+    "395974": "moved"
+  },
+  "drift_reproduces_training_log": true,
+  "clean_text_scores_included": true,
+  "outputs": {
+    "csv": "results/seed_axis_check/modernbert_run-job4518432.csv",
+    "json": "results/seed_axis_check/modernbert_run-job4518432.json",
+    "log": "results/seed_axis_check/modernbert_check.log"
+  },
+  "finished_at": "2026-10-20T22:26:54",
+  "elapsed_seconds": 14.2
+}

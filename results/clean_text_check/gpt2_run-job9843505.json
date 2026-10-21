@@ -30,6 +30,6 @@
     "json": "results/clean_text_check/gpt2_run-job9843505.json",
     "log": "results/clean_text_check/gpt2_check.log"
   },
-  "finished_at": "2026-10-20T14:45:58",
-  "elapsed_seconds": 36.8
+  "finished_at": "2026-10-20T22:25:08",
+  "elapsed_seconds": 153.4
 }

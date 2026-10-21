@@ -1,0 +1,32 @@
+[transformers] [1mBertForMaskedLM LOAD REPORT[0m from: bert-base-uncased
+Key                         | Status     |  | 
+----------------------------+------------+--+-
+bert.pooler.dense.bias      | UNEXPECTED |  | 
+cls.seq_relationship.bias   | UNEXPECTED |  | 
+bert.pooler.dense.weight    | UNEXPECTED |  | 
+cls.seq_relationship.weight | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+[transformers] [1mBertForMaskedLM LOAD REPORT[0m from: bert-base-uncased
+Key                         | Status     |  | 
+----------------------------+------------+--+-
+cls.seq_relationship.bias   | UNEXPECTED |  | 
+bert.pooler.dense.weight    | UNEXPECTED |  | 
+cls.seq_relationship.weight | UNEXPECTED |  | 
+bert.pooler.dense.bias      | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+[W1020 22:22:49.116212150 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 443744256, total: 85009367040).
+[W1020 22:23:03.092700684 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).
+[W1020 22:23:14.644451040 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).
+[W1020 22:23:26.568073849 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).
+[W1020 22:23:38.372443263 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).
+[W1020 22:23:50.258379793 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).
+[W1020 22:24:02.228655737 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).
+[W1020 22:24:14.223975479 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).
+[W1020 22:24:26.247273840 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).
+[W1020 22:24:38.987076720 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).
+[W1020 22:24:50.933340235 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).
+[W1020 22:25:02.940372404 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 734003200 bytes (free: 433258496, total: 85009367040).

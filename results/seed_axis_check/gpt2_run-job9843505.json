@@ -1,0 +1,50 @@
+{
+  "model": "gpt2",
+  "run_dir": "checkpoints/gpt2/run-job9843505",
+  "final": {
+    "model": "gpt2",
+    "step": 759917,
+    "epoch": "1.5",
+    "event": "checkpoint",
+    "checkpoint": "checkpoints/gpt2/run-job9843505/checkpoint-759917",
+    "loss_metric": "perplexity",
+    "congressional": 16.649493,
+    "congressional_loss_change_pct": -21.81,
+    "general_clean": 61.678285,
+    "general_clean_loss_change_pct": 17.66,
+    "mean_drift": 0.63368,
+    "max_drift": 1.085156,
+    "axis_cosine": 0.359877,
+    "relational_spearman": 0.389383,
+    "axis_order_spearman": 0.787466,
+    "separation_accuracy": 0.630952,
+    "separation_margin": 0.021913,
+    "separation_accuracy_step0": 0.666667,
+    "training_log_drift": "0.633638",
+    "matches_training_log": true,
+    "verdict": "moved"
+  },
+  "verdicts": {
+    "0": "baseline",
+    "75992": "moved",
+    "151983": "moved",
+    "227975": "moved",
+    "303967": "moved",
+    "379958": "moved",
+    "455950": "moved",
+    "506611": "moved",
+    "531942": "moved",
+    "607934": "moved",
+    "683925": "moved",
+    "759917": "moved"
+  },
+  "drift_reproduces_training_log": true,
+  "clean_text_scores_included": true,
+  "outputs": {
+    "csv": "results/seed_axis_check/gpt2_run-job9843505.csv",
+    "json": "results/seed_axis_check/gpt2_run-job9843505.json",
+    "log": "results/seed_axis_check/gpt2_check.log"
+  },
+  "finished_at": "2026-10-20T22:25:26",
+  "elapsed_seconds": 14.4
+}

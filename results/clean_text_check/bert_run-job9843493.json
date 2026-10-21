@@ -30,6 +30,6 @@
     "json": "results/clean_text_check/bert_run-job9843493.json",
     "log": "results/clean_text_check/bert_check.log"
   },
-  "finished_at": "2026-10-20T14:45:17",
-  "elapsed_seconds": 20.7
+  "finished_at": "2026-10-20T22:22:17",
+  "elapsed_seconds": 57.0
 }

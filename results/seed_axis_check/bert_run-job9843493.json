@@ -1,0 +1,49 @@
+{
+  "model": "bert",
+  "run_dir": "checkpoints/bert/run-job9843493",
+  "final": {
+    "model": "bert",
+    "step": 877118,
+    "epoch": "2.5",
+    "event": "checkpoint",
+    "checkpoint": "checkpoints/bert/run-job9843493/checkpoint-877118",
+    "loss_metric": "mlm_loss",
+    "congressional": 1.220893,
+    "congressional_loss_change_pct": -52.22,
+    "general_clean": 2.252198,
+    "general_clean_loss_change_pct": 15.86,
+    "mean_drift": 0.492319,
+    "max_drift": 0.661972,
+    "axis_cosine": 0.561,
+    "relational_spearman": 0.651394,
+    "axis_order_spearman": 0.761021,
+    "separation_accuracy": 0.75,
+    "separation_margin": 0.014256,
+    "separation_accuracy_step0": 0.72619,
+    "training_log_drift": "0.492281",
+    "matches_training_log": true,
+    "verdict": "moved"
+  },
+  "verdicts": {
+    "0": "baseline",
+    "87712": "moved",
+    "175424": "moved",
+    "263135": "moved",
+    "350847": "moved",
+    "438559": "moved",
+    "526271": "moved",
+    "613983": "moved",
+    "701694": "moved",
+    "789406": "moved",
+    "877118": "moved"
+  },
+  "drift_reproduces_training_log": true,
+  "clean_text_scores_included": true,
+  "outputs": {
+    "csv": "results/seed_axis_check/bert_run-job9843493.csv",
+    "json": "results/seed_axis_check/bert_run-job9843493.json",
+    "log": "results/seed_axis_check/bert_check.log"
+  },
+  "finished_at": "2026-10-20T22:22:31",
+  "elapsed_seconds": 11.1
+}

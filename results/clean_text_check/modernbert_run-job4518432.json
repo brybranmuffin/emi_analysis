@@ -30,6 +30,6 @@
     "json": "results/clean_text_check/modernbert_run-job4518432.json",
     "log": "results/clean_text_check/modernbert_check.log"
   },
-  "finished_at": "2026-10-20T14:46:20",
-  "elapsed_seconds": 18.3
+  "finished_at": "2026-10-20T22:26:36",
+  "elapsed_seconds": 66.6
 }
