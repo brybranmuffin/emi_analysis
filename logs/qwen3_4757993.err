@@ -1,0 +1,2 @@
+2026-10-21 14:35:49 | WARNING | FLAG at step 48,149: general-domain loss rose 25.7% over step 0 (94.0760 -> 118.2887); limit is 20% (stop_on_flag is off; the run continues)
+2026-10-21 16:40:56 | WARNING | FLAG at step 96,297: general-domain loss rose 25.0% over step 0 (94.0760 -> 117.5921); limit is 20% (stop_on_flag is off; the run continues)

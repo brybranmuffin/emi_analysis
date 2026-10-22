@@ -1,0 +1,2 @@
+[W1021 12:03:08.623198305 CUDACachingAllocator.cpp:3934] memory allocation failed with OOM on device 0 while trying to allocate 727711744 bytes (free: 66256896, total: 85009367040).
+2026-10-21 12:36:24 | WARNING | FLAG at step 70,169: mean seed drift 0.1013 is above 0.1000 and still climbing (previous 0.0393) (stop_on_flag is off; the run continues)
