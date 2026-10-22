@@ -44,3 +44,6 @@ mlruns/
 data/smoke/
 data/val10k/
 *.gzip
+
+# Collected activations (large)
+activations/

@@ -135,6 +135,23 @@ sbatch slurm/adaptation_check.sh               # all four models: clean-text che
 sbatch slurm/adaptation_check.sh qwen3         # one model
 ```
 
+## Activation collection (speech-pooled, every layer)
+
+`emi_analysis.collect_activations` stores one vector per speech per hidden state: the embedding output plus every layer, i.e. 13 for BERT and GPT-2, 23 for ModernBERT, 29 for Qwen3.
+- **Pooling:** the token-weighted mean over all the speech's tokens across all its chunks, with special tokens and padding excluded. Short speeches are kept.
+- **Chunking and packing** are the same as in training.
+- **Checkpoint:** the one with the lowest held-out congressional loss in the given run. For a continuation run, its starting checkpoint also competes.
+- **Output:** `activations/<model>/<checkpoint run>/step<N>/<tag>/`, with one `layer_XX.npy` per hidden state (float16, rows in `speech_ids.txt` order), plus `congress.npy`, `token_counts.npy` and `meta.json`.
+- **Resuming:** an interrupted job resumes when you resubmit the same command.
+
+```bash
+sbatch slurm/collect_activations.sh bert --run-dir checkpoints/bert-continued/run-job4757959          # 20k held-out speeches
+sbatch slurm/collect_activations.sh bert --run-dir checkpoints/bert-continued/run-job4757959 \
+  --input data/train.jsonl --input data/heldout/congressional.jsonl --tag corpus                     # full corpus
+```
+
+`tests/test_collect_activations.py` checks every pooled vector against running each chunk through the model alone, for BERT, ModernBERT and Qwen3.
+
 ## Reading a training run
 
 Each run gets its own folder, `checkpoints/<model>/run-job<SLURM_JOB_ID>/` (or `checkpoints/<data-root name>/<model>/...` with `--data-root`), so reruns never mix with older checkpoints:

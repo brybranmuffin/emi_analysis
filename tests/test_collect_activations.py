@@ -26,6 +26,18 @@ def test_peak_checkpoint_is_lowest_congressional_loss_and_earliest_on_ties():
     assert step == 10 and row["checkpoint"] == "a"
 
 
+def test_continuation_start_competes_for_peak_when_it_is_still_best():
+    rows = [
+        {"step": "0", "congressional_loss": "1.20", "checkpoint": ""},
+        {"step": "10", "congressional_loss": "1.25", "checkpoint": "a"},
+        {"step": "20", "congressional_loss": "1.22", "checkpoint": "b"},
+    ]
+    step, row = select_peak_checkpoint(rows, init_from="runs/original/checkpoint-99")
+    assert step == 0 and row["checkpoint"] == "runs/original/checkpoint-99"
+    step, _ = select_peak_checkpoint(rows)  # a run from the base model: step 0 is not a checkpoint
+    assert step == 20
+
+
 def test_float16_guard_names_the_overflowing_layer():
     with pytest.raises(ValueError, match="layer 5.*--dtype float32"):
         check_float16_range({0: 10.0, 5: 70_000.0})
@@ -86,7 +98,10 @@ def test_pooled_activations_equal_per_chunk_reference(tmp_path, family, override
         expected = _reference_pooled(config, speech["text"])
         assert expected.shape[0] == meta["n_layers"]
         got = torch.tensor(np.stack([layer[row] for layer in layers]))
-        assert torch.allclose(got, expected, atol=1e-4), f"speech {row} differs"
+        # Tolerance relative to the speech's activation scale: tiny ModernBERT reaches |activation| ~700, where float32
+        # summation-order noise (masked packed vs standalone attention) is ~1e-6 of that scale for every element.
+        # A pooling bug (special tokens included, chunks mis-weighted) would differ by 10-100%.
+        assert (got - expected).abs().max() <= 1e-5 * expected.abs().max() + 1e-4, f"speech {row} differs"
 
 
 def test_collection_resumes_after_interruption(tmp_path):
