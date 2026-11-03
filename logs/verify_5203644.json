@@ -1,0 +1,163 @@
+{
+  "ok": false,
+  "aligned_across_collections": true,
+  "collections": {
+    "activations/bert/run-job4757959/step350847/corpus": {
+      "ok": false,
+      "checks": {
+        "status": {
+          "ok": true,
+          "detail": "meta status 'complete', progress 8373445/8,373,445"
+        },
+        "speech_ids": {
+          "ok": true,
+          "detail": "8,373,445 IDs, unique and in input order"
+        },
+        "token_counts": {
+          "ok": false,
+          "detail": "0 speeches with no tokens; 1,996,579,847 tokens pooled (meta.json: 1,996,579,894)"
+        },
+        "files": {
+          "ok": true,
+          "detail": "all present with the recorded shape and dtype"
+        },
+        "rows_written": {
+          "ok": true,
+          "detail": "every row of every layer written and finite",
+          "max_abs_by_layer": {
+            "0": 6.121,
+            "1": 7.266,
+            "2": 9.039,
+            "3": 8.336,
+            "4": 10.133,
+            "5": 10.984,
+            "6": 11.18,
+            "7": 9.664,
+            "8": 9.156,
+            "9": 8.875,
+            "10": 10.828,
+            "11": 12.602,
+            "12": 6.098
+          }
+        },
+        "spot_check": {
+          "ok": true,
+          "detail": "32 speeches recomputed from checkpoints/bert-continued/run-job4757959/checkpoint-350847: all layers match (worst error 0.09 of tolerance)",
+          "speeches": 32,
+          "worst_fraction_of_tolerance": 0.0899
+        }
+      },
+      "n_speeches": 8373445,
+      "model": "bert",
+      "checkpoint": "checkpoints/bert-continued/run-job4757959/checkpoint-350847"
+    },
+    "activations/gpt2/run-job9843505/step759917/corpus": {
+      "ok": true,
+      "checks": {
+        "status": {
+          "ok": true,
+          "detail": "meta status 'complete', progress 8373445/8,373,445"
+        },
+        "speech_ids": {
+          "ok": true,
+          "detail": "8,373,445 IDs, unique and in input order"
+        },
+        "token_counts": {
+          "ok": true,
+          "detail": "0 speeches with no tokens; 1,960,122,398 tokens pooled (meta.json: 1,960,122,398)"
+        },
+        "files": {
+          "ok": true,
+          "detail": "all present with the recorded shape and dtype"
+        },
+        "rows_written": {
+          "ok": true,
+          "detail": "every row of every layer written and finite",
+          "max_abs_by_layer": {
+            "0": 1.381,
+            "1": 22.969,
+            "2": 27.938,
+            "3": 103.062,
+            "4": 106.125,
+            "5": 112.062,
+            "6": 115.625,
+            "7": 120.562,
+            "8": 127.688,
+            "9": 136.625,
+            "10": 147.25,
+            "11": 183.125,
+            "12": 29.531
+          }
+        },
+        "spot_check": {
+          "ok": true,
+          "detail": "32 speeches recomputed from checkpoints/gpt2/run-job9843505/checkpoint-759917: all layers match (worst error 0.09 of tolerance)",
+          "speeches": 32,
+          "worst_fraction_of_tolerance": 0.0896
+        }
+      },
+      "n_speeches": 8373445,
+      "model": "gpt2",
+      "checkpoint": "checkpoints/gpt2/run-job9843505/checkpoint-759917"
+    },
+    "activations/modernbert/run-job4757963/step316779/corpus": {
+      "ok": false,
+      "checks": {
+        "status": {
+          "ok": true,
+          "detail": "meta status 'complete', progress 8373445/8,373,445"
+        },
+        "speech_ids": {
+          "ok": true,
+          "detail": "8,373,445 IDs, unique and in input order"
+        },
+        "token_counts": {
+          "ok": false,
+          "detail": "0 speeches with no tokens; 1,979,040,817 tokens pooled (meta.json: 1,979,040,823)"
+        },
+        "files": {
+          "ok": true,
+          "detail": "all present with the recorded shape and dtype"
+        },
+        "rows_written": {
+          "ok": true,
+          "detail": "every row of every layer written and finite",
+          "max_abs_by_layer": {
+            "0": 3.822,
+            "1": 16.156,
+            "2": 32.531,
+            "3": 40.344,
+            "4": 44.594,
+            "5": 54.625,
+            "6": 43.281,
+            "7": 49.125,
+            "8": 47.062,
+            "9": 58.281,
+            "10": 61.312,
+            "11": 69.938,
+            "12": 118.5,
+            "13": 120.75,
+            "14": 123.625,
+            "15": 138.0,
+            "16": 3424.0,
+            "17": 3444.0,
+            "18": 3488.0,
+            "19": 3508.0,
+            "20": 3530.0,
+            "21": 3560.0,
+            "22": 24.062
+          }
+        },
+        "spot_check": {
+          "ok": false,
+          "detail": "mismatch: layer 16, row 1467587 differs by 37.56 (16.9x tolerance)",
+          "speeches": 32,
+          "worst_fraction_of_tolerance": 16.8591
+        }
+      },
+      "n_speeches": 8373445,
+      "model": "modernbert",
+      "checkpoint": "checkpoints/modernbert-continued/run-job4757963/checkpoint-316779"
+    }
+  }
+}
