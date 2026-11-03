@@ -143,6 +143,8 @@ sbatch slurm/adaptation_check.sh qwen3         # one model
 - **Checkpoint:** the one with the lowest held-out congressional loss in the given run. For a continuation run, its starting checkpoint also competes.
 - **Output:** `activations/<model>/<checkpoint run>/step<N>/<tag>/`, with one `layer_XX.npy` per hidden state (float16, rows in `speech_ids.txt` order), plus `congress.npy`, `token_counts.npy` and `meta.json`.
 - **Resuming:** an interrupted job resumes when you resubmit the same command.
+- **Precision:** `--precision bf16|tf32|fp32` (default bf16). **ModernBERT must use `--precision fp32`.** Its layers 16–22 carry a few very large dimensions, and bf16 rounding swamps the speech-specific signal there: the worst speech's centered cosine with float32 is 0.10–0.98, and 0.97 even at TF32-like precision. BERT, GPT-2 and Qwen3 are 1.00 at every layer in bf16.
+- **Verification:** `sbatch slurm/verify_activations.sh [dirs]` checks completeness, row order, exact per-speech token counts, row identity and per-layer fidelity against a float32 recomputation.
 
 ```bash
 sbatch slurm/collect_activations.sh bert --run-dir checkpoints/bert-continued/run-job4757959          # 20k held-out speeches

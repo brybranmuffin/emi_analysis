@@ -139,3 +139,14 @@ def test_default_checkpoint_is_peak_adaptation(tmp_path):
     assert meta["checkpoint"]["step"] == int(best["step"])
     assert Path(summary["output_dir"]).parent.name == f"step{best['step']}"
     assert np.load(Path(summary["output_dir"]) / "layer_00.npy").dtype == np.float16
+
+
+def test_precision_is_recorded_and_cannot_be_mixed_on_resume(tmp_path):
+    config_path = _make_run_inputs(tmp_path, "bert", max_length=32)
+    _write_speeches(tmp_path / "speeches.jsonl")
+    argv = ["--model", "bert", "--config", str(config_path), "--base", "--input", str(tmp_path / "speeches.jsonl"),
+            "--tag", "t", "--output-root", str(tmp_path / "act")]
+    out = Path(collect_main(argv + ["--precision", "fp32"])["output_dir"])
+    assert json.loads((out / "meta.json").read_text())["precision"] == "fp32"
+    with pytest.raises(RuntimeError, match="--overwrite"):
+        collect_main(argv + ["--precision", "bf16"])

@@ -81,7 +81,10 @@ def build_cli() -> argparse.ArgumentParser:
                         help="Speech JSONL (speech_id, congress, text); repeatable (default: the held-out speeches).")
     parser.add_argument("--tag", default=None, help="Name for this speech set (default: 'heldout', or the input file names).")
     parser.add_argument("--output-root", default="activations")
-    parser.add_argument("--dtype", choices=["float16", "float32"], default="float16")
+    parser.add_argument("--dtype", choices=["float16", "float32"], default="float16", help="Storage format.")
+    parser.add_argument("--precision", choices=["bf16", "tf32", "fp32"], default="bf16",
+                        help="Forward-pass precision: bf16 autocast (fast), tf32 matmuls, or strict float32. "
+                             "ModernBERT needs fp32: bf16 noise swamps the speech-specific signal in its layers 16-22.")
     parser.add_argument("--block-speeches", type=int, default=20_000, help="Speeches per block (memory and resume granularity).")
     parser.add_argument("--tokens-per-batch", type=int, default=65_536)
     parser.add_argument("--num-proc", type=int, default=None)
@@ -198,6 +201,13 @@ def run_collection(args: argparse.Namespace) -> dict:
     if args.require_gpu and device.type != "cuda":
         raise RuntimeError("--require-gpu was set but CUDA is not available on this node.")
     autocast, use_bf16 = autocast_for(config, device)
+    if args.precision != "bf16":
+        import contextlib
+
+        autocast, use_bf16 = contextlib.nullcontext, False
+        if device.type == "cuda":
+            torch.backends.cuda.matmul.allow_tf32 = args.precision == "tf32"
+            torch.backends.cudnn.allow_tf32 = args.precision == "tf32"
     num_proc = args.num_proc or config.num_proc or int(os.environ.get("SLURM_CPUS_PER_TASK", "1"))
     model, tokenizer = load_model_and_tokenizer(config, checkpoint["path"], device)
     model.eval()
@@ -210,6 +220,7 @@ def run_collection(args: argparse.Namespace) -> dict:
     fingerprint = {
         "model": args.model, "checkpoint": checkpoint["path"], "inputs": [[str(p), p.stat().st_size] for p in inputs],
         "n_speeches": n, "n_layers": n_layers, "hidden_size": hidden, "dtype": args.dtype, "max_length": config.max_length,
+        "precision": args.precision,
     }
     meta_path, progress_path = out / "meta.json", out / "progress.json"
     done = 0
@@ -238,10 +249,11 @@ def run_collection(args: argparse.Namespace) -> dict:
         "inputs": ", ".join(str(p) for p in inputs),
         "speeches": f"{n:,} -> {len(chunk_lengths):,} chunks of up to {config.max_length:,} tokens "
                     f"({'packed, speech-isolated' if config.packing else 'batched by length'})",
-        "tokens pooled": f"{pooled_tokens:,} (special tokens and padding excluded; tokenized in {format_duration(time.time() - t0)})",
+        "tokens in chunks": f"{pooled_tokens:,} ([CLS]/[SEP] wrappers and padding excluded; tokenized in {format_duration(time.time() - t0)})",
         "layers stored": f"{n_layers} (embedding output + {n_layers - 1} layers) x {hidden} dims",
         "storage": f"{storage / 1e9:,.1f} GB as {args.dtype}",
-        "device": f"{torch.cuda.get_device_name(device) if device.type == 'cuda' else 'cpu'}, {'bf16 autocast' if use_bf16 else 'fp32'}",
+        "device": f"{torch.cuda.get_device_name(device) if device.type == 'cuda' else 'cpu'}, precision {args.precision}"
+                  + ("" if device.type == "cuda" or args.precision == "fp32" else " (requested; CPU runs float32)"),
         "output": out,
         **({"resuming": f"from speech {done:,}"} if done else {}),
         **environment_info(),
@@ -264,7 +276,9 @@ def run_collection(args: argparse.Namespace) -> dict:
             "pooling": "token-weighted mean over all real tokens of the speech across all its chunks; "
                        "special tokens and padding excluded",
             "chunking": {"max_length": config.max_length, "window": window, "packing": config.packing},
-            "precision": "bf16 autocast forward, float32 accumulation" if use_bf16 else "float32",
+            "precision": args.precision,
+            "precision_detail": {"bf16": "bf16 autocast forward, float32 pooling", "tf32": "float32 weights, TF32 matmuls",
+                                 "fp32": "strict float32 (TF32 off)"}[args.precision],
             "inputs": [str(p) for p in inputs], "tag": tag, "tokens_pooled": pooled_tokens,
             "started_at": datetime.now().isoformat(timespec="seconds")}
     meta_path.write_text(json.dumps(meta, indent=2, default=str) + "\n", encoding="utf-8")
@@ -309,6 +323,11 @@ def run_collection(args: argparse.Namespace) -> dict:
 
     counts_all = np.load(out / "token_counts.npy")
     empty = int((counts_all == 0).sum())
+    pooled = int(counts_all.sum(dtype=np.int64))
+    meta.update(tokens_before_special_exclusion=pooled_tokens, tokens_pooled=pooled,
+                special_tokens_in_text_excluded=pooled_tokens - pooled)
+    if pooled_tokens != pooled:
+        logger.info(f"{pooled_tokens - pooled:,} tokens inside speech text map to special IDs (e.g. [UNK]) and were not pooled")
     if empty:
         logger.warning(f"{empty:,} speeches have no tokens; their rows are all zeros (token_counts = 0).")
     meta.update(status="complete", finished_at=datetime.now().isoformat(timespec="seconds"),
