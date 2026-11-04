@@ -47,3 +47,4 @@ data/val10k/
 
 # Collected activations (large)
 activations/
+.superpowers/
