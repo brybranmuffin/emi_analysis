@@ -1,0 +1,338 @@
+{
+  "ok": true,
+  "aligned_across_collections": true,
+  "collections": {
+    "activations/bert/run-job4757959/step350847/corpus": {
+      "ok": true,
+      "checks": {
+        "status": {
+          "ok": true,
+          "detail": "meta status 'complete', progress 8373445/8,373,445"
+        },
+        "speech_ids": {
+          "ok": true,
+          "detail": "8,373,445 IDs, unique and in input order"
+        },
+        "token_counts": {
+          "ok": true,
+          "detail": "8,373,445 of 8,373,445 speeches pooled exactly the expected tokens; 0 with none; 47 in-text special tokens (e.g. [UNK]) excluded by design",
+          "mismatched_speeches": 0
+        },
+        "files": {
+          "ok": true,
+          "detail": "all present with the recorded shape and dtype"
+        },
+        "rows_written": {
+          "ok": true,
+          "detail": "every row of every layer written and finite",
+          "max_abs_by_layer": {
+            "0": 6.121,
+            "1": 7.266,
+            "2": 9.039,
+            "3": 8.336,
+            "4": 10.133,
+            "5": 10.984,
+            "6": 11.18,
+            "7": 9.664,
+            "8": 9.156,
+            "9": 8.875,
+            "10": 10.828,
+            "11": 12.602,
+            "12": 6.098
+          }
+        },
+        "row_identity": {
+          "ok": true,
+          "detail": "64 sampled rows hold their own speech (layer 0 and token count match)",
+          "speeches": 64
+        },
+        "fidelity": {
+          "ok": true,
+          "detail": "all layers match float32 (worst centered cosine 1.0000)",
+          "failing_layers": [],
+          "worst_centered_cosine": 1.0,
+          "worst_by_layer": {
+            "0": 1.0,
+            "1": 1.0,
+            "2": 1.0,
+            "3": 1.0,
+            "4": 1.0,
+            "5": 1.0,
+            "6": 1.0,
+            "7": 1.0,
+            "8": 1.0,
+            "9": 1.0,
+            "10": 1.0,
+            "11": 1.0,
+            "12": 1.0
+          }
+        }
+      },
+      "n_speeches": 8373445,
+      "model": "bert",
+      "checkpoint": "checkpoints/bert-continued/run-job4757959/checkpoint-350847"
+    },
+    "activations/gpt2/run-job9843505/step759917/corpus": {
+      "ok": true,
+      "checks": {
+        "status": {
+          "ok": true,
+          "detail": "meta status 'complete', progress 8373445/8,373,445"
+        },
+        "speech_ids": {
+          "ok": true,
+          "detail": "8,373,445 IDs, unique and in input order"
+        },
+        "token_counts": {
+          "ok": true,
+          "detail": "8,373,445 of 8,373,445 speeches pooled exactly the expected tokens; 0 with none",
+          "mismatched_speeches": 0
+        },
+        "files": {
+          "ok": true,
+          "detail": "all present with the recorded shape and dtype"
+        },
+        "rows_written": {
+          "ok": true,
+          "detail": "every row of every layer written and finite",
+          "max_abs_by_layer": {
+            "0": 1.381,
+            "1": 22.969,
+            "2": 27.938,
+            "3": 103.062,
+            "4": 106.125,
+            "5": 112.062,
+            "6": 115.625,
+            "7": 120.562,
+            "8": 127.688,
+            "9": 136.625,
+            "10": 147.25,
+            "11": 183.125,
+            "12": 29.531
+          }
+        },
+        "row_identity": {
+          "ok": true,
+          "detail": "64 sampled rows hold their own speech (layer 0 and token count match)",
+          "speeches": 64
+        },
+        "fidelity": {
+          "ok": true,
+          "detail": "all layers match float32 (worst centered cosine 1.0000)",
+          "failing_layers": [],
+          "worst_centered_cosine": 1.0,
+          "worst_by_layer": {
+            "0": 1.0,
+            "1": 1.0,
+            "2": 1.0,
+            "3": 1.0,
+            "4": 1.0,
+            "5": 1.0,
+            "6": 1.0,
+            "7": 1.0,
+            "8": 1.0,
+            "9": 1.0,
+            "10": 1.0,
+            "11": 1.0,
+            "12": 1.0
+          }
+        }
+      },
+      "n_speeches": 8373445,
+      "model": "gpt2",
+      "checkpoint": "checkpoints/gpt2/run-job9843505/checkpoint-759917"
+    },
+    "activations/modernbert/run-job4757963/step316779/corpus": {
+      "ok": true,
+      "checks": {
+        "status": {
+          "ok": true,
+          "detail": "meta status 'complete', progress 8373445/8,373,445"
+        },
+        "speech_ids": {
+          "ok": true,
+          "detail": "8,373,445 IDs, unique and in input order"
+        },
+        "token_counts": {
+          "ok": true,
+          "detail": "8,373,445 of 8,373,445 speeches pooled exactly the expected tokens; 0 with none; 6 in-text special tokens (e.g. [UNK]) excluded by design",
+          "mismatched_speeches": 0
+        },
+        "files": {
+          "ok": true,
+          "detail": "all present with the recorded shape and dtype"
+        },
+        "rows_written": {
+          "ok": true,
+          "detail": "every row of every layer written and finite",
+          "max_abs_by_layer": {
+            "0": 3.822,
+            "1": 16.156,
+            "2": 32.562,
+            "3": 40.344,
+            "4": 44.594,
+            "5": 54.656,
+            "6": 43.281,
+            "7": 49.094,
+            "8": 47.031,
+            "9": 58.219,
+            "10": 61.375,
+            "11": 69.938,
+            "12": 121.812,
+            "13": 124.25,
+            "14": 127.0,
+            "15": 141.5,
+            "16": 3342.0,
+            "17": 3358.0,
+            "18": 3396.0,
+            "19": 3424.0,
+            "20": 3442.0,
+            "21": 3470.0,
+            "22": 24.062
+          }
+        },
+        "row_identity": {
+          "ok": true,
+          "detail": "64 sampled rows hold their own speech (layer 0 and token count match)",
+          "speeches": 64
+        },
+        "fidelity": {
+          "ok": true,
+          "detail": "all layers match float32 (worst centered cosine 1.0000)",
+          "failing_layers": [],
+          "worst_centered_cosine": 1.0,
+          "worst_by_layer": {
+            "0": 1.0,
+            "1": 1.0,
+            "2": 1.0,
+            "3": 1.0,
+            "4": 1.0,
+            "5": 1.0,
+            "6": 1.0,
+            "7": 1.0,
+            "8": 1.0,
+            "9": 1.0,
+            "10": 1.0,
+            "11": 1.0,
+            "12": 1.0,
+            "13": 1.0,
+            "14": 1.0,
+            "15": 1.0,
+            "16": 1.0,
+            "17": 1.0,
+            "18": 1.0,
+            "19": 1.0,
+            "20": 1.0,
+            "21": 1.0,
+            "22": 1.0
+          }
+        }
+      },
+      "n_speeches": 8373445,
+      "model": "modernbert",
+      "checkpoint": "checkpoints/modernbert-continued/run-job4757963/checkpoint-316779"
+    },
+    "activations/qwen3/run-job4757993/step481486/corpus": {
+      "ok": true,
+      "checks": {
+        "status": {
+          "ok": true,
+          "detail": "meta status 'complete', progress 8373445/8,373,445"
+        },
+        "speech_ids": {
+          "ok": true,
+          "detail": "8,373,445 IDs, unique and in input order"
+        },
+        "token_counts": {
+          "ok": true,
+          "detail": "8,373,445 of 8,373,445 speeches pooled exactly the expected tokens; 0 with none",
+          "mismatched_speeches": 0
+        },
+        "files": {
+          "ok": true,
+          "detail": "all present with the recorded shape and dtype"
+        },
+        "rows_written": {
+          "ok": true,
+          "detail": "every row of every layer written and finite",
+          "max_abs_by_layer": {
+            "0": 0.27,
+            "1": 13.633,
+            "2": 19.438,
+            "3": 1002.0,
+            "4": 1002.5,
+            "5": 1003.0,
+            "6": 1004.5,
+            "7": 1005.5,
+            "8": 1007.5,
+            "9": 1009.0,
+            "10": 1011.0,
+            "11": 1015.5,
+            "12": 1021.0,
+            "13": 1026.0,
+            "14": 1032.0,
+            "15": 1036.0,
+            "16": 1044.0,
+            "17": 1056.0,
+            "18": 1073.0,
+            "19": 1094.0,
+            "20": 1122.0,
+            "21": 1154.0,
+            "22": 1197.0,
+            "23": 1236.0,
+            "24": 1288.0,
+            "25": 1351.0,
+            "26": 1444.0,
+            "27": 1524.0,
+            "28": 92.188
+          }
+        },
+        "row_identity": {
+          "ok": true,
+          "detail": "64 sampled rows hold their own speech (layer 0 and token count match)",
+          "speeches": 64
+        },
+        "fidelity": {
+          "ok": true,
+          "detail": "all layers match float32 (worst centered cosine 0.9996)",
+          "failing_layers": [],
+          "worst_centered_cosine": 0.9996,
+          "worst_by_layer": {
+            "0": 1.0,
+            "1": 1.0,
+            "2": 1.0,
+            "3": 0.9997,
+            "4": 0.9997,
+            "5": 0.9996,
+            "6": 0.9996,
+            "7": 0.9997,
+            "8": 0.9997,
+            "9": 0.9997,
+            "10": 0.9997,
+            "11": 0.9999,
+            "12": 0.9999,
+            "13": 0.9999,
+            "14": 0.9999,
+            "15": 0.9999,
+            "16": 0.9999,
+            "17": 0.9999,
+            "18": 1.0,
+            "19": 1.0,
+            "20": 1.0,
+            "21": 1.0,
+            "22": 1.0,
+            "23": 1.0,
+            "24": 1.0,
+            "25": 1.0,
+            "26": 1.0,
+            "27": 1.0,
+            "28": 1.0
+          }
+        }
+      },
+      "n_speeches": 8373445,
+      "model": "qwen3",
+      "checkpoint": "checkpoints/qwen3-continued/run-job4757993/checkpoint-481486"
+    }
+  }
+}

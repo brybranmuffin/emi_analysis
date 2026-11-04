@@ -1,0 +1,156 @@
+job 7129919 on qgpu3001 at 2026-11-03 22:19:40
+verifying: activations/bert/run-job4757959/step350847/corpus activations/gpt2/run-job9843505/step759917/corpus activations/modernbert/run-job4757963/step316779/corpus activations/qwen3/run-job4757993/step481486/corpus
+2026-11-03 22:42:34 | INFO    | ==============================================================================
+2026-11-03 22:42:34 | INFO    | ACTIVATION COLLECTION: bert (spot)
+2026-11-03 22:42:34 | INFO    |   checkpoint          : checkpoints/bert-continued/run-job4757959/checkpoint-350847
+2026-11-03 22:42:34 | INFO    |   why this checkpoint : given with --checkpoint
+2026-11-03 22:42:34 | INFO    |   inputs              : /tmp/tmpb2oudllk/sample.jsonl
+2026-11-03 22:42:34 | INFO    |   speeches            : 64 -> 104 chunks of up to 256 tokens (batched by length)
+2026-11-03 22:42:34 | INFO    |   tokens in chunks    : 16,673 ([CLS]/[SEP] wrappers and padding excluded; tokenized in 00:00:01)
+2026-11-03 22:42:34 | INFO    |   layers stored       : 13 (embedding output + 12 layers) x 768 dims
+2026-11-03 22:42:34 | INFO    |   storage             : 0.0 GB as float32
+2026-11-03 22:42:34 | INFO    |   device              : NVIDIA H100 80GB HBM3, precision fp32
+2026-11-03 22:42:34 | INFO    |   output              : /tmp/tmpb2oudllk/act/bert/run-job4757959/step350847/spot
+2026-11-03 22:42:34 | INFO    |   hostname            : qgpu3001
+2026-11-03 22:42:34 | INFO    |   python              : 3.10.14
+2026-11-03 22:42:34 | INFO    |   python_executable   : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-03 22:42:34 | INFO    |   slurm_job_id        : 7129919
+2026-11-03 22:42:34 | INFO    |   git_commit          : unknown
+2026-11-03 22:42:34 | INFO    |   started_at          : 2026-11-03T22:42:34
+2026-11-03 22:42:34 | INFO    | ==============================================================================
+2026-11-03 22:42:35 | INFO    | speeches 64/64 (100.0%) | 131 speeches/s | elapsed 00:00:04 | ETA 00:00:00 | max |activation| so far 9.6
+2026-11-03 22:42:35 | INFO    | ==============================================================================
+2026-11-03 22:42:35 | INFO    | ACTIVATION COLLECTION COMPLETE: bert (spot)
+2026-11-03 22:42:35 | INFO    |   speeches                    : 64 (0 empty)
+2026-11-03 22:42:35 | INFO    |   files                       : 13 layer files, 0.0 GB, in /tmp/tmpb2oudllk/act/bert/run-job4757959/step350847/spot
+2026-11-03 22:42:35 | INFO    |   largest |pooled activation| : 9.6
+2026-11-03 22:42:35 | INFO    |   elapsed                     : 00:00:04
+2026-11-03 22:42:35 | INFO    | ==============================================================================
+2026-11-03 22:42:36 | INFO    | ==============================================================================
+2026-11-03 22:42:36 | INFO    | PASSED: activations/bert/run-job4757959/step350847/corpus
+2026-11-03 22:42:36 | INFO    |   status                      : ok   meta status 'complete', progress 8373445/8,373,445
+2026-11-03 22:42:36 | INFO    |   speech_ids                  : ok   8,373,445 IDs, unique and in input order
+2026-11-03 22:42:36 | INFO    |   token_counts                : ok   8,373,445 of 8,373,445 speeches pooled exactly the expected tokens; 0 with none; 47 in-text special tokens (e.g. [UNK]) excluded by design
+2026-11-03 22:42:36 | INFO    |   files                       : ok   all present with the recorded shape and dtype
+2026-11-03 22:42:36 | INFO    |   rows_written                : ok   every row of every layer written and finite
+2026-11-03 22:42:36 | INFO    |   row_identity                : ok   64 sampled rows hold their own speech (layer 0 and token count match)
+2026-11-03 22:42:36 | INFO    |   fidelity                    : ok   all layers match float32 (worst centered cosine 1.0000)
+2026-11-03 22:42:36 | INFO    |   precision of stored vectors : bf16 autocast forward, float32 accumulation
+2026-11-03 22:42:36 | INFO    |   elapsed                     : 00:22:49
+2026-11-03 22:42:36 | INFO    | ==============================================================================
+2026-11-03 23:03:32 | INFO    | ==============================================================================
+2026-11-03 23:03:32 | INFO    | ACTIVATION COLLECTION: gpt2 (spot)
+2026-11-03 23:03:32 | INFO    |   checkpoint          : checkpoints/gpt2/run-job9843505/checkpoint-759917
+2026-11-03 23:03:32 | INFO    |   why this checkpoint : given with --checkpoint
+2026-11-03 23:03:32 | INFO    |   inputs              : /tmp/tmpyrzhzzml/sample.jsonl
+2026-11-03 23:03:32 | INFO    |   speeches            : 64 -> 80 chunks of up to 512 tokens (batched by length)
+2026-11-03 23:03:32 | INFO    |   tokens in chunks    : 16,430 ([CLS]/[SEP] wrappers and padding excluded; tokenized in 00:00:04)
+2026-11-03 23:03:32 | INFO    |   layers stored       : 13 (embedding output + 12 layers) x 768 dims
+2026-11-03 23:03:32 | INFO    |   storage             : 0.0 GB as float32
+2026-11-03 23:03:32 | INFO    |   device              : NVIDIA H100 80GB HBM3, precision fp32
+2026-11-03 23:03:32 | INFO    |   output              : /tmp/tmpyrzhzzml/act/gpt2/run-job9843505/step759917/spot
+2026-11-03 23:03:32 | INFO    |   hostname            : qgpu3001
+2026-11-03 23:03:32 | INFO    |   python              : 3.10.14
+2026-11-03 23:03:32 | INFO    |   python_executable   : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-03 23:03:32 | INFO    |   slurm_job_id        : 7129919
+2026-11-03 23:03:32 | INFO    |   git_commit          : unknown
+2026-11-03 23:03:32 | INFO    |   started_at          : 2026-11-03T23:03:32
+2026-11-03 23:03:32 | INFO    | ==============================================================================
+2026-11-03 23:03:33 | INFO    | speeches 64/64 (100.0%) | 173 speeches/s | elapsed 00:00:06 | ETA 00:00:00 | max |activation| so far 153.5
+2026-11-03 23:03:33 | INFO    | ==============================================================================
+2026-11-03 23:03:33 | INFO    | ACTIVATION COLLECTION COMPLETE: gpt2 (spot)
+2026-11-03 23:03:33 | INFO    |   speeches                    : 64 (0 empty)
+2026-11-03 23:03:33 | INFO    |   files                       : 13 layer files, 0.0 GB, in /tmp/tmpyrzhzzml/act/gpt2/run-job9843505/step759917/spot
+2026-11-03 23:03:33 | INFO    |   largest |pooled activation| : 153.5
+2026-11-03 23:03:33 | INFO    |   elapsed                     : 00:00:06
+2026-11-03 23:03:33 | INFO    | ==============================================================================
+2026-11-03 23:03:34 | INFO    | ==============================================================================
+2026-11-03 23:03:34 | INFO    | PASSED: activations/gpt2/run-job9843505/step759917/corpus
+2026-11-03 23:03:34 | INFO    |   status                      : ok   meta status 'complete', progress 8373445/8,373,445
+2026-11-03 23:03:34 | INFO    |   speech_ids                  : ok   8,373,445 IDs, unique and in input order
+2026-11-03 23:03:34 | INFO    |   token_counts                : ok   8,373,445 of 8,373,445 speeches pooled exactly the expected tokens; 0 with none
+2026-11-03 23:03:34 | INFO    |   files                       : ok   all present with the recorded shape and dtype
+2026-11-03 23:03:34 | INFO    |   rows_written                : ok   every row of every layer written and finite
+2026-11-03 23:03:34 | INFO    |   row_identity                : ok   64 sampled rows hold their own speech (layer 0 and token count match)
+2026-11-03 23:03:34 | INFO    |   fidelity                    : ok   all layers match float32 (worst centered cosine 1.0000)
+2026-11-03 23:03:34 | INFO    |   precision of stored vectors : bf16 autocast forward, float32 accumulation
+2026-11-03 23:03:34 | INFO    |   elapsed                     : 00:20:57
+2026-11-03 23:03:34 | INFO    | ==============================================================================
+2026-11-03 23:32:51 | INFO    | ==============================================================================
+2026-11-03 23:32:51 | INFO    | ACTIVATION COLLECTION: modernbert (spot)
+2026-11-03 23:32:51 | INFO    |   checkpoint          : checkpoints/modernbert-continued/run-job4757963/checkpoint-316779
+2026-11-03 23:32:51 | INFO    |   why this checkpoint : given with --checkpoint
+2026-11-03 23:32:51 | INFO    |   inputs              : /tmp/tmp5ietkekz/sample.jsonl
+2026-11-03 23:32:51 | INFO    |   speeches            : 64 -> 66 chunks of up to 2,048 tokens (packed, speech-isolated)
+2026-11-03 23:32:51 | INFO    |   tokens in chunks    : 16,628 ([CLS]/[SEP] wrappers and padding excluded; tokenized in 00:00:01)
+2026-11-03 23:32:51 | INFO    |   layers stored       : 23 (embedding output + 22 layers) x 768 dims
+2026-11-03 23:32:51 | INFO    |   storage             : 0.0 GB as float32
+2026-11-03 23:32:51 | INFO    |   device              : NVIDIA H100 80GB HBM3, precision fp32
+2026-11-03 23:32:51 | INFO    |   output              : /tmp/tmp5ietkekz/act/modernbert/run-job4757963/step316779/spot
+2026-11-03 23:32:51 | INFO    |   hostname            : qgpu3001
+2026-11-03 23:32:51 | INFO    |   python              : 3.10.14
+2026-11-03 23:32:51 | INFO    |   python_executable   : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-03 23:32:51 | INFO    |   slurm_job_id        : 7129919
+2026-11-03 23:32:51 | INFO    |   git_commit          : unknown
+2026-11-03 23:32:51 | INFO    |   started_at          : 2026-11-03T23:32:51
+2026-11-03 23:32:51 | INFO    | ==============================================================================
+2026-11-03 23:32:51 | INFO    | speeches 64/64 (100.0%) | 186 speeches/s | elapsed 00:00:02 | ETA 00:00:00 | max |activation| so far 2,104.6
+2026-11-03 23:32:51 | INFO    | ==============================================================================
+2026-11-03 23:32:51 | INFO    | ACTIVATION COLLECTION COMPLETE: modernbert (spot)
+2026-11-03 23:32:51 | INFO    |   speeches                    : 64 (0 empty)
+2026-11-03 23:32:51 | INFO    |   files                       : 23 layer files, 0.0 GB, in /tmp/tmp5ietkekz/act/modernbert/run-job4757963/step316779/spot
+2026-11-03 23:32:51 | INFO    |   largest |pooled activation| : 2,104.6
+2026-11-03 23:32:51 | INFO    |   elapsed                     : 00:00:02
+2026-11-03 23:32:51 | INFO    | ==============================================================================
+2026-11-03 23:32:53 | INFO    | ==============================================================================
+2026-11-03 23:32:53 | INFO    | PASSED: activations/modernbert/run-job4757963/step316779/corpus
+2026-11-03 23:32:53 | INFO    |   status                      : ok   meta status 'complete', progress 8373445/8,373,445
+2026-11-03 23:32:53 | INFO    |   speech_ids                  : ok   8,373,445 IDs, unique and in input order
+2026-11-03 23:32:53 | INFO    |   token_counts                : ok   8,373,445 of 8,373,445 speeches pooled exactly the expected tokens; 0 with none; 6 in-text special tokens (e.g. [UNK]) excluded by design
+2026-11-03 23:32:53 | INFO    |   files                       : ok   all present with the recorded shape and dtype
+2026-11-03 23:32:53 | INFO    |   rows_written                : ok   every row of every layer written and finite
+2026-11-03 23:32:53 | INFO    |   row_identity                : ok   64 sampled rows hold their own speech (layer 0 and token count match)
+2026-11-03 23:32:53 | INFO    |   fidelity                    : ok   all layers match float32 (worst centered cosine 1.0000)
+2026-11-03 23:32:53 | INFO    |   precision of stored vectors : fp32
+2026-11-03 23:32:53 | INFO    |   elapsed                     : 00:29:20
+2026-11-03 23:32:53 | INFO    | ==============================================================================
+2026-11-04 00:15:15 | INFO    | ==============================================================================
+2026-11-04 00:15:15 | INFO    | ACTIVATION COLLECTION: qwen3 (spot)
+2026-11-04 00:15:15 | INFO    |   checkpoint          : checkpoints/qwen3-continued/run-job4757993/checkpoint-481486
+2026-11-04 00:15:15 | INFO    |   why this checkpoint : given with --checkpoint
+2026-11-04 00:15:15 | INFO    |   inputs              : /tmp/tmpi3vcy5mm/sample.jsonl
+2026-11-04 00:15:15 | INFO    |   speeches            : 64 -> 66 chunks of up to 2,048 tokens (packed, speech-isolated)
+2026-11-04 00:15:15 | INFO    |   tokens in chunks    : 16,962 ([CLS]/[SEP] wrappers and padding excluded; tokenized in 00:00:13)
+2026-11-04 00:15:15 | INFO    |   layers stored       : 29 (embedding output + 28 layers) x 1024 dims
+2026-11-04 00:15:15 | INFO    |   storage             : 0.0 GB as float32
+2026-11-04 00:15:15 | INFO    |   device              : NVIDIA H100 80GB HBM3, precision fp32
+2026-11-04 00:15:15 | INFO    |   output              : /tmp/tmpi3vcy5mm/act/qwen3/run-job4757993/step481486/spot
+2026-11-04 00:15:15 | INFO    |   hostname            : qgpu3001
+2026-11-04 00:15:15 | INFO    |   python              : 3.10.14
+2026-11-04 00:15:15 | INFO    |   python_executable   : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-04 00:15:15 | INFO    |   slurm_job_id        : 7129919
+2026-11-04 00:15:15 | INFO    |   git_commit          : unknown
+2026-11-04 00:15:15 | INFO    |   started_at          : 2026-11-04T00:15:15
+2026-11-04 00:15:15 | INFO    | ==============================================================================
+2026-11-04 00:15:16 | INFO    | speeches 64/64 (100.0%) | 80 speeches/s | elapsed 00:00:30 | ETA 00:00:00 | max |activation| so far 1,126.6
+2026-11-04 00:15:16 | INFO    | ==============================================================================
+2026-11-04 00:15:16 | INFO    | ACTIVATION COLLECTION COMPLETE: qwen3 (spot)
+2026-11-04 00:15:16 | INFO    |   speeches                    : 64 (0 empty)
+2026-11-04 00:15:16 | INFO    |   files                       : 29 layer files, 0.0 GB, in /tmp/tmpi3vcy5mm/act/qwen3/run-job4757993/step481486/spot
+2026-11-04 00:15:16 | INFO    |   largest |pooled activation| : 1,126.6
+2026-11-04 00:15:16 | INFO    |   elapsed                     : 00:00:30
+2026-11-04 00:15:16 | INFO    | ==============================================================================
+2026-11-04 00:15:19 | INFO    | ==============================================================================
+2026-11-04 00:15:19 | INFO    | PASSED: activations/qwen3/run-job4757993/step481486/corpus
+2026-11-04 00:15:19 | INFO    |   status                      : ok   meta status 'complete', progress 8373445/8,373,445
+2026-11-04 00:15:19 | INFO    |   speech_ids                  : ok   8,373,445 IDs, unique and in input order
+2026-11-04 00:15:19 | INFO    |   token_counts                : ok   8,373,445 of 8,373,445 speeches pooled exactly the expected tokens; 0 with none
+2026-11-04 00:15:19 | INFO    |   files                       : ok   all present with the recorded shape and dtype
+2026-11-04 00:15:19 | INFO    |   rows_written                : ok   every row of every layer written and finite
+2026-11-04 00:15:19 | INFO    |   row_identity                : ok   64 sampled rows hold their own speech (layer 0 and token count match)
+2026-11-04 00:15:19 | INFO    |   fidelity                    : ok   all layers match float32 (worst centered cosine 0.9996)
+2026-11-04 00:15:19 | INFO    |   precision of stored vectors : bf16 autocast forward, float32 accumulation
+2026-11-04 00:15:19 | INFO    |   elapsed                     : 00:42:25
+2026-11-04 00:15:19 | INFO    | ==============================================================================
+2026-11-04 00:15:23 | INFO    | Speech order identical across all 4 collections: True
+2026-11-04 00:15:23 | INFO    | Overall: PASSED (report: logs/verify_7129919.json)
