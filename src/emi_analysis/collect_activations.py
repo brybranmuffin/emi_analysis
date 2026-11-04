@@ -22,6 +22,7 @@ Collection runs in blocks of speeches and resumes from the last finished block i
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import logging
 import os
@@ -92,7 +93,7 @@ def build_cli() -> argparse.ArgumentParser:
     parser.add_argument("--require-gpu", action="store_true")
     parser.add_argument("--sae", default=None,
                         help="Token-level SAE checkpoint: store per-speech means of SAE(token) at the SAE's layer instead of "
-                             "raw hidden states (default tag: <tag>_tokensae_<sae name>).")
+                             "raw hidden states (folder: <tag>_tokensae_<sae name>).")
     return parser
 
 
@@ -197,8 +198,8 @@ def run_collection(args: argparse.Namespace) -> dict:
     inputs = [Path(p) for p in (args.input or [config.heldout_data_path])]
     tag = args.tag or ("heldout" if not args.input else "+".join(p.stem for p in inputs))
     sae_meta = torch.load(args.sae, map_location="cpu", weights_only=False)["meta"] if args.sae else None
-    if sae_meta and not args.tag:
-        tag = f"{tag}_tokensae_{sae_meta['name']}"
+    if sae_meta and not tag.endswith(f"_tokensae_{sae_meta['name']}"):
+        tag = f"{tag}_tokensae_{sae_meta['name']}"  # never the raw collection's folder, even with an explicit --tag
     out = Path(args.output_root) / args.model / checkpoint["run"] / f"step{checkpoint['step']}" / tag
     out.mkdir(parents=True, exist_ok=True)
     setup_logging(out / "collect.log", mode="a")
@@ -225,7 +226,8 @@ def run_collection(args: argparse.Namespace) -> dict:
 
         sae, _ = load_sae(args.sae, device)
         sae_info = {"path": str(args.sae), "name": sae_meta["name"], "layer": int(sae_meta["layer"]), "k": sae.k,
-                    "n_features": sae.n_features, "kind": sae_meta.get("kind"), "trained_on": sae_meta.get("checkpoint", {}).get("path")}
+                    "n_features": sae.n_features, "kind": sae_meta.get("kind"), "trained_on": sae_meta.get("checkpoint", {}).get("path"),
+                    "sha256": hashlib.sha256(Path(args.sae).read_bytes()).hexdigest()}
     layer_ids = [sae_info["layer"]] if sae else list(range(n_layers))
     width = sae.n_features if sae else hidden
     np_dtype = np.float16 if args.dtype == "float16" else np.float32
@@ -236,7 +238,7 @@ def run_collection(args: argparse.Namespace) -> dict:
         "model": args.model, "checkpoint": checkpoint["path"], "inputs": [[str(p), p.stat().st_size] for p in inputs],
         "n_speeches": n, "n_layers": n_layers, "hidden_size": hidden, "dtype": args.dtype, "max_length": config.max_length,
         "precision": args.precision,
-        **({"sae": sae_info["path"]} if sae else {}),
+        **({"sae": sae_info["path"], "sae_sha256": sae_info["sha256"]} if sae else {}),
     }
     meta_path, progress_path = out / "meta.json", out / "progress.json"
     done = 0

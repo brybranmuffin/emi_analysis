@@ -45,6 +45,12 @@ EXACT_BOOTSTRAP_MAX = 20_000
 
 # ------------------------------------------------------------------ library
 
+def _block_rows(source, encode=None, block: int = BLOCK) -> int:
+    """Rows per block so a float64 block stays near 1.6 GB, also for 8,192-wide SAE features."""
+    width = getattr(source, "shape", (0, 768))[1] if encode is None else 8_192
+    return min(block, max(1_000, 200_000_000 // max(1, width)))
+
+
 def _blocks(n_rows: int, block: int):
     for start in range(0, n_rows, block):
         yield start, min(start + block, n_rows)
@@ -60,7 +66,7 @@ def token_weighted_mean(source, counts, rows: np.ndarray | None = None, encode=N
     counts = np.asarray(counts, dtype=np.float64)
     n = len(source) if rows is None else len(rows)
     total, weight = None, 0.0
-    for start, stop in _blocks(n, block):
+    for start, stop in _blocks(n, _block_rows(source, encode, block)):
         x = _read(source, rows, start, stop, encode).astype(np.float64)
         c = counts[start:stop] if rows is None else counts[rows[start:stop]]
         part = c @ x
@@ -76,21 +82,22 @@ def keyword_vectors(occ: np.ndarray, keyword: np.ndarray, era: np.ndarray, n_key
     Occurrences with non-finite vectors (spans without tokens) are skipped. Keywords left with none are NaN and
     returned in the second value.
     """
-    occ = np.asarray(occ, dtype=np.float64)
-    use = np.asarray(use, dtype=bool) & np.isfinite(occ).all(axis=1)
-    dim = occ.shape[1]
-    out = np.full((n_keywords, dim), np.nan)
+    rows = np.flatnonzero(np.asarray(use, dtype=bool))
+    sub = np.asarray(occ[rows], dtype=np.float64)  # only the used rows: occurrence files can be 200k x 8,192
+    finite = np.isfinite(sub).all(axis=1)
+    sub, keyword, era = sub[finite], np.asarray(keyword)[rows][finite], np.asarray(era)[rows][finite]
+    out = np.full((n_keywords, occ.shape[1]), np.nan)
     missing = []
     for k in range(n_keywords):
-        mine = use & (keyword == k)
+        mine = keyword == k
         if not mine.any():
             missing.append(k)
             continue
         if balanced:
-            era_means = [occ[mine & (era == e)].mean(axis=0) for e in range(N_ERAS) if (mine & (era == e)).any()]
+            era_means = [sub[mine & (era == e)].mean(axis=0) for e in range(N_ERAS) if (mine & (era == e)).any()]
             out[k] = np.mean(era_means, axis=0)
         else:
-            out[k] = occ[mine].mean(axis=0)
+            out[k] = sub[mine].mean(axis=0)
     return out, missing
 
 
@@ -113,7 +120,7 @@ def cosines(source, rows: np.ndarray | None, mu: np.ndarray, p_ev: np.ndarray, p
     """cos(x - mu, P_ev) and cos(x - mu, P_int) per speech (no centering of x with center=False)."""
     n = len(source) if rows is None else len(rows)
     ev, intu = np.empty(n, dtype=np.float32), np.empty(n, dtype=np.float32)
-    for start, stop in _blocks(n, block):
+    for start, stop in _blocks(n, _block_rows(source, encode, block)):
         x = _read(source, rows, start, stop, encode).astype(np.float64)
         if center:
             x -= mu
@@ -127,7 +134,7 @@ def projection(source, rows: np.ndarray | None, mu: np.ndarray, p_ev: np.ndarray
     direction = p_ev - p_int
     n = len(source) if rows is None else len(rows)
     out = np.empty(n, dtype=np.float32)
-    for start, stop in _blocks(n, block):
+    for start, stop in _blocks(n, _block_rows(source, encode, block)):
         x = _read(source, rows, start, stop, encode).astype(np.float64)
         out[start:stop] = _cos(x - mu if center else x, direction)
     return out
@@ -222,7 +229,10 @@ def auc(scores: np.ndarray, positive: np.ndarray) -> float:
 def layer_auc(occ: np.ndarray, keyword: np.ndarray, pole: np.ndarray, era: np.ndarray, mu: np.ndarray, use: np.ndarray,
               n_keywords: int) -> float:
     """Leave one keyword out: poles from the other keywords score its occurrences; AUC of evidence vs intuition."""
-    occ = np.asarray(occ, dtype=np.float64)
+    rows = np.flatnonzero(np.asarray(use, dtype=bool))
+    occ = np.asarray(occ[rows], dtype=np.float64)
+    keyword, pole, era = np.asarray(keyword)[rows], np.asarray(pole)[rows], np.asarray(era)[rows]
+    use = np.ones(len(rows), dtype=bool)
     kw_pole = np.zeros(n_keywords, dtype=np.int8)
     for k in range(n_keywords):
         if (keyword == k).any():

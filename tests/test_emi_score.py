@@ -144,3 +144,33 @@ def test_end_to_end_raw_scoring_on_tiny_bert(tmp_path):
     assert {r["layer"] for r in series} == {str(i) for i in range(n_layers)}
     with (out / "layer_selection.csv").open() as handle:
         assert len(list(csv.DictReader(handle))) == n_layers
+
+
+class _RowsOnly:
+    """An occurrence array that may only be read by row index (as a memmap of 8,192 SAE features must be)."""
+
+    def __init__(self, data):
+        self.data, self.shape, self.read = data, data.shape, 0
+
+    def __len__(self):
+        return len(self.data)
+
+    def __array__(self, *args, **kwargs):
+        raise AssertionError("the whole occurrence array was loaded")
+
+    def __getitem__(self, index):
+        out = self.data[index]
+        self.read += len(out)
+        return out
+
+
+def test_keyword_vectors_and_auc_read_only_used_rows():
+    rng = np.random.default_rng(4)
+    occ = _RowsOnly(rng.normal(size=(100, 8)))
+    keyword = np.repeat(np.arange(4), 25)
+    era = np.zeros(100, dtype=np.int64)
+    use = np.zeros(100, dtype=bool)
+    use[::5] = True
+    kw, _ = keyword_vectors(occ, keyword, era, 4, use)
+    assert np.isfinite(kw).all() and occ.read == use.sum()
+    assert np.isfinite(layer_auc(occ, keyword, (keyword >= 2).astype(np.int8), era, np.zeros(8), use, 4))

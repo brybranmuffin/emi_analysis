@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -17,9 +18,9 @@ from emi_analysis.verify_activations import main as verify_main
 from test_sae import _corpus
 
 
-def _train(tmp_path: Path, config_path: Path, act: Path, seed: int = 0) -> Path:
+def _train(tmp_path: Path, config_path: Path, act: Path, seed: int = 0, tokens: int = 1500) -> Path:
     return Path(train_sae_main(["--model", "bert", "--config", str(config_path), "--kind", "token", "--layer", "2",
-                                "--activations", str(act), "--k", "4", "--expansion", "2", "--tokens", "1500", "--seed", str(seed),
+                                "--activations", str(act), "--k", "4", "--expansion", "2", "--tokens", str(tokens), "--seed", str(seed),
                                 "--batch-size", "128", "--buffer-tokens", "500", "--output-root", str(tmp_path / "sae")])["output_dir"]) / "sae.pt"
 
 
@@ -62,11 +63,16 @@ def test_sae_collection_equals_mean_of_token_features(tmp_path):
 
 def test_sae_collection_refuses_other_sae_and_resumes(tmp_path):
     config_path, act = _corpus(tmp_path, "bert")
-    first, second = _train(tmp_path, config_path, act, seed=0), _train(tmp_path, config_path, act, seed=1)
+    first = _train(tmp_path, config_path, act)
     out = _collect(tmp_path, config_path, first, "--tag", "t", "--dtype", "float32")
     complete = np.load(out / "layer_02.npy").copy()
+    # The SAE retrained in place (same name, new weights): resuming would mix two SAEs' features, so it is refused.
+    backup = tmp_path / "first_sae.pt"
+    shutil.copy(first, backup)
+    assert _train(tmp_path, config_path, act, tokens=1200) == first
     with pytest.raises(RuntimeError, match="--overwrite"):
-        _collect(tmp_path, config_path, second, "--tag", "t", "--dtype", "float32")
+        _collect(tmp_path, config_path, first, "--tag", "t", "--dtype", "float32")
+    shutil.copy(backup, first)
     (out / "progress.json").write_text(json.dumps({"completed_speeches": 16}))
     layer = np.load(out / "layer_02.npy", mmap_mode="r+")
     layer[16:] = 0
@@ -83,3 +89,11 @@ def test_verify_passes_sae_collection(tmp_path):
     checks = report["collections"][str(out)]["checks"]
     assert report["ok"] is True, checks
     assert checks["row_identity"]["ok"] and checks["fidelity"]["worst_by_layer"].keys() == {2}
+
+
+def test_sae_collection_never_shares_a_folder_with_the_raw_collection(tmp_path):
+    config_path, act = _corpus(tmp_path, "bert")
+    sae_path = _train(tmp_path, config_path, act)
+    out = _collect(tmp_path, config_path, sae_path, "--tag", "corpus", "--dtype", "float32")
+    assert out != act and out.name == "corpus_tokensae_layer02_k4_x2_seed0"
+    assert (act / "layer_00.npy").exists()  # the raw collection is untouched

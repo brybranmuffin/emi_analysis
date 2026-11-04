@@ -221,7 +221,7 @@ def build_cli() -> argparse.ArgumentParser:
     parser.add_argument("--eval-chunks", type=int, default=256, help="Held-out chunks for the spliced LM loss.")
     parser.add_argument("--precision", choices=["auto", "bf16", "tf32", "fp32"], default="auto")
     parser.add_argument("--tokens-per-batch", type=int, default=65_536)
-    parser.add_argument("--block-speeches", type=int, default=2_000)
+    parser.add_argument("--block-speeches", type=int, default=5_000)
     parser.add_argument("--num-proc", type=int, default=None)
     parser.add_argument("--log-every", type=int, default=200)
     parser.add_argument("--output-root", default="sae")
@@ -288,8 +288,9 @@ def run(args: argparse.Namespace) -> dict:
         logger.info(f"{len(rows):,} training speeches; tokens per era: "
                     + ", ".join(f"{e}: {per_era.get(e, 0):,}" for e in range(N_ERAS)))
         trainer = Trainer(sae, args.lr, dead_after=min(10_000_000, max(args.batch_size, args.tokens // 20)), device=device)
+        # Blocks are small: tokenizing one in-process avoids starting worker processes hundreds of times.
         stream = stream_token_states(base, tokenizer, config, speeches, rows, layer, device, context,
-                                     args.tokens_per_batch, args.block_speeches, num_proc)
+                                     args.tokens_per_batch, args.block_speeches, None)
         buffer, filled, normalized = [], 0, False
 
         def train_buffer(tokens: torch.Tensor) -> None:
