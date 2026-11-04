@@ -77,7 +77,7 @@ The Zenodo archive fetched by `python -m emi_analysis.download_assets` contains 
    sbatch slurm/qwen3_train.sh --data-root data/val10k --max-steps 300
    ```
 
-   Check in each log: the prep summary's `held-out IDs in training set: 0`, train's `Held-out leakage check ... OK`, the TOKEN ACCOUNTING block (tokens in = tokens out + tokens dropped; max chunk length within the limit), falling congressional loss across the checkpoints, and the steps/s on the GPU. Steps/s lets you estimate the full run's duration before submitting it. For ModernBERT and Qwen3, also check the PACKING block (fill rate, and tokens in packs = tokens in chunks). EMI on the adapted models is not computed by this repo.
+   Check in each log: the prep summary's `held-out IDs in training set: 0`, train's `Held-out leakage check ... OK`, the TOKEN ACCOUNTING block (tokens in = tokens out + tokens dropped; max chunk length within the limit), falling congressional loss across the checkpoints, and the steps/s on the GPU. Steps/s lets you estimate the full run's duration before submitting it. For ModernBERT and Qwen3, also check the PACKING block (fill rate, and tokens in packs = tokens in chunks). EMI is computed afterwards, from the collected activations (see Contextual EMI below).
 
 4. **Full training** (one GPU each; extra arguments after the script name are passed to `train.py`):
 
@@ -153,6 +153,44 @@ sbatch slurm/collect_activations.sh bert --run-dir checkpoints/bert-continued/ru
 ```
 
 `tests/test_collect_activations.py` checks every pooled vector against running each chunk through the model alone, for BERT, ModernBERT and Qwen3.
+
+## Contextual EMI (raw activations, token-SAE, speech-SAE)
+
+Design: `docs/superpowers/specs/2026-11-04-contextual-emi-design.md`. The dictionary, the DDR averaging and the scoring arithmetic are the paper's (`compute_sbert_avg_lexicon.py`); only the representation changes. Poles are built from the 49 evidence and 35 intuition keywords **as they occur in the speeches**: up to 200 ranked occurrences per keyword and era (eight eras of nine Congresses, training speeches only, at most one per speech), averaged per era, then over eras, then over keywords, then centered on the corpus token mean. Nothing comes from Word2Vec scores, LLM labels or the old SAE notebooks. ModernBERT forward passes run in strict fp32 everywhere (`--precision auto`).
+
+Run order (one model shown; repeat per model). `R=run-job4757959/step350847` for BERT:
+
+```bash
+sbatch slurm/keyword_occurrences.sh --input data/train.jsonl --input data/heldout/congressional.jsonl   # once
+sbatch slurm/keyword_activations.sh bert --run-dir checkpoints/bert-continued/run-job4757959 --occurrences emi/occurrences/corpus
+sbatch slurm/emi_score.sh --model bert --representation raw --activations activations/bert/$R/corpus \
+  --keywords emi/keywords/bert/$R/corpus --occurrences emi/occurrences/corpus                           # all layers; picks the primary layer
+# SAEs on the primary layer (fresh, seeds 0 and 1)
+sbatch slurm/train_sae.sh --model bert --kind token  --activations activations/bert/$R/corpus --layer-from results/emi/raw/bert/$R/meta.json --seed 0
+sbatch slurm/train_sae.sh --model bert --kind speech --activations activations/bert/$R/corpus --layer-from results/emi/raw/bert/$R/meta.json --seed 0
+# keyword features for each SAE, then the token-SAE corpus pass (same collector, --sae mode; resumable)
+sbatch slurm/keyword_activations.sh bert --run-dir checkpoints/bert-continued/run-job4757959 --occurrences emi/occurrences/corpus \
+  --sae sae/bert/$R/token/layerLL_k64_x8_seed0/sae.pt --sae sae/bert/$R/speech/layerLL_k64_x8_seed0/sae.pt
+sbatch slurm/collect_activations.sh bert --run-dir checkpoints/bert-continued/run-job4757959 \
+  --input data/train.jsonl --input data/heldout/congressional.jsonl --tag corpus --sae sae/bert/$R/token/layerLL_k64_x8_seed0/sae.pt
+sbatch slurm/verify_activations.sh activations/bert/$R/corpus_tokensae_layerLL_k64_x8_seed0
+sbatch slurm/emi_score.sh --model bert --representation token_sae --sae sae/bert/$R/token/layerLL_k64_x8_seed0/sae.pt \
+  --sae-features activations/bert/$R/corpus_tokensae_layerLL_k64_x8_seed0 --activations activations/bert/$R/corpus \
+  --keywords emi/keywords/bert/$R/corpus --occurrences emi/occurrences/corpus
+sbatch --partition=gengpu --gres=gpu:h100:1 slurm/emi_score.sh --model bert --representation speech_sae \
+  --sae sae/bert/$R/speech/layerLL_k64_x8_seed0/sae.pt --activations activations/bert/$R/corpus \
+  --keywords emi/keywords/bert/$R/corpus --occurrences emi/occurrences/corpus
+# ablations on the 20k held-out speeches, then validation (last)
+sbatch slurm/emi_ablations.sh --scores results/emi/raw/bert/$R --compare results/emi/token_sae/<name>/bert/$R --compare ...
+sbatch slurm/emi_validate.sh score --scores results/emi/raw/bert/$R --excerpt-activations ... --prolific ... --w2v ...
+```
+
+Replace `LL` with the primary layer that `results/emi/raw/<model>/$R/meta.json` reports. Pass `--precision fp32` to `collect_activations.sh` for ModernBERT.
+
+- **Scoring** (`emi_score`): evidence/intuition cosines of each centered speech vector with the centered poles, the paper's 10-word length-bin adjustment and z-scores, EMI = z_ev − z_int; speeches with ≤ 10 words or < 5% top-100 words get NaN. Per-Congress means with 95% CIs (`series.csv`). The **primary layer** has the highest leave-one-keyword-out AUC (evidence vs intuition occurrences); it never looks at a validation target. Every layer is scored and kept.
+- **SAEs** (`train_sae`): TopK, k = 64, 8× width, AuxK for dead features, trained on era-balanced data that excludes the held-out speeches. Token SAEs stream ~200M tokens from the model; speech SAEs train on the stored speech vectors. `metrics.json` reports held-out FVU, dead features and (token SAEs) the held-out LM loss with the layer replaced by its reconstruction.
+- **Ablations** (`emi_ablations`, held-out): keyword in context vs alone, per-era poles (drift; `era_pole_cosines.csv`), unbalanced sampling, 25/50/200 occurrences, leave one keyword out, projection vs two cosines, no length adjustment, no centering, chunk-weighted Congress means, every layer, and `--compare` folders (representations, base model, SAE seeds and sweep configs). For base vs adapted, collect the held-out set with `--base` and score it with `emi_score` against the same occurrences (it aligns by speech ID).
+- **Validation** (`emi_validate`): `export` writes the Prolific excerpts as a speech file; collect them like any speeches (`--tag prolific`, plus `--sae` for the token-SAE); `score` correlates the per-Congress series with the W2V series and the excerpt EMI with mean(evidence_based − evidence_free), reporting the W2V score's own correlation as the reference.
 
 ## Reading a training run
 
