@@ -90,6 +90,9 @@ def build_cli() -> argparse.ArgumentParser:
     parser.add_argument("--num-proc", type=int, default=None)
     parser.add_argument("--overwrite", action="store_true", help="Discard an existing collection with different settings.")
     parser.add_argument("--require-gpu", action="store_true")
+    parser.add_argument("--sae", default=None,
+                        help="Token-level SAE checkpoint: store per-speech means of SAE(token) at the SAE's layer instead of "
+                             "raw hidden states (default tag: <tag>_tokensae_<sae name>).")
     return parser
 
 
@@ -193,6 +196,9 @@ def run_collection(args: argparse.Namespace) -> dict:
     checkpoint = choose_checkpoint(args, config)
     inputs = [Path(p) for p in (args.input or [config.heldout_data_path])]
     tag = args.tag or ("heldout" if not args.input else "+".join(p.stem for p in inputs))
+    sae_meta = torch.load(args.sae, map_location="cpu", weights_only=False)["meta"] if args.sae else None
+    if sae_meta and not args.tag:
+        tag = f"{tag}_tokensae_{sae_meta['name']}"
     out = Path(args.output_root) / args.model / checkpoint["run"] / f"step{checkpoint['step']}" / tag
     out.mkdir(parents=True, exist_ok=True)
     setup_logging(out / "collect.log", mode="a")
@@ -213,6 +219,15 @@ def run_collection(args: argparse.Namespace) -> dict:
     model.eval()
     base = model.base_model
     n_layers, hidden = model.config.num_hidden_layers + 1, model.config.hidden_size
+    sae, sae_info = None, None
+    if args.sae:
+        from .sae import load_sae
+
+        sae, _ = load_sae(args.sae, device)
+        sae_info = {"path": str(args.sae), "name": sae_meta["name"], "layer": int(sae_meta["layer"]), "k": sae.k,
+                    "n_features": sae.n_features, "kind": sae_meta.get("kind"), "trained_on": sae_meta.get("checkpoint", {}).get("path")}
+    layer_ids = [sae_info["layer"]] if sae else list(range(n_layers))
+    width = sae.n_features if sae else hidden
     np_dtype = np.float16 if args.dtype == "float16" else np.float32
 
     speeches = datasets.concatenate_datasets([load_jsonl_dataset(p, config.datasets_cache_dir) for p in inputs])
@@ -221,6 +236,7 @@ def run_collection(args: argparse.Namespace) -> dict:
         "model": args.model, "checkpoint": checkpoint["path"], "inputs": [[str(p), p.stat().st_size] for p in inputs],
         "n_speeches": n, "n_layers": n_layers, "hidden_size": hidden, "dtype": args.dtype, "max_length": config.max_length,
         "precision": args.precision,
+        **({"sae": sae_info["path"]} if sae else {}),
     }
     meta_path, progress_path = out / "meta.json", out / "progress.json"
     done = 0
@@ -241,7 +257,7 @@ def run_collection(args: argparse.Namespace) -> dict:
     columns = chunks.select_columns(["speech", "length"]).with_format("numpy")[:]
     chunk_speech, chunk_lengths = columns["speech"], columns["length"].astype(np.int64)
     pooled_tokens = int(chunk_lengths.sum()) - n_special * len(chunk_lengths)
-    storage = n * n_layers * hidden * np.dtype(np_dtype).itemsize
+    storage = n * len(layer_ids) * width * np.dtype(np_dtype).itemsize
 
     banner(logger, f"ACTIVATION COLLECTION: {args.model} ({tag})", {
         "checkpoint": checkpoint["path"],
@@ -250,7 +266,8 @@ def run_collection(args: argparse.Namespace) -> dict:
         "speeches": f"{n:,} -> {len(chunk_lengths):,} chunks of up to {config.max_length:,} tokens "
                     f"({'packed, speech-isolated' if config.packing else 'batched by length'})",
         "tokens in chunks": f"{pooled_tokens:,} ([CLS]/[SEP] wrappers and padding excluded; tokenized in {format_duration(time.time() - t0)})",
-        "layers stored": f"{n_layers} (embedding output + {n_layers - 1} layers) x {hidden} dims",
+        "layers stored": (f"SAE features of layer {sae_info['layer']}: {width:,} (TopK k={sae.k}, {sae_info['path']})" if sae
+                          else f"{n_layers} (embedding output + {n_layers - 1} layers) x {hidden} dims"),
         "storage": f"{storage / 1e9:,.1f} GB as {args.dtype}",
         "device": f"{torch.cuda.get_device_name(device) if device.type == 'cuda' else 'cpu'}, precision {args.precision}"
                   + ("" if device.type == "cuda" or args.precision == "fp32" else " (requested; CPU runs float32)"),
@@ -265,13 +282,15 @@ def run_collection(args: argparse.Namespace) -> dict:
         (out / "speech_ids.txt").write_text("\n".join(str(s) for s in speeches["speech_id"]) + "\n", encoding="utf-8")
         np.save(out / "congress.npy", np.asarray(speeches["congress"], dtype=np.int16))
         np.save(out / "token_counts.npy", np.zeros(n, dtype=np.int32))
-        layers = [np.lib.format.open_memmap(out / f"layer_{i:02d}.npy", mode="w+", dtype=np_dtype, shape=(n, hidden))
-                  for i in range(n_layers)]
+        layers = [np.lib.format.open_memmap(out / f"layer_{i:02d}.npy", mode="w+", dtype=np_dtype, shape=(n, width))
+                  for i in layer_ids]
     else:
-        layers = [np.load(out / f"layer_{i:02d}.npy", mmap_mode="r+") for i in range(n_layers)]
+        layers = [np.load(out / f"layer_{i:02d}.npy", mmap_mode="r+") for i in layer_ids]
     token_counts = np.load(out / "token_counts.npy", mmap_mode="r+")
     meta = {"fingerprint": fingerprint, "status": "running", "model": args.model, "model_name": config.model_name,
-            "checkpoint": checkpoint, "n_speeches": n, "n_layers": n_layers, "hidden_size": hidden, "dtype": args.dtype,
+            "checkpoint": checkpoint, "n_speeches": n, "n_layers": n_layers, "hidden_size": width, "dtype": args.dtype,
+            "layers_stored": layer_ids, "model_hidden_size": hidden,
+            "representation": "token_sae" if sae else "raw", **({"sae": sae_info} if sae else {}),
             "layer_index": "0 = embedding output; i = output of layer i; last = final output (final norm applied)",
             "pooling": "token-weighted mean over all real tokens of the speech across all its chunks; "
                        "special tokens and padding excluded",
@@ -284,13 +303,13 @@ def run_collection(args: argparse.Namespace) -> dict:
     meta_path.write_text(json.dumps(meta, indent=2, default=str) + "\n", encoding="utf-8")
 
     special = torch.as_tensor(tokenizer.all_special_ids)
-    max_abs = {i: 0.0 for i in range(n_layers)}
+    max_abs = {i: 0.0 for i in layer_ids}
     collect_started, collected = time.time(), 0
     for s0 in range(done, n, args.block_speeches):
         s1 = min(s0 + args.block_speeches, n)
         c0, c1 = np.searchsorted(chunk_speech, [s0, s1])
         rows = chunks.select(range(int(c0), int(c1))).with_format(None)[:]["input_ids"]
-        sums = torch.zeros((n_layers, s1 - s0, hidden), dtype=torch.float32, device=device)
+        sums = torch.zeros((len(layer_ids), s1 - s0, width), dtype=torch.float32, device=device)
         counts = torch.zeros(s1 - s0, dtype=torch.float32, device=device)
         for units, unit_speech in batches_for_block(rows, chunk_speech[c0:c1] - s0, config, args.tokens_per_batch):
             batch = build_packed_batch(units, tokenizer.pad_token_id) if config.packing else collate(units, tokenizer.pad_token_id)
@@ -298,19 +317,24 @@ def run_collection(args: argparse.Namespace) -> dict:
             keep = index >= 0
             with torch.no_grad(), autocast():
                 states = base(**model_inputs(batch, model, config.objective, device, labels=False), output_hidden_states=True).hidden_states
-            for layer, state in enumerate(states):
-                sums[layer].index_add_(0, index[keep], state.reshape(-1, hidden)[keep].float())
+            if sae is not None:
+                with torch.no_grad():
+                    features = sae.encode(states[layer_ids[0]].reshape(-1, hidden)[keep].float())
+                sums[0].index_add_(0, index[keep], features)
+            else:
+                for layer, state in enumerate(states):
+                    sums[layer].index_add_(0, index[keep], state.reshape(-1, hidden)[keep].float())
             counts.index_add_(0, index[keep], torch.ones(int(keep.sum()), device=device))
 
         means = (sums / counts.clamp(min=1)[None, :, None]).cpu().numpy()
         if not np.isfinite(means).all():
             raise RuntimeError(f"Non-finite pooled activations in speeches {s0:,}-{s1:,}.")
-        block_max = {i: float(np.abs(means[i]).max(initial=0.0)) for i in range(n_layers)}
+        block_max = {i: float(np.abs(means[slot]).max(initial=0.0)) for slot, i in enumerate(layer_ids)}
         if args.dtype == "float16":
             check_float16_range(block_max)
-        for i in range(n_layers):
-            layers[i][s0:s1] = means[i].astype(np_dtype)
-            layers[i].flush()
+        for slot, i in enumerate(layer_ids):
+            layers[slot][s0:s1] = means[slot].astype(np_dtype)
+            layers[slot].flush()
             max_abs[i] = max(max_abs[i], block_max[i])
         token_counts[s0:s1] = counts.cpu().numpy().astype(np.int32)
         token_counts.flush()
@@ -337,7 +361,7 @@ def run_collection(args: argparse.Namespace) -> dict:
     size = sum(p.stat().st_size for p in out.glob("layer_*.npy"))
     banner(logger, f"ACTIVATION COLLECTION COMPLETE: {args.model} ({tag})", {
         "speeches": f"{n:,} ({empty:,} empty)",
-        "files": f"{n_layers} layer files, {size / 1e9:,.1f} GB, in {out}",
+        "files": f"{len(layer_ids)} layer files, {size / 1e9:,.1f} GB, in {out}",
         "largest |pooled activation|": f"{max(max_abs.values()):,.1f}" if done == 0 else "n/a (resumed run)",
         "elapsed": format_duration(time.time() - started),
     })

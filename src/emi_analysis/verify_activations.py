@@ -90,11 +90,16 @@ def expected_token_counts(meta: dict, config, num_proc: int) -> np.ndarray:
     return np.bincount(columns["speech"], weights=columns["pooled"], minlength=meta["n_speeches"]).astype(np.int64)
 
 
+def stored_layers(meta: dict) -> list[int]:
+    """Layers held by the collection: every hidden state, or the SAE's layer for a token-SAE collection."""
+    return list(meta.get("layers_stored", range(meta["n_layers"])))
+
+
 def scan_layers(out: Path, meta: dict, token_counts: np.ndarray) -> tuple[dict, dict]:
     n, hidden, dtype = meta["n_speeches"], meta["hidden_size"], np.dtype(meta["dtype"])
     missing_files, bad_shape = [], []
     zero_rows, nonfinite, max_abs = {}, {}, {}
-    for layer in range(meta["n_layers"]):
+    for layer in stored_layers(meta):
         path = out / f"layer_{layer:02d}.npy"
         if not path.exists():
             missing_files.append(layer)
@@ -135,6 +140,8 @@ def recompute_sample(meta: dict, config_path: str, picks: list[int], tmp: Path, 
     argv = ["--model", meta["model"], "--config", config_path, "--input", str(sample_path), "--tag", "spot",
             "--output-root", str(tmp / "act"), "--dtype", "float32", "--precision", "fp32"]
     argv += ["--base"] if checkpoint.get("run") == "base" else ["--checkpoint", checkpoint["path"]]
+    if meta.get("sae"):
+        argv += ["--sae", meta["sae"]["path"]]
     if require_gpu:
         argv.append("--require-gpu")
     return Path(collect_main(argv)["output_dir"])
@@ -142,20 +149,28 @@ def recompute_sample(meta: dict, config_path: str, picks: list[int], tmp: Path, 
 
 def identity_and_fidelity(out: Path, meta: dict, picks: list[int], fresh: Path, token_counts: np.ndarray) -> tuple[dict, dict]:
     fresh_counts = np.load(fresh / "token_counts.npy")
-    stored0 = np.load(out / "layer_00.npy", mmap_mode="r")
-    fresh0 = np.load(fresh / "layer_00.npy")
+    layers = stored_layers(meta)
+    first = layers[0]
+    stored0 = np.load(out / f"layer_{first:02d}.npy", mmap_mode="r")
+    fresh0 = np.load(fresh / f"layer_{first:02d}.npy")
     wrong = []
     for k, row in enumerate(picks):
         expected = fresh0[k].astype(np.float64)
-        error = float(np.abs(stored0[row].astype(np.float64) - expected).max())
-        allowed = IDENTITY_RELATIVE_TOLERANCE * float(np.abs(expected).max()) + IDENTITY_ABSOLUTE_TOLERANCE
-        if error > allowed or int(token_counts[row]) != int(fresh_counts[k]):
+        got = stored0[row].astype(np.float64)
+        if first == 0:  # the embedding output is precise in any format
+            allowed = IDENTITY_RELATIVE_TOLERANCE * float(np.abs(expected).max()) + IDENTITY_ABSOLUTE_TOLERANCE
+            matches = float(np.abs(got - expected).max()) <= allowed
+        else:  # SAE features: another speech's sparse code points elsewhere
+            norms = np.linalg.norm(got) * np.linalg.norm(expected)
+            matches = norms > 0 and float(got @ expected / norms) >= FIDELITY_MIN
+        if not matches or int(token_counts[row]) != int(fresh_counts[k]):
             wrong.append(row)
-    identity = _check(not wrong, f"{len(picks)} sampled rows hold their own speech (layer 0 and token count match)" if not wrong
+    what = "layer 0" if first == 0 else f"layer {first} features"
+    identity = _check(not wrong, f"{len(picks)} sampled rows hold their own speech ({what} and token count match)" if not wrong
                       else f"{len(wrong)} sampled rows do not match their speech: rows {wrong[:10]}", speeches=len(picks))
 
     worst_by_layer = {}
-    for layer in range(meta["n_layers"]):
+    for layer in layers:
         stored = np.asarray(np.load(out / f"layer_{layer:02d}.npy", mmap_mode="r")[picks], dtype=np.float64)
         reference = np.load(fresh / f"layer_{layer:02d}.npy").astype(np.float64)
         centre = reference.mean(axis=0)
