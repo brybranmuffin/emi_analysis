@@ -245,6 +245,27 @@ def layer_auc(occ: np.ndarray, keyword: np.ndarray, pole: np.ndarray, era: np.nd
     return auc(np.concatenate(scores), np.concatenate(labels))
 
 
+def aligned_stats(act: Path, occ_dir: Path) -> dict[str, np.ndarray]:
+    """speech_stats.npz rows for each row of an activation collection (the corpus itself, or any subset of it)."""
+    stats = dict(np.load(occ_dir / "speech_stats.npz"))
+    act_ids_path, occ_ids_path = act / "speech_ids.txt", occ_dir / "speech_ids.txt"
+    if act_ids_path.exists() and occ_ids_path.exists():
+        act_ids = act_ids_path.read_text(encoding="utf-8").split()
+        occ_ids = occ_ids_path.read_text(encoding="utf-8").split()
+        if act_ids == occ_ids:
+            return stats
+        position = {s: i for i, s in enumerate(occ_ids)}
+        missing = [s for s in act_ids if s not in position]
+        if missing:
+            raise RuntimeError(f"{len(missing):,} speeches of {act} are not in {occ_dir} (e.g. {missing[:3]}).")
+        index = np.asarray([position[s] for s in act_ids], dtype=np.int64)
+        return {k: v[index] for k, v in stats.items()}
+    congress = np.load(act / "congress.npy")
+    if len(congress) != len(stats["congress"]) or not np.array_equal(congress, stats["congress"]):
+        raise RuntimeError(f"Row order of {act} does not match {occ_dir}: they must come from the same input files.")
+    return stats
+
+
 # ------------------------------------------------------------------ representations
 
 class Representation:
@@ -325,7 +346,7 @@ def run(args: argparse.Namespace) -> dict:
     act_meta = json.loads((act / "meta.json").read_text(encoding="utf-8"))
     occ_dir = Path(args.occurrences)
     occ = np.load(occ_dir / "occurrences.npz")
-    stats = np.load(occ_dir / "speech_stats.npz")
+    stats = aligned_stats(act, occ_dir)
     keywords = json.loads((occ_dir / "keywords.json").read_text(encoding="utf-8"))
     n_keywords = len(keywords["words"])
     kw_pole = np.asarray(keywords["poles"], dtype=np.int8)
@@ -343,8 +364,6 @@ def run(args: argparse.Namespace) -> dict:
     setup_logging(out / "emi_score.log", mode="a")
 
     congress = np.load(act / "congress.npy")
-    if len(congress) != len(stats["congress"]) or not np.array_equal(congress, stats["congress"]):
-        raise RuntimeError(f"Row order of {act} does not match {occ_dir}: they must come from the same input files.")
     ok = scorable(stats["word_count"], stats["top100_frac"])
     use = (occ["rank_balanced"] >= 0) & (occ["rank_balanced"] < args.n_per_era)
     banner(logger, f"CONTEXTUAL EMI: {args.model} ({args.representation})", {

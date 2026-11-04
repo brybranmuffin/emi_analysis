@@ -210,10 +210,18 @@ def run(args: argparse.Namespace) -> dict:
     alone_units = [[tokenizer.cls_token_id, *ids, tokenizer.sep_token_id] if wrap else ids for ids in alone_ids]
     alone_place = [(k, list(range(1 if wrap else 0, (1 if wrap else 0) + len(ids)))) for k, ids in enumerate(alone_ids)]
     alone_arrays = [np.zeros((len(words), hidden), dtype=np.float32) for _ in range(n_layers)]
-    run_units(base, alone_units, alone_place, len(words), tokenizer.pad_token_id, args.batch_chunks, device, context,
-              [(lambda states, b, p: [s[b, p] for s in states], alone_arrays)])
+    alone_sinks = [(sinks[0][0], alone_arrays)]
+    alone_sae = []
+    for (transform, (occ_array,)), info in zip(sinks[1:], sae_outputs):
+        array = np.zeros((len(words), occ_array.shape[1]), dtype=np.float32)
+        alone_sinks.append((transform, [array]))
+        alone_sae.append((info, array))
+    run_units(base, alone_units, alone_place, len(words), tokenizer.pad_token_id, args.batch_chunks, device, context, alone_sinks)
     for i, array in enumerate(alone_arrays):
         np.save(out / f"alone_layer_{i:02d}.npy", array)
+    for info, array in alone_sae:
+        info["alone_file"] = f"alone_sae_{info['name']}.npy"
+        np.save(out / info["alone_file"], array)
 
     meta = {
         "model": args.model, "model_name": config.model_name, "checkpoint": checkpoint, "precision": precision,

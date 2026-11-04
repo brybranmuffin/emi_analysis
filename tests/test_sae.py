@@ -148,6 +148,8 @@ def test_keyword_activations_store_mean_of_piece_features(tmp_path):
     raw = np.load(kw / "occ_layer_02.npy")
     sae, _ = load_sae(sae_dir / "sae.pt", "cpu")
     assert features.shape == (len(raw), sae.n_features) and np.isfinite(features).all()
+    alone = np.load(kw / f"alone_sae_{sae_dir.name}.npy")
+    assert alone.shape == (len(json.loads((occ / "keywords.json").read_text())["words"]), sae.n_features)
     config = parse_config(str(config_path))
     _, tokenizer = load_model_and_tokenizer(config, config.model_name, torch.device("cpu"))
     words = json.loads((occ / "keywords.json").read_text())["words"]

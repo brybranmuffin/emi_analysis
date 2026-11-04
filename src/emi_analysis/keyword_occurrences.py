@@ -14,6 +14,7 @@ whole words on character spans, so each model later maps the same spans to its o
 Outputs in emi/occurrences/<tag>/:
     occurrences.npz   row, keyword, pole (0 evidence / 1 intuition), era, start, end, rank_balanced, rank_unbalanced
     speech_stats.npz  word_count, top100_frac, heldout, congress (one entry per collection row)
+    speech_ids.txt    the rows' speech IDs (lets a collection of a subset, e.g. only held-out speeches, be aligned)
     keywords.json     the keywords in index order with their poles
     meta.json         counts per keyword and era, shortfalls, rare keywords
 """
@@ -156,6 +157,7 @@ def run(args: argparse.Namespace) -> dict:
              rank_balanced=rank_balanced[order], rank_unbalanced=rank_unbalanced[order])
     np.savez(out / "speech_stats.npz", word_count=stat_cols["word_count"].astype(np.int32),
              top100_frac=stat_cols["top100_frac"].astype(np.float32), heldout=heldout, congress=congress)
+    (out / "speech_ids.txt").write_text("\n".join(str(s) for s in speeches["speech_id"]) + "\n", encoding="utf-8")
     (out / "keywords.json").write_text(json.dumps({"words": words, "poles": poles.tolist(),
                                                    "evidence": evidence, "intuition": intuition}, indent=2) + "\n")
 
