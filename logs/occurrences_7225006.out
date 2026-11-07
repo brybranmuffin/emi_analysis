@@ -1,0 +1,25 @@
+job 7225006 on qnode0159 at 2026-11-04 16:31:40
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+2026-11-04 16:33:42 | INFO    | ==============================================================================
+2026-11-04 16:33:42 | INFO    | KEYWORD OCCURRENCES
+2026-11-04 16:33:42 | INFO    |   inputs            : data/train.jsonl (8,353,445), data/heldout/congressional.jsonl (20,000, held out)
+2026-11-04 16:33:42 | INFO    |   keywords          : 49 evidence + 35 intuition
+2026-11-04 16:33:42 | INFO    |   sample            : 200 ranked per keyword and era (eras of 9 Congresses), 800 per keyword unbalanced
+2026-11-04 16:33:42 | INFO    |   seed              : 0
+2026-11-04 16:33:42 | INFO    |   output            : emi/occurrences/corpus
+2026-11-04 16:33:42 | INFO    |   hostname          : qnode0159
+2026-11-04 16:33:42 | INFO    |   python            : 3.10.14
+2026-11-04 16:33:42 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-04 16:33:42 | INFO    |   slurm_job_id      : 7225006
+2026-11-04 16:33:42 | INFO    |   git_commit        : unknown
+2026-11-04 16:33:42 | INFO    |   started_at        : 2026-11-04T16:33:42
+2026-11-04 16:33:42 | INFO    | ==============================================================================
+2026-11-04 16:40:49 | INFO    | Scanned 8,373,445 speeches in 00:07:07: 10,124,502 (speech, keyword) pairs with at least one match
+2026-11-04 16:42:43 | INFO    | ==============================================================================
+2026-11-04 16:42:43 | INFO    | KEYWORD OCCURRENCES COMPLETE
+2026-11-04 16:42:43 | INFO    |   occurrences kept                      : 181,532
+2026-11-04 16:42:43 | INFO    |   keyword-era cells short of the target : 72 of 672
+2026-11-04 16:42:43 | INFO    |   rare keywords                         : none
+2026-11-04 16:42:43 | INFO    |   unscorable speeches (paper filters)   : 38
+2026-11-04 16:42:43 | INFO    |   elapsed                               : 00:10:55
+2026-11-04 16:42:43 | INFO    | ==============================================================================
