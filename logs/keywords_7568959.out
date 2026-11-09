@@ -1,0 +1,27 @@
+job 7568959 on qgpu3005 at 2026-11-07 12:05:12
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+NVIDIA H100 80GB HBM3, 81559 MiB
+=== keyword activations: modernbert ===
+2026-11-07 12:05:30 | INFO    | ==============================================================================
+2026-11-07 12:05:30 | INFO    | KEYWORD ACTIVATIONS: modernbert
+2026-11-07 12:05:30 | INFO    |   checkpoint          : checkpoints/modernbert-continued/run-job4757963/checkpoint-316779
+2026-11-07 12:05:30 | INFO    |   why this checkpoint : given with --checkpoint
+2026-11-07 12:05:30 | INFO    |   occurrences         : 181,532 in 170,478 speeches (emi/occurrences/corpus)
+2026-11-07 12:05:30 | INFO    |   keywords            : 84
+2026-11-07 12:05:30 | INFO    |   layers              : 23 x 768
+2026-11-07 12:05:30 | INFO    |   precision           : fp32
+2026-11-07 12:05:30 | INFO    |   output              : emi/keywords/modernbert/run-job4757963/step316779/corpus
+2026-11-07 12:05:30 | INFO    |   hostname            : qgpu3005
+2026-11-07 12:05:30 | INFO    |   python              : 3.10.14
+2026-11-07 12:05:30 | INFO    |   python_executable   : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-07 12:05:30 | INFO    |   slurm_job_id        : 7568959
+2026-11-07 12:05:30 | INFO    |   git_commit          : unknown
+2026-11-07 12:05:30 | INFO    |   started_at          : 2026-11-07T12:05:30
+2026-11-07 12:05:30 | INFO    | ==============================================================================
+2026-11-07 12:11:13 | INFO    | Planned 173,016 chunks in 00:05:43; 4 spans cross a chunk boundary; 0 spans have no token
+2026-11-07 12:32:55 | INFO    | ==============================================================================
+2026-11-07 12:32:55 | INFO    | KEYWORD ACTIVATIONS COMPLETE: modernbert
+2026-11-07 12:32:55 | INFO    |   occurrences : 181,532 (4 straddling a chunk boundary, 0 without tokens)
+2026-11-07 12:32:55 | INFO    |   files       : 23 occurrence layers + 23 alone layers
+2026-11-07 12:32:55 | INFO    |   elapsed     : 00:27:39
+2026-11-07 12:32:55 | INFO    | ==============================================================================

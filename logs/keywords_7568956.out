@@ -1,0 +1,27 @@
+job 7568956 on qgpu3011 at 2026-11-07 12:00:08
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+NVIDIA H100 80GB HBM3, 81559 MiB
+=== keyword activations: gpt2 ===
+2026-11-07 12:00:25 | INFO    | ==============================================================================
+2026-11-07 12:00:25 | INFO    | KEYWORD ACTIVATIONS: gpt2
+2026-11-07 12:00:25 | INFO    |   checkpoint          : checkpoints/gpt2/run-job9843505/checkpoint-759917
+2026-11-07 12:00:25 | INFO    |   why this checkpoint : given with --checkpoint
+2026-11-07 12:00:25 | INFO    |   occurrences         : 181,532 in 170,478 speeches (emi/occurrences/corpus)
+2026-11-07 12:00:25 | INFO    |   keywords            : 84
+2026-11-07 12:00:25 | INFO    |   layers              : 13 x 768
+2026-11-07 12:00:25 | INFO    |   precision           : bf16
+2026-11-07 12:00:25 | INFO    |   output              : emi/keywords/gpt2/run-job9843505/step759917/corpus
+2026-11-07 12:00:25 | INFO    |   hostname            : qgpu3011
+2026-11-07 12:00:25 | INFO    |   python              : 3.10.14
+2026-11-07 12:00:25 | INFO    |   python_executable   : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-07 12:00:25 | INFO    |   slurm_job_id        : 7568956
+2026-11-07 12:00:25 | INFO    |   git_commit          : unknown
+2026-11-07 12:00:25 | INFO    |   started_at          : 2026-11-07T12:00:25
+2026-11-07 12:00:25 | INFO    | ==============================================================================
+2026-11-07 12:05:56 | INFO    | Planned 177,138 chunks in 00:05:31; 9 spans cross a chunk boundary; 0 spans have no token
+2026-11-07 12:08:49 | INFO    | ==============================================================================
+2026-11-07 12:08:49 | INFO    | KEYWORD ACTIVATIONS COMPLETE: gpt2
+2026-11-07 12:08:49 | INFO    |   occurrences : 181,532 (9 straddling a chunk boundary, 0 without tokens)
+2026-11-07 12:08:49 | INFO    |   files       : 13 occurrence layers + 13 alone layers
+2026-11-07 12:08:49 | INFO    |   elapsed     : 00:08:38
+2026-11-07 12:08:49 | INFO    | ==============================================================================
