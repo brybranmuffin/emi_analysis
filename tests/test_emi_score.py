@@ -121,7 +121,7 @@ def test_end_to_end_raw_scoring_on_tiny_bert(tmp_path):
     kw = Path(keyword_main(["--model", "bert", "--config", str(config_path), "--base", "--occurrences", str(occ),
                             "--precision", "fp32", "--output-root", str(tmp_path / "kw")])["output_dir"])
     summary = score_main(["--model", "bert", "--activations", str(act), "--keywords", str(kw), "--occurrences", str(occ),
-                          "--representation", "raw", "--n-per-era", "4", "--output-root", str(tmp_path / "results"),
+                          "--representation", "raw", "--n-per-era", "4", "--min-per-era", "1", "--output-root", str(tmp_path / "results"),
                           "--n-boot", "50"])
     out = Path(summary["output_dir"])
     meta = json.loads((out / "meta.json").read_text())
@@ -174,3 +174,32 @@ def test_keyword_vectors_and_auc_read_only_used_rows():
     kw, _ = keyword_vectors(occ, keyword, era, 4, use)
     assert np.isfinite(kw).all() and occ.read == use.sum()
     assert np.isfinite(layer_auc(occ, keyword, (keyword >= 2).astype(np.int8), era, np.zeros(8), use, 4))
+
+
+def test_min_per_era_skips_thin_eras_and_drops_keywords_with_none():
+    a, b = np.array([1.0, 0.0]), np.array([0.0, 1.0])
+    occ = np.stack([a] * 10 + [b] + [b] * 3).astype(np.float32)
+    keyword = np.array([0] * 11 + [1] * 3)
+    era = np.array([0] * 10 + [1] + [2] * 3)
+    use = np.ones(len(keyword), dtype=bool)
+    kw, missing = keyword_vectors(occ, keyword, era, 2, use, min_per_era=5)
+    assert np.allclose(kw[0], a)  # the single era-1 occurrence no longer counts as a whole era
+    assert missing == [1] and np.isnan(kw[1]).all()  # keyword 1 has no era with 5 occurrences
+    old, _ = keyword_vectors(occ, keyword, era, 2, use)
+    assert np.allclose(old[0], (a + b) / 2)
+
+
+def test_scoring_refuses_poles_without_keywords(tmp_path):
+    import pytest
+
+    config_path = _make_run_inputs(tmp_path, "bert", max_length=32)
+    inputs = ["--input", str(tmp_path / "data" / "train.jsonl"), "--input", str(tmp_path / "data" / "heldout" / "congressional.jsonl")]
+    act = Path(collect_main(["--model", "bert", "--config", str(config_path), "--base", *inputs, "--tag", "corpus",
+                             "--output-root", str(tmp_path / "act"), "--dtype", "float32", "--precision", "fp32"])["output_dir"])
+    occ = Path(occurrences_main(["--config", str(config_path), *inputs, "--per-era", "4", "--unbalanced", "8",
+                                 "--num-proc", "1", "--output-root", str(tmp_path / "occ")])["output_dir"])
+    kw = Path(keyword_main(["--model", "bert", "--config", str(config_path), "--base", "--occurrences", str(occ),
+                            "--precision", "fp32", "--output-root", str(tmp_path / "kw")])["output_dir"])
+    with pytest.raises(RuntimeError, match="min-per-era"):
+        score_main(["--model", "bert", "--activations", str(act), "--keywords", str(kw), "--occurrences", str(occ),
+                    "--layers", "1", "--output-root", str(tmp_path / "results")])

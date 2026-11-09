@@ -107,8 +107,10 @@ Eight eras of nine Congresses: 46–54, 55–63, 64–72, 73–81, 82–90, 91�
 
 ### Poles (same rule in every representation)
 1. Map each occurrence's vector into the representation (raw: as is; SAE: encode with that SAE).
-2. Keyword vector = mean over eras of (mean over that era's occurrences). Each era counts equally even when
-   an era is short; an era with no occurrences is skipped and logged.
+2. Keyword vector = mean over eras of (mean over that era's occurrences). Each era counts equally, but only
+   eras with at least 25 sampled occurrences count (amended 2026-11-08 after the occurrence sample showed
+   cells of 1-4 occurrences, e.g. "fake news" before 2016); a keyword with no such era is left out and
+   reported. Ablations: no minimum, and only keywords with >= 100 occurrences in every era.
 3. Pole = mean of its keyword vectors (DDR).
 4. Center: subtract μ, the corpus **token-weighted** mean in that representation. Because the stored speech
    vectors are token-weighted means, the token-weighted mean over speeches equals the mean over all tokens.

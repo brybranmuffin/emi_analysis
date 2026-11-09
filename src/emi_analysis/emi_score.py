@@ -76,11 +76,12 @@ def token_weighted_mean(source, counts, rows: np.ndarray | None = None, encode=N
 
 
 def keyword_vectors(occ: np.ndarray, keyword: np.ndarray, era: np.ndarray, n_keywords: int, use: np.ndarray,
-                    balanced: bool = True) -> tuple[np.ndarray, list[int]]:
+                    balanced: bool = True, min_per_era: int = 1) -> tuple[np.ndarray, list[int]]:
     """Per-keyword vector: mean over eras of the era's mean occurrence (balanced) or the plain mean.
 
-    Occurrences with non-finite vectors (spans without tokens) are skipped. Keywords left with none are NaN and
-    returned in the second value.
+    With balanced=True an era counts only if the keyword has at least min_per_era occurrences there, so one stray
+    occurrence does not weigh as much as a full era. Occurrences with non-finite vectors are skipped. Keywords left
+    with nothing are NaN and returned in the second value.
     """
     rows = np.flatnonzero(np.asarray(use, dtype=bool))
     sub = np.asarray(occ[rows], dtype=np.float64)  # only the used rows: occurrence files can be 200k x 8,192
@@ -94,7 +95,11 @@ def keyword_vectors(occ: np.ndarray, keyword: np.ndarray, era: np.ndarray, n_key
             missing.append(k)
             continue
         if balanced:
-            era_means = [sub[mine & (era == e)].mean(axis=0) for e in range(N_ERAS) if (mine & (era == e)).any()]
+            era_means = [sub[mine & (era == e)].mean(axis=0) for e in range(N_ERAS)
+                         if (mine & (era == e)).sum() >= max(1, min_per_era)]
+            if not era_means:
+                missing.append(k)
+                continue
             out[k] = np.mean(era_means, axis=0)
         else:
             out[k] = sub[mine].mean(axis=0)
@@ -227,7 +232,7 @@ def auc(scores: np.ndarray, positive: np.ndarray) -> float:
 
 
 def layer_auc(occ: np.ndarray, keyword: np.ndarray, pole: np.ndarray, era: np.ndarray, mu: np.ndarray, use: np.ndarray,
-              n_keywords: int) -> float:
+              n_keywords: int, min_per_era: int = 1) -> float:
     """Leave one keyword out: poles from the other keywords score its occurrences; AUC of evidence vs intuition."""
     rows = np.flatnonzero(np.asarray(use, dtype=bool))
     occ = np.asarray(occ[rows], dtype=np.float64)
@@ -237,7 +242,7 @@ def layer_auc(occ: np.ndarray, keyword: np.ndarray, pole: np.ndarray, era: np.nd
     for k in range(n_keywords):
         if (keyword == k).any():
             kw_pole[k] = pole[keyword == k][0]
-    kw, _ = keyword_vectors(occ, keyword, era, n_keywords, use)
+    kw, _ = keyword_vectors(occ, keyword, era, n_keywords, use, min_per_era=min_per_era)
     ok = np.isfinite(kw).all(axis=1)
     scores, labels = [], []
     for k in np.flatnonzero(ok):
@@ -339,6 +344,8 @@ def build_cli() -> argparse.ArgumentParser:
     parser.add_argument("--sae-features", default=None, help="Token-SAE speech feature collection (token_sae).")
     parser.add_argument("--layers", default="all", help="'all' or comma-separated layers (SAE representations: the SAE's layer).")
     parser.add_argument("--n-per-era", type=int, default=100, help="Occurrences per keyword and era used for the poles.")
+    parser.add_argument("--min-per-era", type=int, default=25,
+                        help="An era counts toward a keyword's vector only with at least this many occurrences.")
     parser.add_argument("--n-boot", type=int, default=1000)
     parser.add_argument("--output-root", default="results/emi")
     return parser
@@ -388,9 +395,16 @@ def run(args: argparse.Namespace) -> dict:
         t0 = time.time()
         rep = load_representation(args, layer)
         mu = token_weighted_mean(rep.source, rep.counts, encode=rep.encode)
-        kw_vecs, missing = keyword_vectors(rep.occ, occ["keyword"], occ["era"], n_keywords, use)
+        bad = int((~np.isfinite(np.asarray(rep.occ[np.flatnonzero(use)], dtype=np.float32)).all(axis=1)).sum())
+        if bad:
+            logger.warning(f"layer {layer}: {bad:,} used occurrence vectors are not finite (skipped)")
+        kw_vecs, missing = keyword_vectors(rep.occ, occ["keyword"], occ["era"], n_keywords, use, min_per_era=args.min_per_era)
+        have = np.isfinite(kw_vecs).all(axis=1)
+        if not (have & (kw_pole == 0)).any() or not (have & (kw_pole == 1)).any():
+            raise RuntimeError(f"layer {layer}: a pole has no keyword with an era of at least --min-per-era "
+                               f"{args.min_per_era} occurrences (within the first --n-per-era {args.n_per_era}).")
         p_ev, p_int = poles(kw_vecs, kw_pole, mu)
-        layer_score = layer_auc(rep.occ, occ["keyword"], occ["pole"], occ["era"], mu, use, n_keywords)
+        layer_score = layer_auc(rep.occ, occ["keyword"], occ["pole"], occ["era"], mu, use, n_keywords, args.min_per_era)
         ev, intu = cosines(rep.source, None, mu, p_ev, p_int, encode=rep.encode)
         emi, params = emi_from_cosines(ev, intu, stats["word_count"], ok)
         np.save(out / f"layer_{layer:02d}_ev.npy", ev)
@@ -421,7 +435,7 @@ def run(args: argparse.Namespace) -> dict:
         "model": args.model, "representation": args.representation, "sae": args.sae, "sae_features": args.sae_features,
         "activations": str(act), "keywords": args.keywords, "occurrences": str(occ_dir), "checkpoint": act_meta["checkpoint"],
         "layers": layers, "primary_layer": int(primary), "primary_rule": "highest leave-one-keyword-out AUC (ties: deeper)",
-        "n_per_era": args.n_per_era, "n_speeches": int(len(congress)), "n_scored": int(ok.sum()),
+        "n_per_era": args.n_per_era, "min_per_era": args.min_per_era, "n_speeches": int(len(congress)), "n_scored": int(ok.sum()),
         "elapsed_seconds": round(time.time() - started, 1), "finished_at": datetime.now().isoformat(timespec="seconds"),
     }
     (out / "meta.json").write_text(json.dumps(meta, indent=2, default=str) + "\n", encoding="utf-8")

@@ -9,6 +9,8 @@ held-out EMI of the same scores folder (its primary layer, corpus mean, main pol
     era_poles/<e>           poles from one era's occurrences only (drift; their cosines in era_pole_cosines.csv)
     sampling/unbalanced     the same number of occurrences per keyword drawn from all eras at once
     n_per_era/<n>           25, 50, 200 occurrences per keyword and era instead of the main number
+    min_per_era/1           every era with any occurrence counts toward a keyword (no minimum)
+    keywords/all_eras       only keywords with at least 100 occurrences in every era (no modern-vocabulary tilt)
     loo/<word>              the poles without one keyword (loo_keywords.csv)
     scoring/projection      one cosine with P_ev - P_int instead of two cosines
     scoring/no_length_adjust, scoring/no_centering
@@ -43,6 +45,7 @@ from .runinfo import banner, format_duration, setup_logging
 logger = logging.getLogger("emi_analysis")
 
 SAMPLE_SIZES = (25, 50, 200)
+ALL_ERAS_MIN = 100
 
 
 def _corr(a: np.ndarray, b: np.ndarray) -> tuple[float, float, int]:
@@ -126,6 +129,7 @@ def run(args: argparse.Namespace) -> dict:
     mu = np.load(scores / f"mu_layer_{layer:02d}.npy")
     main_poles = np.load(scores / f"poles_layer_{layer:02d}.npz")
     n_main = int(meta["n_per_era"])
+    min_main = int(meta.get("min_per_era", 1))
     banner(logger, f"EMI ABLATIONS: {meta['model']} ({rep_tag(meta)}), layer {layer}", {
         "scores": scores, "held-out speeches": f"{len(held):,} ({int(ok.sum()):,} scorable)", "output": out})
 
@@ -133,8 +137,9 @@ def run(args: argparse.Namespace) -> dict:
         ev, intu = cosines(rep.source, held, mu, p_ev, p_int, encode=rep.encode, center=center)
         return emi_from_cosines(ev, intu, wc, ok, adjust)[0]
 
-    def poles_from(use, balanced=True, keep=None):
-        vectors, _ = keyword_vectors(rep.occ, occ["keyword"], occ["era"], len(words), use, balanced)
+    def poles_from(use, balanced=True, keep=None, min_per_era=None):
+        vectors, _ = keyword_vectors(rep.occ, occ["keyword"], occ["era"], len(words), use, balanced,
+                                     min_per_era=min_main if min_per_era is None else min_per_era)
         if keep is not None:
             vectors = np.where(keep[:, None], vectors, np.nan)
         if not (np.isfinite(vectors).all(axis=1) & (kw_pole == 0)).any() or not (np.isfinite(vectors).all(axis=1) & (kw_pole == 1)).any():
@@ -192,6 +197,17 @@ def run(args: argparse.Namespace) -> dict:
     for n in SAMPLE_SIZES:
         p, _ = poles_from((occ["rank_balanced"] >= 0) & (occ["rank_balanced"] < n))
         record(f"n_per_era/{n}", emi_for(*p) if p else None)
+
+    p, _ = poles_from(use_main, min_per_era=1)
+    record("min_per_era/1", emi_for(*p) if p else None)
+    sampled = np.zeros((len(words), N_ERAS), dtype=np.int64)
+    in_sample = occ["rank_balanced"] >= 0
+    np.add.at(sampled, (occ["keyword"][in_sample], occ["era"][in_sample]), 1)
+    all_eras = (sampled >= ALL_ERAS_MIN).all(axis=1)
+    logger.info(f"keywords with >= {ALL_ERAS_MIN} occurrences in every era: {int((all_eras & (kw_pole == 0)).sum())} evidence, "
+                f"{int((all_eras & (kw_pole == 1)).sum())} intuition")
+    p, _ = poles_from(use_main, keep=all_eras)
+    record("keywords/all_eras", emi_for(*p) if p else None)
 
     # leave one keyword out
     main_vectors = main_poles["keyword_vectors"]

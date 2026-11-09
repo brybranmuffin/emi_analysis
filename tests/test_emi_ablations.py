@@ -43,7 +43,7 @@ def pipeline(tmp_path_factory):
                                  "--output-root", str(tmp / "occ")])["output_dir"])
     kw = Path(keyword_main([*common, "--occurrences", str(occ), "--precision", "fp32", "--output-root", str(tmp / "kw")])["output_dir"])
     scores = Path(score_main(["--model", "bert", "--activations", str(act), "--keywords", str(kw), "--occurrences", str(occ),
-                              "--n-per-era", "4", "--output-root", str(tmp / "results"), "--n-boot", "20"])["output_dir"])
+                              "--n-per-era", "4", "--min-per-era", "1", "--output-root", str(tmp / "results"), "--n-boot", "20"])["output_dir"])
     return {"tmp": tmp, "config": config_path, "act": act, "occ": occ, "kw": kw, "scores": scores, "common": common}
 
 
@@ -52,7 +52,8 @@ def test_ablation_table_has_every_variant(pipeline):
     rows = {r["variant"]: r for r in _read(out / "ablations.csv")}
     words = json.loads((pipeline["occ"] / "keywords.json").read_text())["words"]
     expected = {"context/alone", "sampling/unbalanced", "scoring/projection", "scoring/no_length_adjust",
-                "scoring/no_centering", "series/chunk_weighted", "n_per_era/25", "n_per_era/50", "n_per_era/200"}
+                "scoring/no_centering", "series/chunk_weighted", "n_per_era/25", "n_per_era/50", "n_per_era/200",
+                "min_per_era/1", "keywords/all_eras"}
     assert expected <= set(rows)
     assert {f"era_poles/{e}" for e in range(8)} <= set(rows)
     primary = json.loads((pipeline["scores"] / "meta.json").read_text())["primary_layer"]
@@ -79,7 +80,7 @@ def test_subset_collection_scores_against_corpus_occurrences(pipeline):
     held = Path(collect_main([*pipeline["common"], "--input", str(tmp / "data" / "heldout" / "congressional.jsonl"), "--tag", "heldout",
                               "--output-root", str(tmp / "act"), "--dtype", "float32", "--precision", "fp32"])["output_dir"])
     sub = Path(score_main(["--model", "bert", "--activations", str(held), "--keywords", str(pipeline["kw"]),
-                           "--occurrences", str(pipeline["occ"]), "--n-per-era", "4", "--layers", "2",
+                           "--occurrences", str(pipeline["occ"]), "--n-per-era", "4", "--min-per-era", "1", "--layers", "2",
                            "--output-root", str(tmp / "results_sub"), "--n-boot", "20"])["output_dir"])
     assert np.load(sub / "layer_02_ev.npy").shape == (40,)
     out = Path(ablations_main(["--scores", str(pipeline["scores"]), "--compare", str(sub), "--output-root", str(tmp / "abl3")])["output_dir"])
