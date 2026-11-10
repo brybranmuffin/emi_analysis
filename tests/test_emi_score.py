@@ -11,7 +11,8 @@ from scipy.stats import zscore
 
 from emi_analysis.collect_activations import main as collect_main
 from emi_analysis.emi_score import (congress_series, cosines, emi_from_cosines, keyword_vectors, layer_auc, main as score_main,
-                                    poles, standardize, token_weighted_mean)
+                                    poles, speech_layer_auc, standardize, token_weighted_mean)
+from emi_analysis.emi_select_layer import main as select_main
 from emi_analysis.keyword_activations import main as keyword_main
 from emi_analysis.keyword_occurrences import main as occurrences_main
 
@@ -107,6 +108,71 @@ def test_layer_auc_separates_planted_axis():
     assert 0.3 < layer_auc(random_occ, keyword, pole, era, np.zeros(16), use, n_kw) < 0.7
 
 
+def _planted_speeches(rng, signal: float = 1.0, n_kw: int = 10, per: int = 30, dim: int = 16):
+    """One occurrence per speech; each speech vector and its occurrence vector lean toward their keyword's pole."""
+    keyword = np.repeat(np.arange(n_kw), per)
+    pole = (keyword >= n_kw // 2).astype(np.int8)
+    axis = rng.normal(size=dim)
+    lean = np.where(pole[:, None] == 0, 1.0, -1.0) * axis
+    occ = rng.normal(size=(len(keyword), dim)) + 2 * lean
+    speeches = rng.normal(size=(len(keyword), dim)) * 3 + signal * lean
+    return {"source": speeches, "occ": occ, "row": np.arange(len(keyword)), "keyword": keyword, "pole": pole,
+            "era": rng.integers(0, 8, size=len(keyword)), "mu": np.zeros(dim), "use": np.ones(len(keyword), dtype=bool),
+            "n_keywords": n_kw, "ok": np.ones(len(keyword), dtype=bool)}
+
+
+def test_speech_auc_scores_whole_speeches_not_occurrences():
+    rng = np.random.default_rng(6)
+    strong = speech_layer_auc(**_planted_speeches(rng, signal=1.0))
+    assert strong["auc"] > 0.9 and strong["n_speeches"] == 300 and strong["n_keywords"] == 10
+    # Occurrences separate perfectly but the speeches carry no signal: the speech AUC must say so.
+    flat = speech_layer_auc(**_planted_speeches(rng, signal=0.0))
+    assert 0.3 < flat["auc"] < 0.7
+    assert layer_auc(*(_planted_speeches(rng, signal=0.0)[k] for k in ("occ", "keyword", "pole", "era", "mu", "use", "n_keywords"))) > 0.9
+
+
+def test_primary_layer_skips_the_embedding_layer():
+    from emi_analysis.emi_score import choose_primary
+
+    rows = [{"layer": 0, "loo_speech_auc": 0.70}, {"layer": 1, "loo_speech_auc": 0.60}, {"layer": 2, "loo_speech_auc": 0.65},
+            {"layer": 3, "loo_speech_auc": 0.65}]
+    assert choose_primary(rows, [0, 1, 2, 3]) == 3  # layer 0 is best but excluded; the tie goes deeper
+    assert choose_primary(rows[:1], [0]) == 0  # an SAE result has only its own layer
+    assert choose_primary([{"layer": "0", "loo_speech_auc": "0.7"}, {"layer": "1", "loo_speech_auc": "nan"}], [0, 1]) == 1
+
+
+def test_speech_auc_skips_pole_speeches_and_unscorable_ones():
+    rng = np.random.default_rng(7)
+    data = _planted_speeches(rng)
+    # Speech 0 also supplies a pole occurrence of keyword 9 (it holds two sampled keywords): never scored.
+    data["row"] = np.r_[data["row"], 0]
+    data["keyword"] = np.r_[data["keyword"], 9]
+    data["pole"] = np.r_[data["pole"], 1]
+    data["era"] = np.r_[data["era"], 0]
+    data["use"] = np.r_[data["use"], True]
+    data["occ"] = np.vstack([data["occ"], data["occ"][-1:]])
+    data["ok"] = data["ok"].copy()
+    data["ok"][1] = False  # too short for the paper's filters
+    out = speech_layer_auc(**data)
+    assert out["n_speeches"] == 300 - 2 and out["n_excluded_shared"] == 1
+    # An occurrence outside `use` does not feed the poles, so its speech stays scorable.
+    data["use"][-1] = False
+    assert speech_layer_auc(**data)["n_speeches"] == 300 - 1
+
+
+def test_speech_auc_applies_saved_standardization():
+    rng = np.random.default_rng(8)
+    data = _planted_speeches(rng)
+    wc = np.where(data["pole"] == 0, 100, 20)  # evidence speeches sit in bin 8, intuition speeches in bin 0
+    plain = speech_layer_auc(**data, word_count=wc)
+    assert plain["auc"] > 0.9
+    zero = {"adjust": True, "bin_means": {0: 0.0, 8: 0.0}, "mean": 0.0, "sd": 1.0}
+    assert np.isclose(speech_layer_auc(**data, word_count=wc, params={"ev": zero, "int": zero})["auc"], plain["auc"])
+    # The corpus says bin-8 speeches have a far higher evidence cosine: once that is subtracted, the ranking flips.
+    ev = {"adjust": True, "bin_means": {0: 0.0, 8: 100.0}, "mean": 0.0, "sd": 1.0}
+    assert speech_layer_auc(**data, word_count=wc, params={"ev": ev, "int": zero})["auc"] < 0.1
+
+
 def test_end_to_end_raw_scoring_on_tiny_bert(tmp_path):
     config_path = _make_run_inputs(tmp_path, "bert", max_length=32)
     rng = random.Random(5)
@@ -143,7 +209,24 @@ def test_end_to_end_raw_scoring_on_tiny_bert(tmp_path):
         series = list(csv.DictReader(handle))
     assert {r["layer"] for r in series} == {str(i) for i in range(n_layers)}
     with (out / "layer_selection.csv").open() as handle:
-        assert len(list(csv.DictReader(handle))) == n_layers
+        selection = list(csv.DictReader(handle))
+    assert len(selection) == n_layers and {"loo_keyword_auc", "loo_speech_auc", "n_auc_speeches"} <= set(selection[0])
+    assert "speech" in meta["primary_rule"]
+
+    # Re-selecting from the saved results reproduces the same speech AUCs and keeps the old choice on record.
+    meta["primary_layer"], meta["primary_rule"] = 0, "highest leave-one-keyword-out AUC (ties: deeper)"
+    (out / "meta.json").write_text(json.dumps(meta))
+    (out / "layer_selection.csv").write_text("layer,loo_keyword_auc,pole_cosine,missing_keywords\n" + "".join(
+        f"{r['layer']},{r['loo_keyword_auc']},{r['pole_cosine']},{r['missing_keywords']}\n" for r in selection))
+    result = select_main([str(out)])
+    again = json.loads((out / "meta.json").read_text())
+    with (out / "layer_selection.csv").open() as handle:
+        reselected = list(csv.DictReader(handle))
+    assert [r["loo_speech_auc"] for r in reselected] == [r["loo_speech_auc"] for r in selection]
+    assert [r["loo_keyword_auc"] for r in reselected] == [r["loo_keyword_auc"] for r in selection]
+    assert again["primary_layer"] == result[0]["primary_layer"] == summary["primary_layer"]
+    assert again["previous_primary"] == {"primary_layer": 0, "primary_rule": "highest leave-one-keyword-out AUC (ties: deeper)"}
+    assert "speech" in again["primary_rule"]
 
 
 class _RowsOnly:

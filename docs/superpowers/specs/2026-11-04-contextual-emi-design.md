@@ -129,10 +129,22 @@ Eight eras of nine Congresses: 46–54, 55–63, 64–72, 73–81, 82–90, 91�
   whether weighting speeches by their chunk count changes the series.
 
 ### Choosing the layer (fixed before any validation)
-For each model and layer, measure how well the poles separate evidence from intuition **occurrences**:
-leave one keyword out, build poles from the rest, and score that keyword's held-out occurrences. Report
-AUC over all occurrences. The primary layer per model is the one with the highest AUC (ties → deeper).
-Every layer is still scored and reported. This uses only the dictionary, never the validation data.
+For each model and layer, measure how well the poles separate evidence from intuition **speeches**:
+leave one keyword out, build poles from the rest, and score the whole speeches that keyword's sampled
+occurrences come from, as the length-adjusted, z-scored EMI the layer produces (its corpus length-bin
+means and SDs). A speech that also supplies a sampled occurrence of another keyword is skipped (that
+occurrence is in the poles), as are unscorable speeches. Report AUC over all scored speeches. The primary
+layer per model is the one with the highest AUC (ties → deeper), **excluding layer 0**: the embedding output
+carries no context, so it cannot be the primary layer of a contextual EMI (decided 2026-11-09, before any
+validation, after ModernBERT's layer 0 edged out layer 20 by 0.004). Every layer is still scored and
+reported. This uses only the dictionary, never the validation data.
+
+*Changed 2026-11-09.* The first rule scored the held-out keyword's own **occurrence** vectors. Raw
+scoring showed it picks layer 0–2 in every model: near the input a keyword's occurrences are almost the
+same vector, so separation is easiest exactly where the model is least contextual, while EMI scores
+speech means. The occurrence AUC stays in `layer_selection.csv` as a diagnostic (`loo_keyword_auc`), and
+`emi_select_layer` re-applied the new rule to the raw results scored under the old one (old choice kept
+in `meta.json` as `previous_primary`).
 
 ### Token-SAE
 - Architecture: TopK SAE (Gao et al., 2024), the encoder keeps exactly k features. Unit-norm decoder columns.

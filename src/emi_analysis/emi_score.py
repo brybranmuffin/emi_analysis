@@ -14,8 +14,10 @@ Per layer: mu = token-weighted corpus mean (it equals the mean over all tokens, 
 and speech means alike); keyword vector = mean over eras of the mean of that era's sampled occurrences; pole = mean
 of its keyword vectors, minus mu; evidence/intuition score = cosine of (speech - mu) with each pole; then the paper's
 length-bin adjustment, z-scores and EMI = z_ev - z_int. Speeches the paper would drop (<= 10 words, < 5% top-100
-words) get NaN. The primary layer is the one whose poles best separate held-out keywords' occurrences
-(leave-one-keyword-out AUC); it uses only the dictionary, never a validation target.
+words) get NaN. The primary layer is the one whose poles best separate the speeches held-out keywords were sampled
+from (leave-one-keyword-out speech AUC, speech_layer_auc); it uses only the dictionary, never a validation target.
+The older keyword-token AUC (layer_auc) is still reported as a diagnostic. emi_select_layer re-applies the rule to
+results scored before it existed.
 
 Output in results/emi/<representation>[/<sae name>]/<model>/<run>/step<N>/:
     layer_XX_{ev,int,emi}.npy, mu_layer_XX.npy, poles_layer_XX.npz, params_layer_XX.json
@@ -231,17 +233,27 @@ def auc(scores: np.ndarray, positive: np.ndarray) -> float:
     return float((ranks[positive].sum() - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg))
 
 
-def layer_auc(occ: np.ndarray, keyword: np.ndarray, pole: np.ndarray, era: np.ndarray, mu: np.ndarray, use: np.ndarray,
-              n_keywords: int, min_per_era: int = 1) -> float:
-    """Leave one keyword out: poles from the other keywords score its occurrences; AUC of evidence vs intuition."""
-    rows = np.flatnonzero(np.asarray(use, dtype=bool))
-    occ = np.asarray(occ[rows], dtype=np.float64)
-    keyword, pole, era = np.asarray(keyword)[rows], np.asarray(pole)[rows], np.asarray(era)[rows]
-    use = np.ones(len(rows), dtype=bool)
+def _keyword_poles(keyword: np.ndarray, pole: np.ndarray, n_keywords: int) -> np.ndarray:
+    """Pole (0 evidence / 1 intuition) of each keyword, read off its occurrences."""
     kw_pole = np.zeros(n_keywords, dtype=np.int8)
     for k in range(n_keywords):
         if (keyword == k).any():
             kw_pole[k] = pole[keyword == k][0]
+    return kw_pole
+
+
+def layer_auc(occ: np.ndarray, keyword: np.ndarray, pole: np.ndarray, era: np.ndarray, mu: np.ndarray, use: np.ndarray,
+              n_keywords: int, min_per_era: int = 1) -> float:
+    """Leave one keyword out: poles from the other keywords score its occurrences; AUC of evidence vs intuition.
+
+    A diagnostic since 2026-11-09: it scores the activation at the keyword itself, which near the input is almost
+    the same vector every time, so it favours the least contextual layers. The primary layer uses speech_layer_auc.
+    """
+    rows = np.flatnonzero(np.asarray(use, dtype=bool))
+    occ = np.asarray(occ[rows], dtype=np.float64)
+    keyword, pole, era = np.asarray(keyword)[rows], np.asarray(pole)[rows], np.asarray(era)[rows]
+    use = np.ones(len(rows), dtype=bool)
+    kw_pole = _keyword_poles(keyword, pole, n_keywords)
     kw, _ = keyword_vectors(occ, keyword, era, n_keywords, use, min_per_era=min_per_era)
     ok = np.isfinite(kw).all(axis=1)
     scores, labels = [], []
@@ -260,25 +272,98 @@ def layer_auc(occ: np.ndarray, keyword: np.ndarray, pole: np.ndarray, era: np.nd
     return auc(np.concatenate(scores), np.concatenate(labels))
 
 
-def aligned_stats(act: Path, occ_dir: Path) -> dict[str, np.ndarray]:
-    """speech_stats.npz rows for each row of an activation collection (the corpus itself, or any subset of it)."""
-    stats = dict(np.load(occ_dir / "speech_stats.npz"))
+def speech_layer_auc(source, occ: np.ndarray, row: np.ndarray, keyword: np.ndarray, pole: np.ndarray, era: np.ndarray,
+                     mu: np.ndarray, use: np.ndarray, n_keywords: int, ok: np.ndarray, word_count=None,
+                     params: dict | None = None, min_per_era: int = 1, encode=None) -> dict:
+    """Leave one keyword out, scored on whole speeches: the layer-selection rule.
+
+    For each keyword with a vector, poles are built from the other keywords' sampled occurrences (exactly as for
+    the real poles) and score the speech vectors (source rows) of the speeches that keyword was sampled from: the
+    same speech-level vector EMI scores. With params (emi_from_cosines' "ev"/"int" for this layer) and word_count
+    the score is the length-adjusted, z-scored EMI; without, cos(P_ev) - cos(P_int). params are fitted with the
+    full poles, a close stand-in for each leave-one-out pole pair. Returns the pooled AUC (evidence = positive).
+
+    A speech is skipped when it is not scorable (ok) or when it also supplies a sampled occurrence of another
+    keyword: that occurrence went into the poles. row maps each occurrence to its source row (-1: not in source).
+    """
+    use = np.asarray(use, dtype=bool)
+    row, keyword, pole = np.asarray(row, dtype=np.int64), np.asarray(keyword), np.asarray(pole)
+    ok = np.asarray(ok, dtype=bool)
+    if params is not None and word_count is None:
+        raise ValueError("params need word_count")
+    kw_pole = _keyword_poles(keyword[use], pole[use], n_keywords)
+    kw, _ = keyword_vectors(occ, keyword, era, n_keywords, use, min_per_era=min_per_era)
+    have = np.isfinite(kw).all(axis=1)
+    feeds = use & have[keyword] & (row >= 0)  # sampled occurrences that go into some pole
+    rows_fed, times_fed = np.unique(row[feeds], return_counts=True)
+    shared = rows_fed[times_fed > 1]
+    candidate = feeds & ~np.isin(row, shared)
+    candidate[candidate] &= ok[row[candidate]]
+    target = np.unique(row[candidate])
+    x_all = np.concatenate([_read(source, target, s, e, encode) for s, e in _blocks(len(target), 50_000)]) if len(target) \
+        else np.zeros((0, len(mu)), dtype=np.float32)
+    scores, labels, n_kw = [], [], 0
+    for k in np.flatnonzero(have):
+        keep = have.copy()
+        keep[k] = False
+        if not (keep & (kw_pole == 0)).any() or not (keep & (kw_pole == 1)).any():
+            continue
+        mine = row[candidate & (keyword == k)]
+        if not len(mine):
+            continue
+        p_ev, p_int = poles(kw, kw_pole, mu, keep)
+        x = x_all[np.searchsorted(target, mine)].astype(np.float64) - mu
+        ev, intu = _cos(x, p_ev), _cos(x, p_int)
+        if params is None:
+            score = ev - intu
+        else:
+            wc = np.asarray(word_count)[mine]
+            score = apply_standardize(ev, wc, params["ev"]) - apply_standardize(intu, wc, params["int"])
+        finite = np.isfinite(score)
+        scores.append(score[finite])
+        labels.append(np.full(int(finite.sum()), kw_pole[k] == 0))
+        n_kw += 1
+    n = int(sum(len(s) for s in scores))
+    value = auc(np.concatenate(scores), np.concatenate(labels)) if scores else float("nan")
+    return {"auc": value, "n_speeches": n, "n_keywords": n_kw, "n_excluded_shared": int(len(shared))}
+
+
+def _collection_index(act: Path, occ_dir: Path) -> np.ndarray | None:
+    """Corpus row (occ_dir's order) of each row of an activation collection; None when the orders are identical."""
     act_ids_path, occ_ids_path = act / "speech_ids.txt", occ_dir / "speech_ids.txt"
     if act_ids_path.exists() and occ_ids_path.exists():
         act_ids = act_ids_path.read_text(encoding="utf-8").split()
         occ_ids = occ_ids_path.read_text(encoding="utf-8").split()
         if act_ids == occ_ids:
-            return stats
+            return None
         position = {s: i for i, s in enumerate(occ_ids)}
         missing = [s for s in act_ids if s not in position]
         if missing:
             raise RuntimeError(f"{len(missing):,} speeches of {act} are not in {occ_dir} (e.g. {missing[:3]}).")
-        index = np.asarray([position[s] for s in act_ids], dtype=np.int64)
-        return {k: v[index] for k, v in stats.items()}
+        return np.asarray([position[s] for s in act_ids], dtype=np.int64)
     congress = np.load(act / "congress.npy")
-    if len(congress) != len(stats["congress"]) or not np.array_equal(congress, stats["congress"]):
+    corpus_congress = np.load(occ_dir / "speech_stats.npz")["congress"]
+    if len(congress) != len(corpus_congress) or not np.array_equal(congress, corpus_congress):
         raise RuntimeError(f"Row order of {act} does not match {occ_dir}: they must come from the same input files.")
-    return stats
+    return None
+
+
+def _select_stats(stats: dict[str, np.ndarray], index: np.ndarray | None) -> dict[str, np.ndarray]:
+    return stats if index is None else {k: v[index] for k, v in stats.items()}
+
+
+def aligned_stats(act: Path, occ_dir: Path) -> dict[str, np.ndarray]:
+    """speech_stats.npz rows for each row of an activation collection (the corpus itself, or any subset of it)."""
+    return _select_stats(dict(np.load(occ_dir / "speech_stats.npz")), _collection_index(act, occ_dir))
+
+
+def occurrence_rows(occ_row: np.ndarray, index: np.ndarray | None, n_corpus: int) -> np.ndarray:
+    """Each occurrence's row in the activation collection (-1 when its speech is not in the collection)."""
+    if index is None:
+        return np.asarray(occ_row, dtype=np.int64)
+    position = np.full(n_corpus, -1, dtype=np.int64)
+    position[index] = np.arange(len(index))
+    return position[np.asarray(occ_row, dtype=np.int64)]
 
 
 # ------------------------------------------------------------------ representations
@@ -331,6 +416,32 @@ def sae_name(path) -> str:
     return path.parent.name if path.name == "sae.pt" else path.stem
 
 
+# ------------------------------------------------------------------ layer selection
+
+PRIMARY_RULE = "highest leave-one-keyword-out speech AUC, layer 0 (embeddings) excluded (ties: deeper)"
+SELECTION_FIELDS = ["layer", "loo_speech_auc", "n_auc_speeches", "n_auc_keywords", "loo_keyword_auc", "pole_cosine",
+                    "missing_keywords"]
+
+
+def choose_primary(selection: list[dict], layers: list[int]) -> int:
+    """The layer with the highest speech AUC; ties go deeper. The last layer when no AUC is finite.
+
+    Layer 0 is the embedding output, before any context is mixed in, so a contextual EMI never takes it as primary
+    (decided 2026-11-09, before validation). It is still scored and reported; it is chosen only when it is the
+    sole layer.
+    """
+    candidates = [s for s in selection if int(s["layer"]) != 0] or selection
+    valid = [s for s in candidates if np.isfinite(float(s["loo_speech_auc"]))]
+    return int(max(valid, key=lambda s: (float(s["loo_speech_auc"]), int(s["layer"])))["layer"]) if valid else layers[-1]
+
+
+def write_selection(path: Path, selection: list[dict]) -> None:
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=SELECTION_FIELDS)
+        writer.writeheader()
+        writer.writerows(selection)
+
+
 # ------------------------------------------------------------------ CLI
 
 def build_cli() -> argparse.ArgumentParser:
@@ -363,7 +474,10 @@ def run(args: argparse.Namespace) -> dict:
     act_meta = json.loads((act / "meta.json").read_text(encoding="utf-8"))
     occ_dir = Path(args.occurrences)
     occ = np.load(occ_dir / "occurrences.npz")
-    stats = aligned_stats(act, occ_dir)
+    corpus_stats = dict(np.load(occ_dir / "speech_stats.npz"))
+    index = _collection_index(act, occ_dir)
+    stats = _select_stats(corpus_stats, index)
+    occ_rows = occurrence_rows(occ["row"], index, len(corpus_stats["congress"]))
     keywords = json.loads((occ_dir / "keywords.json").read_text(encoding="utf-8"))
     n_keywords = len(keywords["words"])
     kw_pole = np.asarray(keywords["poles"], dtype=np.int8)
@@ -407,6 +521,8 @@ def run(args: argparse.Namespace) -> dict:
         layer_score = layer_auc(rep.occ, occ["keyword"], occ["pole"], occ["era"], mu, use, n_keywords, args.min_per_era)
         ev, intu = cosines(rep.source, None, mu, p_ev, p_int, encode=rep.encode)
         emi, params = emi_from_cosines(ev, intu, stats["word_count"], ok)
+        speech = speech_layer_auc(rep.source, rep.occ, occ_rows, occ["keyword"], occ["pole"], occ["era"], mu, use,
+                                  n_keywords, ok, stats["word_count"], params, args.min_per_era, rep.encode)
         np.save(out / f"layer_{layer:02d}_ev.npy", ev)
         np.save(out / f"layer_{layer:02d}_int.npy", intu)
         np.save(out / f"layer_{layer:02d}_emi.npy", emi)
@@ -416,31 +532,29 @@ def run(args: argparse.Namespace) -> dict:
         for row in congress_series(emi, congress, n_boot=args.n_boot):
             series_rows.append({"layer": layer, **row})
         pole_cos = float(p_ev @ p_int / (np.linalg.norm(p_ev) * np.linalg.norm(p_int)))
-        selection.append({"layer": layer, "loo_keyword_auc": layer_score, "pole_cosine": pole_cos,
+        selection.append({"layer": layer, "loo_speech_auc": speech["auc"], "n_auc_speeches": speech["n_speeches"],
+                          "n_auc_keywords": speech["n_keywords"], "loo_keyword_auc": layer_score, "pole_cosine": pole_cos,
                           "missing_keywords": ";".join(keywords["words"][k] for k in missing)})
-        logger.info(f"layer {layer:2d}: leave-one-keyword-out AUC {layer_score:.3f} | cos(P_ev, P_int) {pole_cos:+.3f} | "
+        logger.info(f"layer {layer:2d}: speech AUC {speech['auc']:.3f} ({speech['n_speeches']:,} speeches) | "
+                    f"keyword-token AUC {layer_score:.3f} | cos(P_ev, P_int) {pole_cos:+.3f} | "
                     f"{len(missing)} keywords without occurrences | {format_duration(time.time() - t0)}")
 
     with (out / "series.csv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=["layer", "congress", "n", "mean", "lower", "upper", "ci_method"])
         writer.writeheader()
         writer.writerows(series_rows)
-    with (out / "layer_selection.csv").open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=["layer", "loo_keyword_auc", "pole_cosine", "missing_keywords"])
-        writer.writeheader()
-        writer.writerows(selection)
-    valid = [s for s in selection if np.isfinite(s["loo_keyword_auc"])]
-    primary = max(valid, key=lambda s: (s["loo_keyword_auc"], s["layer"]))["layer"] if valid else layers[-1]
+    write_selection(out / "layer_selection.csv", selection)
+    primary = choose_primary(selection, layers)
     meta = {
         "model": args.model, "representation": args.representation, "sae": args.sae, "sae_features": args.sae_features,
         "activations": str(act), "keywords": args.keywords, "occurrences": str(occ_dir), "checkpoint": act_meta["checkpoint"],
-        "layers": layers, "primary_layer": int(primary), "primary_rule": "highest leave-one-keyword-out AUC (ties: deeper)",
+        "layers": layers, "primary_layer": int(primary), "primary_rule": PRIMARY_RULE,
         "n_per_era": args.n_per_era, "min_per_era": args.min_per_era, "n_speeches": int(len(congress)), "n_scored": int(ok.sum()),
         "elapsed_seconds": round(time.time() - started, 1), "finished_at": datetime.now().isoformat(timespec="seconds"),
     }
     (out / "meta.json").write_text(json.dumps(meta, indent=2, default=str) + "\n", encoding="utf-8")
     banner(logger, f"CONTEXTUAL EMI COMPLETE: {args.model} ({args.representation})", {
-        "primary layer": f"{primary} (AUC {next(s['loo_keyword_auc'] for s in selection if s['layer'] == primary):.3f})",
+        "primary layer": f"{primary} (speech AUC {next(s['loo_speech_auc'] for s in selection if s['layer'] == primary):.3f})",
         "scored speeches": f"{int(ok.sum()):,} of {len(congress):,}",
         "output": out, "elapsed": format_duration(time.time() - started),
     })

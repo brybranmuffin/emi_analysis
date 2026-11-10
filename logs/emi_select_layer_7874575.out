@@ -1,0 +1,164 @@
+job 7874575 on qnode0009 at 2026-11-09 22:20:51
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+2026-11-09 22:20:55 | INFO    | ==============================================================================
+2026-11-09 22:20:55 | INFO    | LAYER SELECTION (speech AUC): bert (raw)
+2026-11-09 22:20:55 | INFO    |   results           : results/emi/raw/bert/run-job4757959/step350847
+2026-11-09 22:20:55 | INFO    |   activations       : activations/bert/run-job4757959/step350847/corpus
+2026-11-09 22:20:55 | INFO    |   occurrences       : emi/occurrences/corpus (62,894 sampled occurrences)
+2026-11-09 22:20:55 | INFO    |   current primary   : 4 (highest leave-one-keyword-out speech AUC (ties: deeper))
+2026-11-09 22:20:55 | INFO    |   layers            : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+2026-11-09 22:20:55 | INFO    |   hostname          : qnode0009
+2026-11-09 22:20:55 | INFO    |   python            : 3.10.14
+2026-11-09 22:20:55 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-09 22:20:55 | INFO    |   slurm_job_id      : 7874575
+2026-11-09 22:20:55 | INFO    |   git_commit        : unknown
+2026-11-09 22:20:55 | INFO    |   started_at        : 2026-11-09T22:20:55
+2026-11-09 22:20:55 | INFO    | ==============================================================================
+2026-11-09 22:21:03 | INFO    | layer  0: speech AUC 0.637 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.979 | 00:00:07
+2026-11-09 22:21:08 | INFO    | layer  1: speech AUC 0.654 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.985 | 00:00:05
+2026-11-09 22:21:11 | INFO    | layer  2: speech AUC 0.655 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.983 | 00:00:03
+2026-11-09 22:21:14 | INFO    | layer  3: speech AUC 0.662 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.981 | 00:00:03
+2026-11-09 22:21:17 | INFO    | layer  4: speech AUC 0.663 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.982 | 00:00:03
+2026-11-09 22:21:21 | INFO    | layer  5: speech AUC 0.660 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.981 | 00:00:03
+2026-11-09 22:21:24 | INFO    | layer  6: speech AUC 0.657 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.977 | 00:00:03
+2026-11-09 22:21:27 | INFO    | layer  7: speech AUC 0.658 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.978 | 00:00:03
+2026-11-09 22:21:30 | INFO    | layer  8: speech AUC 0.656 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.971 | 00:00:03
+2026-11-09 22:21:34 | INFO    | layer  9: speech AUC 0.656 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.969 | 00:00:03
+2026-11-09 22:21:37 | INFO    | layer 10: speech AUC 0.659 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.963 | 00:00:03
+2026-11-09 22:21:40 | INFO    | layer 11: speech AUC 0.657 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.967 | 00:00:03
+2026-11-09 22:21:43 | INFO    | layer 12: speech AUC 0.628 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.960 | 00:00:03
+2026-11-09 22:21:43 | INFO    | ==============================================================================
+2026-11-09 22:21:43 | INFO    | LAYER SELECTION COMPLETE: bert (raw)
+2026-11-09 22:21:43 | INFO    |   primary layer : 4 (speech AUC 0.663, 59,533 speeches)
+2026-11-09 22:21:43 | INFO    |   was           : 4
+2026-11-09 22:21:43 | INFO    |   meta.json     : results/emi/raw/bert/run-job4757959/step350847/meta.json
+2026-11-09 22:21:43 | INFO    |   elapsed       : 00:00:50
+2026-11-09 22:21:43 | INFO    | ==============================================================================
+2026-11-09 22:21:45 | INFO    | ==============================================================================
+2026-11-09 22:21:45 | INFO    | LAYER SELECTION (speech AUC): gpt2 (raw)
+2026-11-09 22:21:45 | INFO    |   results           : results/emi/raw/gpt2/run-job9843505/step759917
+2026-11-09 22:21:45 | INFO    |   activations       : activations/gpt2/run-job9843505/step759917/corpus
+2026-11-09 22:21:45 | INFO    |   occurrences       : emi/occurrences/corpus (62,894 sampled occurrences)
+2026-11-09 22:21:45 | INFO    |   current primary   : 6 (highest leave-one-keyword-out speech AUC (ties: deeper))
+2026-11-09 22:21:45 | INFO    |   layers            : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+2026-11-09 22:21:45 | INFO    |   hostname          : qnode0009
+2026-11-09 22:21:45 | INFO    |   python            : 3.10.14
+2026-11-09 22:21:45 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-09 22:21:45 | INFO    |   slurm_job_id      : 7874575
+2026-11-09 22:21:45 | INFO    |   git_commit        : unknown
+2026-11-09 22:21:45 | INFO    |   started_at        : 2026-11-09T22:21:45
+2026-11-09 22:21:45 | INFO    | ==============================================================================
+2026-11-09 22:21:48 | INFO    | layer  0: speech AUC 0.587 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.928 | 00:00:03
+2026-11-09 22:21:52 | INFO    | layer  1: speech AUC 0.641 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.974 | 00:00:03
+2026-11-09 22:21:55 | INFO    | layer  2: speech AUC 0.643 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.978 | 00:00:03
+2026-11-09 22:21:58 | INFO    | layer  3: speech AUC 0.651 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.972 | 00:00:03
+2026-11-09 22:22:01 | INFO    | layer  4: speech AUC 0.656 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.967 | 00:00:03
+2026-11-09 22:22:04 | INFO    | layer  5: speech AUC 0.657 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.955 | 00:00:03
+2026-11-09 22:22:08 | INFO    | layer  6: speech AUC 0.658 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.956 | 00:00:03
+2026-11-09 22:22:11 | INFO    | layer  7: speech AUC 0.655 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.944 | 00:00:03
+2026-11-09 22:22:14 | INFO    | layer  8: speech AUC 0.656 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.936 | 00:00:03
+2026-11-09 22:22:17 | INFO    | layer  9: speech AUC 0.653 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.930 | 00:00:03
+2026-11-09 22:22:20 | INFO    | layer 10: speech AUC 0.651 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.917 | 00:00:03
+2026-11-09 22:22:24 | INFO    | layer 11: speech AUC 0.644 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.892 | 00:00:03
+2026-11-09 22:22:27 | INFO    | layer 12: speech AUC 0.611 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.757 | 00:00:03
+2026-11-09 22:22:27 | INFO    | ==============================================================================
+2026-11-09 22:22:27 | INFO    | LAYER SELECTION COMPLETE: gpt2 (raw)
+2026-11-09 22:22:27 | INFO    |   primary layer : 6 (speech AUC 0.658, 59,533 speeches)
+2026-11-09 22:22:27 | INFO    |   was           : 6
+2026-11-09 22:22:27 | INFO    |   meta.json     : results/emi/raw/gpt2/run-job9843505/step759917/meta.json
+2026-11-09 22:22:27 | INFO    |   elapsed       : 00:00:44
+2026-11-09 22:22:27 | INFO    | ==============================================================================
+2026-11-09 22:22:29 | INFO    | ==============================================================================
+2026-11-09 22:22:29 | INFO    | LAYER SELECTION (speech AUC): modernbert (raw)
+2026-11-09 22:22:29 | INFO    |   results           : results/emi/raw/modernbert/run-job4757963/step316779
+2026-11-09 22:22:29 | INFO    |   activations       : activations/modernbert/run-job4757963/step316779/corpus
+2026-11-09 22:22:29 | INFO    |   occurrences       : emi/occurrences/corpus (62,894 sampled occurrences)
+2026-11-09 22:22:29 | INFO    |   current primary   : 0 (highest leave-one-keyword-out speech AUC (ties: deeper))
+2026-11-09 22:22:29 | INFO    |   layers            : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22
+2026-11-09 22:22:29 | INFO    |   hostname          : qnode0009
+2026-11-09 22:22:29 | INFO    |   python            : 3.10.14
+2026-11-09 22:22:29 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-09 22:22:29 | INFO    |   slurm_job_id      : 7874575
+2026-11-09 22:22:29 | INFO    |   git_commit        : unknown
+2026-11-09 22:22:29 | INFO    |   started_at        : 2026-11-09T22:22:29
+2026-11-09 22:22:29 | INFO    | ==============================================================================
+2026-11-09 22:22:32 | INFO    | layer  0: speech AUC 0.657 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.995 | 00:00:03
+2026-11-09 22:22:35 | INFO    | layer  1: speech AUC 0.612 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.973 | 00:00:03
+2026-11-09 22:22:38 | INFO    | layer  2: speech AUC 0.599 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.969 | 00:00:03
+2026-11-09 22:22:41 | INFO    | layer  3: speech AUC 0.582 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.977 | 00:00:03
+2026-11-09 22:22:44 | INFO    | layer  4: speech AUC 0.591 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.978 | 00:00:03
+2026-11-09 22:22:48 | INFO    | layer  5: speech AUC 0.611 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.974 | 00:00:03
+2026-11-09 22:22:51 | INFO    | layer  6: speech AUC 0.613 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.972 | 00:00:03
+2026-11-09 22:22:54 | INFO    | layer  7: speech AUC 0.623 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.967 | 00:00:03
+2026-11-09 22:22:57 | INFO    | layer  8: speech AUC 0.628 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.954 | 00:00:03
+2026-11-09 22:23:00 | INFO    | layer  9: speech AUC 0.633 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.947 | 00:00:03
+2026-11-09 22:23:03 | INFO    | layer 10: speech AUC 0.634 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.959 | 00:00:03
+2026-11-09 22:23:07 | INFO    | layer 11: speech AUC 0.630 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.957 | 00:00:03
+2026-11-09 22:23:10 | INFO    | layer 12: speech AUC 0.622 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.941 | 00:00:03
+2026-11-09 22:23:13 | INFO    | layer 13: speech AUC 0.629 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.953 | 00:00:03
+2026-11-09 22:23:17 | INFO    | layer 14: speech AUC 0.628 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.958 | 00:00:03
+2026-11-09 22:23:20 | INFO    | layer 15: speech AUC 0.622 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.937 | 00:00:03
+2026-11-09 22:23:23 | INFO    | layer 16: speech AUC 0.633 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.954 | 00:00:03
+2026-11-09 22:23:26 | INFO    | layer 17: speech AUC 0.640 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.961 | 00:00:03
+2026-11-09 22:23:30 | INFO    | layer 18: speech AUC 0.649 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.971 | 00:00:03
+2026-11-09 22:23:33 | INFO    | layer 19: speech AUC 0.651 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.966 | 00:00:03
+2026-11-09 22:23:36 | INFO    | layer 20: speech AUC 0.653 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.957 | 00:00:03
+2026-11-09 22:23:39 | INFO    | layer 21: speech AUC 0.650 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.949 | 00:00:03
+2026-11-09 22:23:43 | INFO    | layer 22: speech AUC 0.639 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.918 | 00:00:03
+2026-11-09 22:23:43 | INFO    | ==============================================================================
+2026-11-09 22:23:43 | INFO    | LAYER SELECTION COMPLETE: modernbert (raw)
+2026-11-09 22:23:43 | INFO    |   primary layer : 20 (speech AUC 0.653, 59,533 speeches)
+2026-11-09 22:23:43 | INFO    |   was           : 0
+2026-11-09 22:23:43 | INFO    |   meta.json     : results/emi/raw/modernbert/run-job4757963/step316779/meta.json
+2026-11-09 22:23:43 | INFO    |   elapsed       : 00:01:16
+2026-11-09 22:23:43 | INFO    | ==============================================================================
+2026-11-09 22:23:45 | INFO    | ==============================================================================
+2026-11-09 22:23:45 | INFO    | LAYER SELECTION (speech AUC): qwen3 (raw)
+2026-11-09 22:23:45 | INFO    |   results           : results/emi/raw/qwen3/run-job4757993/step481486
+2026-11-09 22:23:45 | INFO    |   activations       : activations/qwen3/run-job4757993/step481486/corpus
+2026-11-09 22:23:45 | INFO    |   occurrences       : emi/occurrences/corpus (62,894 sampled occurrences)
+2026-11-09 22:23:45 | INFO    |   current primary   : 18 (highest leave-one-keyword-out speech AUC (ties: deeper))
+2026-11-09 22:23:45 | INFO    |   layers            : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28
+2026-11-09 22:23:45 | INFO    |   hostname          : qnode0009
+2026-11-09 22:23:45 | INFO    |   python            : 3.10.14
+2026-11-09 22:23:45 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-09 22:23:45 | INFO    |   slurm_job_id      : 7874575
+2026-11-09 22:23:45 | INFO    |   git_commit        : unknown
+2026-11-09 22:23:45 | INFO    |   started_at        : 2026-11-09T22:23:45
+2026-11-09 22:23:45 | INFO    | ==============================================================================
+2026-11-09 22:23:49 | INFO    | layer  0: speech AUC 0.635 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.983 | 00:00:04
+2026-11-09 22:23:53 | INFO    | layer  1: speech AUC 0.640 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.991 | 00:00:04
+2026-11-09 22:23:57 | INFO    | layer  2: speech AUC 0.642 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.989 | 00:00:04
+2026-11-09 22:24:01 | INFO    | layer  3: speech AUC 0.630 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.979 | 00:00:04
+2026-11-09 22:24:06 | INFO    | layer  4: speech AUC 0.635 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.976 | 00:00:04
+2026-11-09 22:24:10 | INFO    | layer  5: speech AUC 0.642 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.980 | 00:00:04
+2026-11-09 22:24:14 | INFO    | layer  6: speech AUC 0.644 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.976 | 00:00:04
+2026-11-09 22:24:18 | INFO    | layer  7: speech AUC 0.648 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.975 | 00:00:04
+2026-11-09 22:24:22 | INFO    | layer  8: speech AUC 0.652 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.976 | 00:00:04
+2026-11-09 22:24:26 | INFO    | layer  9: speech AUC 0.658 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.978 | 00:00:04
+2026-11-09 22:24:31 | INFO    | layer 10: speech AUC 0.658 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.967 | 00:00:04
+2026-11-09 22:24:35 | INFO    | layer 11: speech AUC 0.659 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.964 | 00:00:04
+2026-11-09 22:24:39 | INFO    | layer 12: speech AUC 0.658 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.976 | 00:00:04
+2026-11-09 22:24:43 | INFO    | layer 13: speech AUC 0.657 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.976 | 00:00:04
+2026-11-09 22:24:47 | INFO    | layer 14: speech AUC 0.658 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.978 | 00:00:04
+2026-11-09 22:24:51 | INFO    | layer 15: speech AUC 0.659 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.977 | 00:00:04
+2026-11-09 22:24:56 | INFO    | layer 16: speech AUC 0.657 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.974 | 00:00:04
+2026-11-09 22:25:00 | INFO    | layer 17: speech AUC 0.658 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.979 | 00:00:04
+2026-11-09 22:25:04 | INFO    | layer 18: speech AUC 0.660 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.977 | 00:00:04
+2026-11-09 22:25:08 | INFO    | layer 19: speech AUC 0.654 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.974 | 00:00:04
+2026-11-09 22:25:13 | INFO    | layer 20: speech AUC 0.654 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.963 | 00:00:04
+2026-11-09 22:25:17 | INFO    | layer 21: speech AUC 0.655 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.963 | 00:00:04
+2026-11-09 22:25:21 | INFO    | layer 22: speech AUC 0.657 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.958 | 00:00:04
+2026-11-09 22:25:25 | INFO    | layer 23: speech AUC 0.652 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.952 | 00:00:04
+2026-11-09 22:25:29 | INFO    | layer 24: speech AUC 0.646 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.938 | 00:00:04
+2026-11-09 22:25:34 | INFO    | layer 25: speech AUC 0.636 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.929 | 00:00:04
+2026-11-09 22:25:38 | INFO    | layer 26: speech AUC 0.646 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.919 | 00:00:04
+2026-11-09 22:25:42 | INFO    | layer 27: speech AUC 0.629 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.859 | 00:00:04
+2026-11-09 22:25:47 | INFO    | layer 28: speech AUC 0.626 (59,533 speeches, 83 keywords, 1,592 shared skipped) | keyword-token AUC 0.797 | 00:00:04
+2026-11-09 22:25:47 | INFO    | ==============================================================================
+2026-11-09 22:25:47 | INFO    | LAYER SELECTION COMPLETE: qwen3 (raw)
+2026-11-09 22:25:47 | INFO    |   primary layer : 18 (speech AUC 0.660, 59,533 speeches)
+2026-11-09 22:25:47 | INFO    |   was           : 18
+2026-11-09 22:25:47 | INFO    |   meta.json     : results/emi/raw/qwen3/run-job4757993/step481486/meta.json
+2026-11-09 22:25:47 | INFO    |   elapsed       : 00:02:04
+2026-11-09 22:25:47 | INFO    | ==============================================================================
