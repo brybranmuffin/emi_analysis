@@ -1,0 +1,53 @@
+{
+  "model": "gpt2",
+  "representation": "raw",
+  "sae": null,
+  "sae_features": null,
+  "activations": "activations/gpt2/run-job9843505/step759917/corpus",
+  "keywords": "emi/keywords/gpt2/run-job9843505/step759917/corpus",
+  "occurrences": "emi/occurrences/corpus",
+  "checkpoint": {
+    "path": "checkpoints/gpt2/run-job9843505/checkpoint-759917",
+    "step": 759917,
+    "run": "run-job9843505",
+    "selected_from_run": "checkpoints/gpt2/run-job9843505",
+    "init_from": null,
+    "reason": "lowest held-out congressional perplexity (16.6495) among 11 candidates",
+    "candidates": {
+      "75992": 19.058726,
+      "151983": 18.339218,
+      "227975": 17.895033,
+      "303967": 17.618698,
+      "379958": 17.364384,
+      "455950": 17.154798,
+      "506611": 17.025098,
+      "531942": 16.957985,
+      "607934": 16.844745,
+      "683925": 16.716114,
+      "759917": 16.649493
+    }
+  },
+  "layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "primary_layer": 2,
+  "primary_rule": "highest leave-one-keyword-out AUC (ties: deeper)",
+  "n_per_era": 100,
+  "min_per_era": 25,
+  "n_speeches": 8373445,
+  "n_scored": 8373407,
+  "elapsed_seconds": 2142.8,
+  "finished_at": "2026-11-08T22:52:33"
+}

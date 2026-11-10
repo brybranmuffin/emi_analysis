@@ -1,0 +1,47 @@
+job 7721433 on qnode0157 at 2026-11-08 22:16:50
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+2026-11-08 22:16:52 | INFO    | ==============================================================================
+2026-11-08 22:16:52 | INFO    | CONTEXTUAL EMI: modernbert (raw)
+2026-11-08 22:16:52 | INFO    |   activations       : activations/modernbert/run-job4757963/step316779/corpus
+2026-11-08 22:16:52 | INFO    |   keywords          : emi/keywords/modernbert/run-job4757963/step316779/corpus
+2026-11-08 22:16:52 | INFO    |   occurrences       : emi/occurrences/corpus (62,894 used for poles)
+2026-11-08 22:16:52 | INFO    |   layers            : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22
+2026-11-08 22:16:52 | INFO    |   speeches          : 8,373,445 (8,373,407 scorable)
+2026-11-08 22:16:52 | INFO    |   output            : results/emi/raw/modernbert/run-job4757963/step316779
+2026-11-08 22:16:52 | INFO    |   hostname          : qnode0157
+2026-11-08 22:16:52 | INFO    |   python            : 3.10.14
+2026-11-08 22:16:52 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-08 22:16:52 | INFO    |   slurm_job_id      : 7721433
+2026-11-08 22:16:52 | INFO    |   git_commit        : unknown
+2026-11-08 22:16:52 | INFO    |   started_at        : 2026-11-08T22:16:52
+2026-11-08 22:16:52 | INFO    | ==============================================================================
+2026-11-08 22:19:10 | INFO    | layer  0: leave-one-keyword-out AUC 0.995 | cos(P_ev, P_int) +0.540 | 1 keywords without occurrences | 00:02:18
+2026-11-08 22:21:27 | INFO    | layer  1: leave-one-keyword-out AUC 0.973 | cos(P_ev, P_int) +0.557 | 1 keywords without occurrences | 00:02:17
+2026-11-08 22:23:43 | INFO    | layer  2: leave-one-keyword-out AUC 0.969 | cos(P_ev, P_int) +0.613 | 1 keywords without occurrences | 00:02:17
+2026-11-08 22:25:59 | INFO    | layer  3: leave-one-keyword-out AUC 0.977 | cos(P_ev, P_int) +0.660 | 1 keywords without occurrences | 00:02:16
+2026-11-08 22:28:18 | INFO    | layer  4: leave-one-keyword-out AUC 0.978 | cos(P_ev, P_int) +0.673 | 1 keywords without occurrences | 00:02:18
+2026-11-08 22:30:40 | INFO    | layer  5: leave-one-keyword-out AUC 0.974 | cos(P_ev, P_int) +0.679 | 1 keywords without occurrences | 00:02:22
+2026-11-08 22:33:02 | INFO    | layer  6: leave-one-keyword-out AUC 0.972 | cos(P_ev, P_int) +0.684 | 1 keywords without occurrences | 00:02:22
+2026-11-08 22:35:22 | INFO    | layer  7: leave-one-keyword-out AUC 0.967 | cos(P_ev, P_int) +0.660 | 1 keywords without occurrences | 00:02:21
+2026-11-08 22:38:18 | INFO    | layer  8: leave-one-keyword-out AUC 0.954 | cos(P_ev, P_int) +0.647 | 1 keywords without occurrences | 00:02:56
+2026-11-08 22:41:32 | INFO    | layer  9: leave-one-keyword-out AUC 0.947 | cos(P_ev, P_int) +0.641 | 1 keywords without occurrences | 00:03:14
+2026-11-08 22:44:37 | INFO    | layer 10: leave-one-keyword-out AUC 0.959 | cos(P_ev, P_int) +0.642 | 1 keywords without occurrences | 00:03:05
+2026-11-08 22:46:58 | INFO    | layer 11: leave-one-keyword-out AUC 0.957 | cos(P_ev, P_int) +0.678 | 1 keywords without occurrences | 00:02:21
+2026-11-08 22:49:20 | INFO    | layer 12: leave-one-keyword-out AUC 0.941 | cos(P_ev, P_int) +0.679 | 1 keywords without occurrences | 00:02:21
+2026-11-08 22:51:39 | INFO    | layer 13: leave-one-keyword-out AUC 0.953 | cos(P_ev, P_int) +0.657 | 1 keywords without occurrences | 00:02:20
+2026-11-08 22:54:37 | INFO    | layer 14: leave-one-keyword-out AUC 0.958 | cos(P_ev, P_int) +0.674 | 1 keywords without occurrences | 00:02:58
+2026-11-08 22:57:50 | INFO    | layer 15: leave-one-keyword-out AUC 0.937 | cos(P_ev, P_int) +0.727 | 1 keywords without occurrences | 00:03:13
+2026-11-08 23:01:05 | INFO    | layer 16: leave-one-keyword-out AUC 0.954 | cos(P_ev, P_int) +0.998 | 1 keywords without occurrences | 00:03:15
+2026-11-08 23:04:08 | INFO    | layer 17: leave-one-keyword-out AUC 0.961 | cos(P_ev, P_int) +0.997 | 1 keywords without occurrences | 00:03:03
+2026-11-08 23:07:16 | INFO    | layer 18: leave-one-keyword-out AUC 0.971 | cos(P_ev, P_int) +0.995 | 1 keywords without occurrences | 00:03:08
+2026-11-08 23:10:27 | INFO    | layer 19: leave-one-keyword-out AUC 0.966 | cos(P_ev, P_int) +0.994 | 1 keywords without occurrences | 00:03:11
+2026-11-08 23:13:38 | INFO    | layer 20: leave-one-keyword-out AUC 0.957 | cos(P_ev, P_int) +0.993 | 1 keywords without occurrences | 00:03:11
+2026-11-08 23:16:41 | INFO    | layer 21: leave-one-keyword-out AUC 0.949 | cos(P_ev, P_int) +0.992 | 1 keywords without occurrences | 00:03:04
+2026-11-08 23:19:43 | INFO    | layer 22: leave-one-keyword-out AUC 0.918 | cos(P_ev, P_int) +0.761 | 1 keywords without occurrences | 00:03:01
+2026-11-08 23:19:43 | INFO    | ==============================================================================
+2026-11-08 23:19:43 | INFO    | CONTEXTUAL EMI COMPLETE: modernbert (raw)
+2026-11-08 23:19:43 | INFO    |   primary layer   : 0 (AUC 0.995)
+2026-11-08 23:19:43 | INFO    |   scored speeches : 8,373,407 of 8,373,445
+2026-11-08 23:19:43 | INFO    |   output          : results/emi/raw/modernbert/run-job4757963/step316779
+2026-11-08 23:19:43 | INFO    |   elapsed         : 01:02:53
+2026-11-08 23:19:43 | INFO    | ==============================================================================

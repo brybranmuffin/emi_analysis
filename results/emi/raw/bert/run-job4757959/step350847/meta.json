@@ -1,0 +1,53 @@
+{
+  "model": "bert",
+  "representation": "raw",
+  "sae": null,
+  "sae_features": null,
+  "activations": "activations/bert/run-job4757959/step350847/corpus",
+  "keywords": "emi/keywords/bert/run-job4757959/step350847/corpus",
+  "occurrences": "emi/occurrences/corpus",
+  "checkpoint": {
+    "path": "checkpoints/bert-continued/run-job4757959/checkpoint-350847",
+    "step": 350847,
+    "run": "run-job4757959",
+    "selected_from_run": "checkpoints/bert-continued/run-job4757959",
+    "init_from": "checkpoints/bert/run-job9843493/checkpoint-877118",
+    "reason": "lowest held-out congressional mlm_loss (1.2036) among 11 candidates incl. the continuation's starting checkpoint",
+    "candidates": {
+      "0": 1.220893,
+      "35085": 1.263289,
+      "70169": 1.258342,
+      "105254": 1.251453,
+      "140339": 1.244826,
+      "175424": 1.235471,
+      "210508": 1.228136,
+      "245593": 1.219727,
+      "280678": 1.212506,
+      "315762": 1.206915,
+      "350847": 1.203597
+    }
+  },
+  "layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "primary_layer": 1,
+  "primary_rule": "highest leave-one-keyword-out AUC (ties: deeper)",
+  "n_per_era": 100,
+  "min_per_era": 25,
+  "n_speeches": 8373445,
+  "n_scored": 8373407,
+  "elapsed_seconds": 1868.8,
+  "finished_at": "2026-11-08T22:47:05"
+}

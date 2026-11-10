@@ -1,0 +1,37 @@
+job 7721422 on qnode0113 at 2026-11-08 22:15:53
+python /scratch/rsr7518/emi_analysis/.venv/bin/python (Python 3.10.14); git unknown
+2026-11-08 22:15:58 | INFO    | ==============================================================================
+2026-11-08 22:15:58 | INFO    | CONTEXTUAL EMI: bert (raw)
+2026-11-08 22:15:58 | INFO    |   activations       : activations/bert/run-job4757959/step350847/corpus
+2026-11-08 22:15:58 | INFO    |   keywords          : emi/keywords/bert/run-job4757959/step350847/corpus
+2026-11-08 22:15:58 | INFO    |   occurrences       : emi/occurrences/corpus (62,894 used for poles)
+2026-11-08 22:15:58 | INFO    |   layers            : 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+2026-11-08 22:15:58 | INFO    |   speeches          : 8,373,445 (8,373,407 scorable)
+2026-11-08 22:15:58 | INFO    |   output            : results/emi/raw/bert/run-job4757959/step350847
+2026-11-08 22:15:58 | INFO    |   hostname          : qnode0113
+2026-11-08 22:15:58 | INFO    |   python            : 3.10.14
+2026-11-08 22:15:58 | INFO    |   python_executable : /scratch/rsr7518/emi_analysis/.venv/bin/python
+2026-11-08 22:15:58 | INFO    |   slurm_job_id      : 7721422
+2026-11-08 22:15:58 | INFO    |   git_commit        : unknown
+2026-11-08 22:15:58 | INFO    |   started_at        : 2026-11-08T22:15:58
+2026-11-08 22:15:58 | INFO    | ==============================================================================
+2026-11-08 22:18:21 | INFO    | layer  0: leave-one-keyword-out AUC 0.979 | cos(P_ev, P_int) +0.721 | 1 keywords without occurrences | 00:02:23
+2026-11-08 22:20:46 | INFO    | layer  1: leave-one-keyword-out AUC 0.985 | cos(P_ev, P_int) +0.594 | 1 keywords without occurrences | 00:02:25
+2026-11-08 22:23:08 | INFO    | layer  2: leave-one-keyword-out AUC 0.983 | cos(P_ev, P_int) +0.558 | 1 keywords without occurrences | 00:02:21
+2026-11-08 22:25:31 | INFO    | layer  3: leave-one-keyword-out AUC 0.981 | cos(P_ev, P_int) +0.567 | 1 keywords without occurrences | 00:02:23
+2026-11-08 22:27:58 | INFO    | layer  4: leave-one-keyword-out AUC 0.982 | cos(P_ev, P_int) +0.569 | 1 keywords without occurrences | 00:02:27
+2026-11-08 22:30:18 | INFO    | layer  5: leave-one-keyword-out AUC 0.981 | cos(P_ev, P_int) +0.564 | 1 keywords without occurrences | 00:02:20
+2026-11-08 22:32:41 | INFO    | layer  6: leave-one-keyword-out AUC 0.977 | cos(P_ev, P_int) +0.553 | 1 keywords without occurrences | 00:02:23
+2026-11-08 22:35:04 | INFO    | layer  7: leave-one-keyword-out AUC 0.978 | cos(P_ev, P_int) +0.553 | 1 keywords without occurrences | 00:02:23
+2026-11-08 22:37:31 | INFO    | layer  8: leave-one-keyword-out AUC 0.971 | cos(P_ev, P_int) +0.556 | 1 keywords without occurrences | 00:02:28
+2026-11-08 22:39:58 | INFO    | layer  9: leave-one-keyword-out AUC 0.969 | cos(P_ev, P_int) +0.555 | 1 keywords without occurrences | 00:02:27
+2026-11-08 22:42:19 | INFO    | layer 10: leave-one-keyword-out AUC 0.963 | cos(P_ev, P_int) +0.568 | 1 keywords without occurrences | 00:02:21
+2026-11-08 22:44:40 | INFO    | layer 11: leave-one-keyword-out AUC 0.967 | cos(P_ev, P_int) +0.587 | 1 keywords without occurrences | 00:02:21
+2026-11-08 22:47:05 | INFO    | layer 12: leave-one-keyword-out AUC 0.960 | cos(P_ev, P_int) +0.637 | 1 keywords without occurrences | 00:02:25
+2026-11-08 22:47:05 | INFO    | ==============================================================================
+2026-11-08 22:47:05 | INFO    | CONTEXTUAL EMI COMPLETE: bert (raw)
+2026-11-08 22:47:05 | INFO    |   primary layer   : 1 (AUC 0.985)
+2026-11-08 22:47:05 | INFO    |   scored speeches : 8,373,407 of 8,373,445
+2026-11-08 22:47:05 | INFO    |   output          : results/emi/raw/bert/run-job4757959/step350847
+2026-11-08 22:47:05 | INFO    |   elapsed         : 00:31:09
+2026-11-08 22:47:05 | INFO    | ==============================================================================
